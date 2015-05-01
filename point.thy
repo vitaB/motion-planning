@@ -39,7 +39,7 @@ lemma "p\<lparr>xCoord := a\<rparr> = p\<lparr> xCoord := a'\<rparr> \<Longright
   apply (simp)
 done 
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"pointsEqual r p = (getX r = getX p \<and> getY r = getY p)"
+"pointsEqual r p \<longleftrightarrow> (getX r = getX p \<and> getY r = getY p)"
 lemma pointsEqualSame : "pointsEqual p p" by (simp add: pointsEqual_def)
 lemma pointsEqual1 : "p = (| xCoord = a, yCoord = b |) \<and> r = (| xCoord = a, yCoord = b |)
   \<longrightarrow> pointsEqual p r" by (simp add: pointsEqual_def getX_def getY_def)
@@ -56,7 +56,15 @@ definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<R
 "collinear a b c = ((getX a - getX b)*(getY b - getY c) = (getY a- getY b)*(getX b - getX c))"
 
 
-(*move/translate point*)
-
 (*Punkt a links vom Punkt b?*)
+definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"leftFromPoint a b = (getX a < getX b)"
+lemma "a < b \<longleftrightarrow> leftFromPoint (| xCoord = a, yCoord = c |) (| xCoord = b, yCoord = c |)"
+by (auto simp add: getX_def leftFromPoint_def)
+
+(*punkt B zwischen A und C*)
+definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"midpoint a b c = (2 * getY a = getY b + getY c \<and> 2 * getX a = getX b + getX c)"
+
+(*move/translate point*)
 end
