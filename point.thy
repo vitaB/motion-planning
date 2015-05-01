@@ -33,11 +33,9 @@ lemma pointSame : "p\<lparr>xCoord := a, yCoord := b\<rparr> = p\<lparr>yCoord :
 lemma pointSameCoord : "p = \<lparr>xCoord = xCoord p, yCoord = yCoord p\<rparr>" by simp
 lemma pointSameCoord1 : "p\<lparr>xCoord := a\<rparr> = p\<lparr> xCoord := a'\<rparr> \<Longrightarrow> a = a'"
   apply (drule_tac f = xCoord in arg_cong) apply (simp)
+  (*apply (rule_tac r = p in point2d.cases_scheme) (*apply (cases p)*)
+  apply (simp)*)
 done
-lemma "p\<lparr>xCoord := a\<rparr> = p\<lparr> xCoord := a'\<rparr> \<Longrightarrow> a = a'"
-  apply (rule_tac r = p in point2d.cases_scheme) (*apply (cases p)*)
-  apply (simp)
-done 
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "pointsEqual r p \<longleftrightarrow> (getX r = getX p \<and> getY r = getY p)"
 lemma pointsEqualSame : "pointsEqual p p" by (simp add: pointsEqual_def)
@@ -51,20 +49,35 @@ theorem pointsEquals : "pointsEqual p r \<longleftrightarrow> p = r"
     apply (simp add: pointsEqualSame)
 done
 
-(*3 Punkte sind auf einer geraden*)
-definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"collinear a b c = ((getX a - getX b)*(getY b - getY c) = (getY a- getY b)*(getX b - getX c))"
-
-
 (*Punkt a links vom Punkt b?*)
 definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "leftFromPoint a b = (getX a < getX b)"
 lemma "a < b \<longleftrightarrow> leftFromPoint (| xCoord = a, yCoord = c |) (| xCoord = b, yCoord = c |)"
 by (auto simp add: getX_def leftFromPoint_def)
 
-(*punkt B zwischen A und C*)
+(*punkt A zwischen B und C*)
 definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "midpoint a b c = (2 * getY a = getY b + getY c \<and> 2 * getX a = getX b + getX c)"
+definition betwpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"betwpoint a b c = (\<forall> n. n > 1 \<longrightarrow> (n * getY a = getY b + getY c \<and> n * getX a = getX b + getX c))"
+
+(*3 Punkte sind auf einer geraden*)
+definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"collinear a b c = ((getX a - getX b)*(getY b - getY c) = (getY a- getY b)*(getX b - getX c))"
+lemma "midpoint a b c \<longrightarrow> collinear a b c"
+  apply (rule impI)
+  apply (simp add: midpoint_def collinear_def getY_def getX_def)
+  apply (erule conjE)
+  apply algebra
+done
+lemma betwpointCollinear : "betwpoint a b c \<longrightarrow> collinear a b c"
+  apply (rule impI)
+  apply (simp add: betwpoint_def collinear_def getY_def getX_def)
+  apply (erule_tac x = 2 in allE)
+  apply (simp)
+  apply algebra
+done
 
 (*move/translate point*)
+
 end
