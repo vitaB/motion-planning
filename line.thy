@@ -2,45 +2,60 @@ theory line
 imports point
 begin
 
-record line = 
-  sLine :: point2d
-  eLine :: point2d
-(*line equal*)
-(*Punkt links von line*)
+(*definition pt1 :: point2d where "pt1 \<equiv> (| xCoord = 1, yCoord = 4 |)"
+definition pt2 :: point2d where "pt2 \<equiv> (| xCoord = 2, yCoord = 6 |)"
+(*Falsch. alle Punkte die ungleich sind, sind damit Strecken.
+Es sollen aber nur ausgewählte Strecken angeschaut werden.*)
+definition line1 :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"line1 a b = (\<not> pointsEqual a b)"
+lemma "line1 p r \<longleftrightarrow> p \<noteq> r" by (auto simp add: line1_def pointsEqual)
+(*Zugreifen auf die Punkte?*)
+typedef segment1 =  "{(A::point2d,B::point2d). A \<noteq> B}"
+  apply (auto) apply (rule_tac x = pt1 in  exI) apply (rule_tac x = pt2 in  exI)
+  apply (simp add: pt1_def pt2_def)
+done
+thm Rep_segment1
+thm Abs_segment1_cases
+definition segm1 :: segment1 where "segm1 \<equiv> Abs_segment1 (pt1, pt1)"*)
+
+
+(*definition segment*)
+record line =
+  sPoint :: point2d
+  ePoint :: point2d
+definition segment :: "line \<Rightarrow> bool" where "segment A  \<equiv> (sPoint A \<noteq> ePoint A)"
+
+(*update segment*)
+
+(*segment equal*)
+lemma segment_equal : "segment A \<Longrightarrow> segment B \<Longrightarrow> A = B \<longleftrightarrow> sPoint A = sPoint B \<and> ePoint A = ePoint B"
+  apply (rule iffI)
+  apply (simp)
+  apply (erule conjE)
+  apply (simp)
+done
+  
+(*Punkt links von line. berechnung durch Kreuzprodukt. kreuz > 0 im Uhrzeigersinn (punkt liegt rechts von der Strecke)
+kreuz = 0 punkte liegen alle auf der selben Linie. kreuz < 0 gegen den Uhrzeigersinn *)
+definition kreuz :: "line \<Rightarrow> point2d \<Rightarrow> real" where
+  "kreuz A p \<equiv> signedArea (sPoint A) p (ePoint A)"
+(*kreuzprodukt = 0 wenn 3 punkte kollinear*)
+lemma kreuz_collinear : "kreuz A p = 0 \<longleftrightarrow> collinear (sPoint A) (ePoint A) p"
+by (simp add: kreuz_def colliniearRight)
+
+(*Punkt auf der line*)
+definition point_on_segment :: "line \<Rightarrow> point2d \<Rightarrow> bool" where
+"segment A \<Longrightarrow> (point_on_segment A p \<equiv> min (getX (sPoint A))(getX (ePoint A)) \<le> getX p
+\<and> getX p \<le> max (getX (sPoint A))(getX (ePoint A)) \<and> min (getY (sPoint A))(getY (ePoint A)) \<le> getY p
+\<and> getY p \<le> max (getY (sPoint A))(getY (ePoint A)))"
+(* zwischenPunkt p von segment A liegt A*)
+lemma segment_betwpoint : " segment A \<Longrightarrow> betwpoint p (sPoint A) (ePoint A) \<longrightarrow> point_on_segment A p"
+  apply (rule impI)
+  apply (simp add: betwpoint_def point_on_segment_def)
+  apply (erule_tac x = 2 in allE)
+  apply (simp)
+  apply (auto)
+done
+
 (*intersection (line a, line b) echtes Schneiden, unechtes Schneiden*)
-
-
-(*Polygon, liste/sequenz mit Punkten wo Anfangspunkt und Endpunk gleich sind*)
-definition polygon = "line"
-(*Punkt inside Polygon*)
-(*intersection(Polygon, Line)*)
-(*intersection(Polygon, Polygon)*)
-(*move Polygon*)
-
-definition convexPolygon = "polygon"
-(*wann ist ein polygon convex*)
-(*intersection(Polygon, Polygon)*)
-
-(*Intrduce new type without definition*)
-typedecl pt
-typedecl line
-typedecl plane
-
-consts on_line :: "pt \<Rightarrow> line \<Rightarrow> bool"
-consts in_plane :: "pt \<Rightarrow> plane \<Rightarrow> bool"
-
-constdefs
-  collinear S \<equiv> \<exists> a. \<forall> P\<in>S. on-line P a
-  planar S \<equiv> \<exists>\<alpha>. \<forall>P\<in>S. in-plane P \<alpha>
-  line-of A B \<equiv> SOME a. on-line A a \<and> on-line B a
-  plane-of A B C \<equiv> SOME \<alpha>. in-plane A \<alpha> \<and> in-plane B \<alpha> \<and> in-plane C \<alpha> line-on-plane a \<alpha> \<equiv> \<forall> P. on-line P a −\<rightarrow> in-plane P \<alpha>
-axioms
-  AxiomI12: A̸=B =\<Rightarrow> \<exists> !a. on-line A a \<and> on-line B a AxiomI3a: \<forall>a. \<exists>A B. A̸=B \<and> on-line A a \<and> on-line B a AxiomI3b: \<exists> A B C. \<not>collinear {A,B,C}
-  AxiomI4b:\<forall> \<alpha>. \<exists> A. in-plane A \<alpha>
-  AxiomI45: \<not>collinear {A,B,C} =\<Rightarrow> \<exists> !\<alpha>. in-plane A \<alpha> \<and> in-plane B \<alpha> \<and> in-plane C \<alpha> AxiomI6: [ A̸=B; in-plane A \<alpha>; in-plane B \<alpha> ] =\<Rightarrow> line-on-plane (line-of A B) \<alpha>
-  AxiomI7: [ \<alpha≯=\<beta>; in-plane A \<alpha>; in-plane A \<beta> ] =\<Rightarrow> \<exists> B. A̸=B \<and> in-plane B \<alpha> \<and> in-plane B \<beta> AxiomI8: \<exists> A B C D. \<not>planar {A,B,C,D}
-
-pt \<equiv> UNIV :: hypvec set
-line \<equiv> UNIV :: (pt * pt) set
-
 end
