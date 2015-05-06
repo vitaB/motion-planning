@@ -18,8 +18,6 @@ thm Rep_segment1
 thm Abs_segment1_cases
 definition segm1 :: segment1 where "segm1 \<equiv> Abs_segment1 (pt1, pt1)"*)
 
-
-(*definition segment*)
 record line =
   sPoint :: point2d
   ePoint :: point2d
@@ -27,13 +25,15 @@ definition segment :: "line \<Rightarrow> bool" where "segment A  \<equiv> (sPoi
 
 (*update segment*)
 
-(*segment equal*)
-lemma segment_equal : "segment A \<Longrightarrow> segment B \<Longrightarrow> A = B \<longleftrightarrow> sPoint A = sPoint B \<and> ePoint A = ePoint B"
+(*segmentEqual*)
+lemma segment_Same : "segment A \<Longrightarrow> segment B \<Longrightarrow> A = B \<longleftrightarrow> sPoint A = sPoint B \<and> ePoint A = ePoint B"
   apply (rule iffI)
   apply (simp)
   apply (erule conjE)
   apply (simp)
 done
+definition segmentEqual :: "line \<Rightarrow> line \<Rightarrow> bool" where
+"segment A \<Longrightarrow> segment B \<Longrightarrow> segmentEqual A B \<equiv> (A = B \<or> sPoint A = ePoint B \<and> ePoint A = sPoint B)"
   
 (*Punkt links von line. berechnung durch Kreuzprodukt. kreuz > 0 im Uhrzeigersinn (punkt liegt rechts von der Strecke)
 kreuz = 0 punkte liegen alle auf der selben Linie. kreuz < 0 gegen den Uhrzeigersinn *)
