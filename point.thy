@@ -137,6 +137,8 @@ lemma twoPointsColl2 [simp]: "collinear a a b" by (simp add: collinear_def)
 lemma notLeftTurn [simp]: "(\<not> leftTurn a c b) = (leftTurn a b c \<or> collinear a b c)"
   apply (simp add:leftTurn_def)
   apply (subst colliniearRight)
+  apply (auto)
+  apply (simp add: signedArea_def)
 oops
 lemma notBetweenSelf [simp]: "\<not> (betwpoint a a b)"
   apply (rule notI)

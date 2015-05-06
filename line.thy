@@ -21,6 +21,8 @@ definition segm1 :: segment1 where "segm1 \<equiv> Abs_segment1 (pt1, pt1)"*)
 record line =
   sPoint :: point2d
   ePoint :: point2d
+definition l1 :: line where "l1 \<equiv> \<lparr>sPoint = \<lparr> xCoord = 1, yCoord = 4 \<rparr>, ePoint = (| xCoord = 3, yCoord = 1 |)\<rparr>"
+definition l2 :: line where "l2 \<equiv> \<lparr>sPoint = \<lparr> xCoord = 1, yCoord = 1 \<rparr>, ePoint = (| xCoord = 4, yCoord = 4 |)\<rparr>"
 definition segment :: "line \<Rightarrow> bool" where "segment A  \<equiv> (sPoint A \<noteq> ePoint A)"
 
 (*update segment*)
@@ -35,13 +37,16 @@ done
 definition segmentEqual :: "line \<Rightarrow> line \<Rightarrow> bool" where
 "segment A \<Longrightarrow> segment B \<Longrightarrow> segmentEqual A B \<equiv> (A = B \<or> sPoint A = ePoint B \<and> ePoint A = sPoint B)"
   
-(*Punkt links von line. berechnung durch Kreuzprodukt. kreuz > 0 im Uhrzeigersinn (punkt liegt rechts von der Strecke)
-kreuz = 0 punkte liegen alle auf der selben Linie. kreuz < 0 gegen den Uhrzeigersinn *)
+(*Punkt links von line. berechnung durch Kreuzprodukt. kreuz < 0 im Uhrzeigersinn (punkt liegt rechts von der Strecke)
+kreuz = 0 punkte liegen alle auf der selben Linie. kreuz > 0 gegen den Uhrzeigersinn *)
 definition kreuz :: "line \<Rightarrow> point2d \<Rightarrow> real" where
-  "kreuz A p \<equiv> signedArea (sPoint A) p (ePoint A)"
+  "kreuz A p \<equiv> signedArea (sPoint A) (ePoint A) p"
 (*kreuzprodukt = 0 wenn 3 punkte kollinear*)
 lemma kreuz_collinear : "kreuz A p = 0 \<longleftrightarrow> collinear (sPoint A) (ePoint A) p"
-by (simp add: kreuz_def colliniearRight)
+  apply (simp add: kreuz_def colliniearRight)
+  apply (simp add: signedArea_def)
+  apply (algebra)
+done
 
 (*Punkt auf der line*)
 definition point_on_segment :: "line \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -58,4 +63,27 @@ lemma segment_betwpoint : " segment A \<Longrightarrow> betwpoint p (sPoint A) (
 done
 
 (*intersection (line a, line b) echtes Schneiden, unechtes Schneiden*)
+definition echtesSchneiden :: "line \<Rightarrow> line \<Rightarrow> bool" where
+"segment A \<Longrightarrow> segment B \<Longrightarrow> echtesSchneiden A B \<equiv>
+  let a = signedArea (sPoint B) (ePoint B) (sPoint A) in 
+  let b = signedArea (sPoint B) (ePoint B) (ePoint A) in
+  let c = signedArea (sPoint A) (ePoint A) (sPoint B) in
+  let d = signedArea (sPoint A) (ePoint A) (ePoint B) in
+    ((a > 0 \<and> b < 0) \<or> (a < 0 \<and> b > 0)) \<and> ((c > 0 \<and> d < 0) \<or> (c < 0 \<and> d > 0))"
+lemma "segment l1 \<Longrightarrow> segment l2 \<Longrightarrow> echtesSchneiden l1 l2"
+  apply (auto simp add: echtesSchneiden_def)
+  apply (auto simp add: l1_def l2_def signedArea_def)
+done
+definition intersect :: "line \<Rightarrow> line \<Rightarrow> bool" where
+"segment A \<Longrightarrow> segment B \<Longrightarrow> intersect A B \<equiv>
+  let a = signedArea (sPoint B) (ePoint B) (sPoint A) in 
+  let b = signedArea (sPoint B) (ePoint B) (ePoint A) in
+  let c = signedArea (sPoint A) (ePoint A) (sPoint B) in
+  let d = signedArea (sPoint A) (ePoint A) (ePoint B) in
+   ((a > 0 \<and> b < 0) \<or> (a < 0 \<and> b > 0)) \<and> ((c > 0 \<and> d < 0) \<or> (c < 0 \<and> d > 0))
+   \<or> (a = 0 \<or> point_on_segment B (sPoint A))
+   \<or> (b = 0 \<or> point_on_segment B (ePoint A))
+   \<or> (c = 0 \<or> point_on_segment A (sPoint B))
+   \<or> (d = 0 \<or> point_on_segment A (ePoint B))"
+
 end

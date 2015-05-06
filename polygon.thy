@@ -12,8 +12,6 @@ definition circuit_list :: "line list \<Rightarrow> bool" where
 
 (* Es fehlt noch! kein segment wiederholt sich*)
 
-(*polygon equivalent*)
-
 (*definition polygon_eq :: "line list \<Rightarrow> line list \<Rightarrow> bool" where
 "polygon_eq P R \<equiv> list_eq_iff_nth_eq P R"*)
 
