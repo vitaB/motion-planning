@@ -133,6 +133,9 @@ lemma twoPointsColl2 [simp]: "collinear a a b" by (simp add: collinear_def)
 
 
 
+
+
+
 (*Zusätliche lemmas*)
 lemma notLeftTurn [simp]: "(\<not> leftTurn a c b) = (leftTurn a b c \<or> collinear a b c)"
   apply (simp add:leftTurn_def)

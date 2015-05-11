@@ -2,22 +2,42 @@ theory line
 imports point
 begin
 
-(*definition pt1 :: point2d where "pt1 \<equiv> (| xCoord = 1, yCoord = 4 |)"
-definition pt2 :: point2d where "pt2 \<equiv> (| xCoord = 2, yCoord = 6 |)"
-(*Falsch. alle Punkte die ungleich sind, sind damit Strecken.
-Es sollen aber nur ausgewählte Strecken angeschaut werden.*)
-definition line1 :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"line1 a b = (\<not> pointsEqual a b)"
-lemma "line1 p r \<longleftrightarrow> p \<noteq> r" by (auto simp add: line1_def pointsEqual)
-(*Zugreifen auf die Punkte?*)
-typedef segment1 =  "{(A::point2d,B::point2d). A \<noteq> B}"
-  apply (auto) apply (rule_tac x = pt1 in  exI) apply (rule_tac x = pt2 in  exI)
-  apply (simp add: pt1_def pt2_def)
-done
-thm Rep_segment1
-thm Abs_segment1_cases
-definition segm1 :: segment1 where "segm1 \<equiv> Abs_segment1 (pt1, pt1)"*)
+definition segment :: "point2d \<Rightarrow> point2d  \<Rightarrow> bool" where
+"segment a b \<equiv> \<not> pointsEqual a b"
 
+definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"segment A B \<Longrightarrow> point_on_segment p A B \<equiv>  min (getX A)(getX B) \<le> getX p \<and>
+getX p \<le> max (getX A)(getX B) \<and> min (getY A)(getY B) \<le> getY p
+\<and> getY p \<le> max (getY A)(getY B)"
+
+(* zwischenPunkt p von segment A B liegt auf A B*)
+lemma segment_betwpoint : " segment A B \<Longrightarrow> betwpoint p A B \<longrightarrow> point_on_segment p A B"
+  apply (rule impI)
+  apply (simp add: betwpoint_def point_on_segment_def)
+  apply (erule_tac x = 2 in allE)
+  apply (simp)
+  apply (auto)
+done
+
+(*Schnittpunkt zwischen Segment A B und Segment P R*)
+definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv>
+  let a = signedArea P R A in
+  let b = signedArea P R B in
+  let c = signedArea A B P in
+  let d = signedArea A B R in
+   ((a > 0 \<and> b < 0) \<or> (a < 0 \<and> b > 0)) \<and> ((c > 0 \<and> d < 0) \<or> (c < 0 \<and> d > 0))
+   \<or> (a = 0 \<or> point_on_segment A P R)
+   \<or> (b = 0 \<or> point_on_segment B P R)
+   \<or> (c = 0 \<or> point_on_segment P A B)
+   \<or> (d = 0 \<or> point_on_segment R A B)"
+
+
+
+
+
+
+(* Line soll kein eigener Datentyp mehr sein!
 record line =
   sPoint :: point2d
   ePoint :: point2d
@@ -70,10 +90,7 @@ definition echtesSchneiden :: "line \<Rightarrow> line \<Rightarrow> bool" where
   let c = signedArea (sPoint A) (ePoint A) (sPoint B) in
   let d = signedArea (sPoint A) (ePoint A) (ePoint B) in
     ((a > 0 \<and> b < 0) \<or> (a < 0 \<and> b > 0)) \<and> ((c > 0 \<and> d < 0) \<or> (c < 0 \<and> d > 0))"
-lemma "segment l1 \<Longrightarrow> segment l2 \<Longrightarrow> echtesSchneiden l1 l2"
-  apply (auto simp add: echtesSchneiden_def)
-  apply (auto simp add: l1_def l2_def signedArea_def)
-done
+
 definition intersect :: "line \<Rightarrow> line \<Rightarrow> bool" where
 "segment A \<Longrightarrow> segment B \<Longrightarrow> intersect A B \<equiv>
   let a = signedArea (sPoint B) (ePoint B) (sPoint A) in 
@@ -85,5 +102,22 @@ definition intersect :: "line \<Rightarrow> line \<Rightarrow> bool" where
    \<or> (b = 0 \<or> point_on_segment B (ePoint A))
    \<or> (c = 0 \<or> point_on_segment A (sPoint B))
    \<or> (d = 0 \<or> point_on_segment A (ePoint B))"
+lemma "segment l1 \<Longrightarrow> segment \<lparr>sPoint = \<lparr> xCoord = 1, yCoord = 1 \<rparr>, ePoint = (| xCoord = 3, yCoord = 1 |)\<rparr>
+\<Longrightarrow> intersect l1 \<lparr>sPoint = \<lparr> xCoord = 1, yCoord = 1 \<rparr>, ePoint = (| xCoord = 3, yCoord = 1 |)\<rparr>"
+  apply (auto simp add: intersect_def)
+  apply (auto simp add: l1_def l2_def signedArea_def)
+done
 
+
+lemma "segment l1 \<Longrightarrow> segment l2 \<Longrightarrow> echtesSchneiden l1 l2"
+  apply (auto simp add: echtesSchneiden_def)
+  apply (auto simp add: l1_def l2_def signedArea_def)
+done
+definition r1 :: line where "r1 \<equiv> \<lparr>sPoint = \<lparr> xCoord = 2, yCoord = 1 \<rparr>, ePoint = (| xCoord = 2, yCoord = 2 |)\<rparr>"
+definition r2 :: line where "r2 \<equiv> \<lparr>sPoint = \<lparr> xCoord = 1, yCoord = 3 \<rparr>, ePoint = (| xCoord = 3, yCoord = 3 |)\<rparr>"
+lemma "segment r1 \<Longrightarrow> segment r2 \<Longrightarrow> \<not> intersect r1 r2"
+  apply (auto simp add: intersect_def)
+  apply (auto simp add: r1_def r2_def signedArea_def simp add: point_on_segment_def)
+done
+*)
 end
