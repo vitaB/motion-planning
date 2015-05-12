@@ -7,14 +7,22 @@ hat damit also nur 2 Nachbarn*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
 
+
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> \<forall> a b::point2d. a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
 by (auto simp add: pointsEqual_def)
 
+(*alle Kanten von pointList sind segmente*)
+lemma pointsSegments : "\<forall> P::point2d list. a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> segment a b"
+by (auto simp add: pointList_def segment_def pointsEqual_def)
+
 (*lemma distVertex : ""*)
 
 
-
+(*trapezoidalmap*)
+fun trapezoidalMap ::  "point2d list \<Rightarrow> real list" where
+"trapezoidalMap [] = []"
+| "trapezoidalMap (x#xs) = insort_insert (getX x) (trapezoidalMap xs)"
 
 
 (* Line/Segment soll kein eigener Datentyp mehr sein!

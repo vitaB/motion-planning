@@ -43,7 +43,7 @@ done
 (*Punkt a links vom Punkt b?*)
 definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "leftFromPoint a b = (getX a < getX b)"
-lemma "a < b \<longleftrightarrow> leftFromPoint (| xCoord = a, yCoord = c |) (| xCoord = b, yCoord = c |)"
+lemma "a < b \<longleftrightarrow> leftFromPoint (| xCoord = a, yCoord = c |) (| xCoord = b, yCoord = d |)"
 by (auto simp add: leftFromPoint_def)
 
 (*As our verifications relied upon reasoning about the relative positions of points, we needed

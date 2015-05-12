@@ -2,8 +2,16 @@ theory line
 imports point
 begin
 
+typedef segment = "{{A, B} :: point2d set |A B. A \<noteq> B}"
+theorem "the-segment" :
+assumes "A \<noteq> B"
+shows "endpoints (the-segment A B) = {A, B}"
+
 definition segment :: "point2d \<Rightarrow> point2d  \<Rightarrow> bool" where
 "segment a b \<equiv> \<not> pointsEqual a b"
+
+definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
 
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> point_on_segment p A B \<equiv>  min (getX A)(getX B) \<le> getX p \<and>
@@ -11,7 +19,7 @@ getX p \<le> max (getX A)(getX B) \<and> min (getY A)(getY B) \<le> getY p
 \<and> getY p \<le> max (getY A)(getY B)"
 
 (* zwischenPunkt p von segment A B liegt auf A B*)
-lemma segment_betwpoint : " segment A B \<Longrightarrow> betwpoint p A B \<longrightarrow> point_on_segment p A B"
+lemma segment_betwpoint : "segment A B \<Longrightarrow> betwpoint p A B \<longrightarrow> point_on_segment p A B"
   apply (rule impI)
   apply (simp add: betwpoint_def point_on_segment_def)
   apply (erule_tac x = 2 in allE)
@@ -20,6 +28,14 @@ lemma segment_betwpoint : " segment A B \<Longrightarrow> betwpoint p A B \<long
 done
 
 (*Schnittpunkt zwischen Segment A B und Segment P R*)
+definition crossing ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"segment A B \<Longrightarrow> segment P R \<Longrightarrow> crossing A B P R \<equiv>
+  let a = signedArea P R A in
+  let b = signedArea P R B in
+  let c = signedArea A B P in
+  let d = signedArea A B R in
+   ((a > 0 \<and> b < 0) \<or> (a < 0 \<and> b > 0)) \<and> ((c > 0 \<and> d < 0) \<or> (c < 0 \<and> d > 0))"
+
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv>
   let a = signedArea P R A in
