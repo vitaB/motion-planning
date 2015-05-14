@@ -1,5 +1,5 @@
 theory segmentList
-imports line
+imports line "~~/src/HOL/Hoare/Hoare_Logic"
 begin
 
 (*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor.
@@ -20,9 +20,40 @@ by (auto simp add: pointList_def segment_def pointsEqual_def)
 
 
 (*trapezoidalmap*)
+fun xCoordList ::  "point2d list \<Rightarrow> real list" where
+"xCoordList [] = []" 
+| "xCoordList (x#xs) = insort_insert (getX x) (xCoordList xs)"
+lemma XCoordSorted : "sorted (xCoordList P)"
+  apply (induct P rule: xCoordList.induct, simp)
+  apply (simp add: List.linorder_class.sorted_insort_insert)
+done
+lemma inInsort : "a \<in> set (insort_insert x xs) \<Longrightarrow> a \<in> set (xs) \<or> a = x"
+sorry
+lemma inXCoord : "a \<in> set xs \<and> (getX a) \<in> set (xCoordList xs)"
+sorry
+
+lemma testab : "pointList L \<Longrightarrow> VARS (xs :: real list) i {pointList L}
+  xs := [];
+  i := 0;
+  WHILE i \<noteq> length L
+  INV {\<forall> a. a < i \<longrightarrow> xs!a = (xCoordList L)!a}
+  DO
+    xs := insort_insert (getX (L!i)) (xs);
+    i := i + 1
+  OD
+  {True}"
+  apply(vcg_simp)
+  apply (rule allI, rule impI) apply (safe) apply (erule_tac x=a in allE)
+  apply (safe) apply (cut_tac x="getX (L ! i)" and xs=xs and a=a in inInsort)
+  apply (simp) apply (cut_tac a="(L ! i)" and xs="L" in inXCoord, simp)
+  apply (erule_tac x=a in allE, auto)
+sorry
+
 fun trapezoidalMap ::  "point2d list \<Rightarrow> real list" where
 "trapezoidalMap [] = []"
 | "trapezoidalMap (x#xs) = insort_insert (getX x) (trapezoidalMap xs)"
+
+
 
 
 (* Line/Segment soll kein eigener Datentyp mehr sein!

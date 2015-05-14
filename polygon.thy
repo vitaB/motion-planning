@@ -32,7 +32,7 @@ sorry
 definition conv_polygon :: "point2d list \<Rightarrow> bool" where
 "pointist L \<Longrightarrow> P = polygon L \<Longrightarrow> conv_polygon P \<equiv> (pointsCl P \<or> pointsACl P)"
 
-definition poly1 :: "point2d list" where
+(*definition poly1 :: "point2d list" where
 "poly1 \<equiv> [(| xCoord = 0, yCoord = 0 |),(| xCoord = 2, yCoord = 1 |),(| xCoord = 3, yCoord = 2 |),(| xCoord = 1, yCoord = 3 |)]"
 definition poly2 :: "point2d list" where
 "poly2 \<equiv> polygon poly1"
@@ -47,7 +47,7 @@ lemma "conv_polygon (polygon poly1)"
  apply (simp add: polygon_def conv_polygon_def, rule disjI2)
  apply (auto simp add: poly1_def signedArea_def)
  apply (simp add: pointList_def)
-done
+done*)
 
 
 (*Punkt inside Polygon*)
@@ -58,9 +58,16 @@ done
 
 (*intersection(Polygon, Strecke A B)*)
 fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "linePolygonInters [] A B = False"
-| "linePolygonInters [a] A B = False"
-| "linePolygonInters (a#b#xs) A B = (segment A B \<and> (intersect a b A B \<or> linePolygonInters xs A B))"
+  "linePolygonInters [] P R = False"
+| "linePolygonInters [a] P R = False"
+| "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters xs P R))"
+lemma "pointist L \<Longrightarrow> P = polygon L \<Longrightarrow> segment A B \<Longrightarrow> linePolygonInters P A B \<longleftrightarrow> (\<exists> i j. 0 \<le> i \<and> i < j \<and> j \<le> size L \<longrightarrow>
+  intersect (nth P i) (nth P j) A B)"
+  apply (rule iffI)
+  apply (rule_tac x="(P ,A, B)" in linePolygonInters.cases)
+  apply (simp, simp)
+  apply (simp)
+sorry
 
 
 (*wenn ein punkt einer Strecke inside Polygon und ein Punkt einer Strecke outside, dann gibt es eine intersection*)
