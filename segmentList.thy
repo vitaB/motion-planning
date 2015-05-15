@@ -19,7 +19,10 @@ by (auto simp add: pointList_def segment_def pointsEqual_def)
 (*lemma distVertex : ""*)
 
 
-(*trapezoidalmap*)
+(*for trapezoidalmap*)
+fun yCoordList ::  "point2d list \<Rightarrow> real list" where
+"yCoordList [] = []" 
+| "yCoordList (x#xs) = insort_insert (getY x) (yCoordList xs)"
 fun xCoordList ::  "point2d list \<Rightarrow> real list" where
 "xCoordList [] = []" 
 | "xCoordList (x#xs) = insort_insert (getX x) (xCoordList xs)"
@@ -31,27 +34,6 @@ lemma inInsort : "a \<in> set (insort_insert x xs) \<Longrightarrow> a \<in> set
 sorry
 lemma inXCoord : "a \<in> set xs \<and> (getX a) \<in> set (xCoordList xs)"
 sorry
-
-lemma testab : "pointList L \<Longrightarrow> VARS (xs :: real list) i {pointList L}
-  xs := [];
-  i := 0;
-  WHILE i \<noteq> length L
-  INV {\<forall> a. a < i \<longrightarrow> xs!a = (xCoordList L)!a}
-  DO
-    xs := insort_insert (getX (L!i)) (xs);
-    i := i + 1
-  OD
-  {True}"
-  apply(vcg_simp)
-  apply (rule allI, rule impI) apply (safe) apply (erule_tac x=a in allE)
-  apply (safe) apply (cut_tac x="getX (L ! i)" and xs=xs and a=a in inInsort)
-  apply (simp) apply (cut_tac a="(L ! i)" and xs="L" in inXCoord, simp)
-  apply (erule_tac x=a in allE, auto)
-sorry
-
-fun trapezoidalMap ::  "point2d list \<Rightarrow> real list" where
-"trapezoidalMap [] = []"
-| "trapezoidalMap (x#xs) = insort_insert (getX x) (trapezoidalMap xs)"
 
 
 
