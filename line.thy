@@ -2,11 +2,8 @@ theory line
 imports point
 begin
 
-typedef segment = "{{A, B} :: point2d set |A B. A \<noteq> B}"
-theorem "the-segment" :
-assumes "A \<noteq> B"
-shows "endpoints (the-segment A B) = {A, B}"
-
+(*Definition für Segment.*)
+(*Evtl. wäre ein eigener Datentyp besser*)
 definition segment :: "point2d \<Rightarrow> point2d  \<Rightarrow> bool" where
 "segment a b \<equiv> \<not> pointsEqual a b"
 
@@ -27,7 +24,7 @@ lemma segment_betwpoint : "segment A B \<Longrightarrow> betwpoint p A B \<longr
   apply (auto)
 done
 
-(*Schnittpunkt zwischen Segment A B und Segment P R*)
+(*(echter)Schnitt zwischen Segment A B und Segment P R*)
 definition crossing ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> crossing A B P R \<equiv>
   let a = signedArea P R A in
@@ -60,6 +57,14 @@ record line =
 definition l1 :: line where "l1 \<equiv> \<lparr>sPoint = \<lparr> xCoord = 1, yCoord = 4 \<rparr>, ePoint = (| xCoord = 3, yCoord = 1 |)\<rparr>"
 definition l2 :: line where "l2 \<equiv> \<lparr>sPoint = \<lparr> xCoord = 1, yCoord = 1 \<rparr>, ePoint = (| xCoord = 4, yCoord = 4 |)\<rparr>"
 definition segment :: "line \<Rightarrow> bool" where "segment A  \<equiv> (sPoint A \<noteq> ePoint A)"
+
+(*alternative für segment
+typedef segment = "{{A, B} :: point2d set |A B. A \<noteq> B}"
+  apply (simp)
+  apply (rule_tac x="\<lparr> xCoord = 0, yCoord = 0 \<rparr>" in exI)
+  apply (rule_tac x="\<lparr> xCoord = 1, yCoord = 1 \<rparr>" in exI)
+  apply (simp)
+done*)
 
 (*update segment*)
 

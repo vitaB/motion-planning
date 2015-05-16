@@ -46,24 +46,18 @@ definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" w
 lemma "a < b \<longleftrightarrow> leftFromPoint (| xCoord = a, yCoord = c |) (| xCoord = b, yCoord = d |)"
 by (auto simp add: leftFromPoint_def)
 
-(*As our verifications relied upon reasoning about the relative positions of points, we needed
-to formlise this notion. For this we used the signed area of a triangle; with the convention being
-that if the points are ordered anti-clockwise, the area is positive, and if the points are ordered
-clockwise, the area is negative.*)
+(*signed area of a triangle; with the convention being that
+- if the points are ordered anti-clockwise, the area is positive
+- if the points are ordered clockwise, the area is negative.*)
 definition signedArea :: "[point2d, point2d, point2d] \<Rightarrow> real" where
 "signedArea a b c \<equiv> (getX b - getX a)*(getY c - getY a)
 - (getY b - getY a)*(getX c - getX a)"
-lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c"
-  apply (simp add: signedArea_def) apply algebra
-done
-lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b"
-  apply (simp add: signedArea_def) apply algebra
-done
+lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c" by (simp add: signedArea_def, algebra)
+lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b" by (simp add: signedArea_def,  algebra)
 lemma areaDoublePoint [simp]: "signedArea a a b = 0" by (simp add: signedArea_def)
 lemma areaDoublePoint2 [simp]: "signedArea a b b = 0" by (simp add: signedArea_def)
 
-(*Using this definition it was then easy to formally represent the orientation of points; we say
-that three points a, b and c make a left turn if they make an anti-clockwise cycle:*)
+(*three points a, b and c make a left turn if they make an anti-clockwise cycle:*)
 definition leftTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
 "leftTurn a b c \<equiv> 0 < signedArea a b c"
 lemma leftTurnRotate [simp]: "leftTurn b c a = leftTurn a b c" by (simp add: leftTurn_def)
@@ -120,12 +114,8 @@ lemma colliniearRight : "collinear a b c \<longleftrightarrow> (signedArea a b c
   apply (simp add: collinear_def signedArea_def)
   apply (rule iffI)
 by algebra+
-lemma collRotate [simp]: "collinear c a b = collinear a b c"
-  apply (simp add: collinear_def) apply algebra
-done
-lemma collSwap [simp]: "collinear a c b = collinear a b c"
-  apply (simp add: collinear_def) apply algebra
-done
+lemma collRotate [simp]: "collinear c a b = collinear a b c" by (simp add: collinear_def, algebra)
+lemma collSwap [simp]: "collinear a c b = collinear a b c" by (simp add: collinear_def, algebra)
 lemma twoPointsColl [simp]: "collinear a b b" by (simp add: collinear_def)
 lemma twoPointsColl2 [simp]: "collinear a a b" by (simp add: collinear_def)
 
@@ -162,29 +152,29 @@ done
 lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
   apply (simp add: collinear_def)
   apply (auto)
-oops
+sorry
 lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
-oops
+sorry
 lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow>
 isBetween a b c \<or> isBetween b a c \<or> isBetween c a b"
   apply (simp add: collinear_def)
-oops
+sorry
 lemma areaContra [dest]: " signedArea a c b < 0\<Longrightarrow> signedArea a b c < 0  \<Longrightarrow> False"
   apply (simp add: signedArea_def)
-oops
+sorry
 lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea a b c \<Longrightarrow> False"
-oops
+sorry
 lemma notBetweenSamePoint [dest]: "betwpoint a b b \<Longrightarrow> False"
   apply (simp add: betwpoint_def)
   apply (erule_tac x = 2 in allE)
   apply (auto)
-oops
-lemma notBetween [dest]: "betwpoint A B C \<Longrightarrow>betwpoint B A C  \<Longrightarrow> False" oops
-lemma notBetween2 [dest]: "betwpoint A B C \<Longrightarrow>betwpoint C A B  \<Longrightarrow> False" oops
-lemma notBetween3 [dest]: "betwpoint B A C \<Longrightarrow>betwpoint C A B \<Longrightarrow> False" oops
+sorry
+lemma notBetween [dest]: "betwpoint A B C \<Longrightarrow>betwpoint B A C  \<Longrightarrow> False" sorry
+lemma notBetween2 [dest]: "betwpoint A B C \<Longrightarrow>betwpoint C A B  \<Longrightarrow> False" sorry
+lemma notBetween3 [dest]: "betwpoint B A C \<Longrightarrow>betwpoint C A B \<Longrightarrow> False" sorry
 lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False"
   apply (simp add: leftTurn_def)            
-oops
-lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False" oops
-lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False" oops
+sorry
+lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False" sorry
+lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False" sorry
 end

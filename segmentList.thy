@@ -7,7 +7,6 @@ hat damit also nur 2 Nachbarn*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
 
-
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> \<forall> a b::point2d. a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
 by (auto simp add: pointsEqual_def)
@@ -16,10 +15,16 @@ by (auto simp add: pointsEqual_def)
 lemma pointsSegments : "\<forall> P::point2d list. a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> segment a b"
 by (auto simp add: pointList_def segment_def pointsEqual_def)
 
-(*lemma distVertex : ""*)
+(*keine der Kanten kann sich wiederholen*)
+lemma distVertex : "pointList P \<Longrightarrow> \<forall> a b c d::point2d. a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
+  \<and> a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<longrightarrow> \<not> segment_Same a b c d"  
+  apply (auto)
+  apply (cut_tac a=a and b=b in pointsSegments) apply (erule_tac x=P in allE)
+  apply (cut_tac a=c and b=d in pointsSegments) apply (erule_tac x=P in allE)
+  apply (auto simp add: segment_Same_def pointsEqual_def)
+done
 
-
-(*for trapezoidalmap*)
+(*for trapezoidalmap. Sollte noch mit Lambda abstrakter definiert werden*)
 fun yCoordList ::  "point2d list \<Rightarrow> real list" where
 "yCoordList [] = []" 
 | "yCoordList (x#xs) = insort_insert (getY x) (yCoordList xs)"
@@ -28,11 +33,26 @@ fun xCoordList ::  "point2d list \<Rightarrow> real list" where
 | "xCoordList (x#xs) = insort_insert (getX x) (xCoordList xs)"
 lemma XCoordSorted : "sorted (xCoordList P)"
   apply (induct P rule: xCoordList.induct, simp)
-  apply (simp add: List.linorder_class.sorted_insort_insert)
+  apply (simp add: sorted_insort_insert)
+done
+lemma YCoordSorted : "sorted (yCoordList P)"
+  apply (induct P rule: yCoordList.induct, simp)
+  apply (simp add: sorted_insort_insert)
 done
 lemma inInsort : "a \<in> set (insort_insert x xs) \<Longrightarrow> a \<in> set (xs) \<or> a = x"
 sorry
 lemma inXCoord : "a \<in> set xs \<and> (getX a) \<in> set (xCoordList xs)"
+sorry
+lemma inYCoord : "a \<in> set xs \<and> (getY a) \<in> set (yCoordList xs)"
+sorry
+lemma xCoordSorted1 : "pointList L \<Longrightarrow> last (xCoordList L) - hd (xCoordList L) \<ge> 0"
+  apply (induction L rule: xCoordList.induct)
+  apply (simp add: pointList_def)
+  apply (simp)
+sorry
+lemma yCoordSorted1 : "pointList L \<Longrightarrow> last (yCoordList L) - hd (yCoordList L) \<ge> 0"
+  apply (induction L rule: yCoordList.induct)
+  apply (simp add: pointList_def)
 sorry
 
 

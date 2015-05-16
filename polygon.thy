@@ -30,28 +30,11 @@ lemma pointsClRev : "pointList P \<Longrightarrow> pointsCl P \<longleftrightarr
 sorry
 
 definition conv_polygon :: "point2d list \<Rightarrow> bool" where
-"pointist L \<Longrightarrow> P = polygon L \<Longrightarrow> conv_polygon P \<equiv> (pointsCl P \<or> pointsACl P)"
-
-(*definition poly1 :: "point2d list" where
-"poly1 \<equiv> [(| xCoord = 0, yCoord = 0 |),(| xCoord = 2, yCoord = 1 |),(| xCoord = 3, yCoord = 2 |),(| xCoord = 1, yCoord = 3 |)]"
-definition poly2 :: "point2d list" where
-"poly2 \<equiv> polygon poly1"
-lemma "trapezoidalMap poly2 = [0,1,2,3]"
-apply (simp add: poly2_def poly1_def)
-apply (simp add: polygon_def pointList_def del: trapezoidalMap.simps)
-apply (simp add: insort_insert_insort)
-apply (simp add: insort_insert_triv)
-done
-lemma "conv_polygon (polygon poly1)"
- apply (subgoal_tac "pointList poly1")
- apply (simp add: polygon_def conv_polygon_def, rule disjI2)
- apply (auto simp add: poly1_def signedArea_def)
- apply (simp add: pointList_def)
-done*)
-
+"pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> conv_polygon P \<equiv> (pointsCl P \<or> pointsACl P)"
 
 (*Punkt inside Polygon*)
-
+definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+"conv_polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j k. 0 \<le> i \<and> j = i + 1 \<and> k = j + 1 \<longrightarrow> signedArea (P!i) (P!j) (P!k) > 0"
 
 (*Punkt outside Polygon*)
 
@@ -61,22 +44,25 @@ fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point
   "linePolygonInters [] P R = False"
 | "linePolygonInters [a] P R = False"
 | "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters xs P R))"
-lemma "pointist L \<Longrightarrow> P = polygon L \<Longrightarrow> segment A B \<Longrightarrow> linePolygonInters P A B \<longleftrightarrow> (\<exists> i j. 0 \<le> i \<and> i < j \<and> j \<le> size L \<longrightarrow>
+(*wenn ein Segment aus dem Polygon die Strecke A B schneidet*)
+lemma "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> segment A B \<Longrightarrow> linePolygonInters P A B \<longleftrightarrow> (\<exists> i j. 0 \<le> i \<and> i < j \<and> j \<le> size L \<longrightarrow>
   intersect (nth P i) (nth P j) A B)"
   apply (rule iffI)
   apply (rule_tac x="(P ,A, B)" in linePolygonInters.cases)
   apply (simp, simp)
   apply (simp)
+  apply (rule_tac x=0 in exI) apply (rule_tac x=1 in exI)
+  apply (simp, rule impI)
+  apply (cut_tac a=a and b=b in pointsSegments) apply (erule_tac x=P in allE)
+  apply (simp add: intersect_def)
 sorry
-
 
 (*wenn ein punkt einer Strecke inside Polygon und ein Punkt einer Strecke outside, dann gibt es eine intersection*)
 
-
 (*intersection(Polygon, Polygon)*)
 
-
 (*move Polygon*)
+
 
 
 
@@ -109,7 +95,6 @@ lemma segmentPolygon [simp] : "pointList P \<Longrightarrow> R = segList(polygon
   apply (simp only: List.list.sel(1))
 sorry
   
-
 (*kein segment wiederholt sich*)
 lemma segPolygonDistinct : "pointList P \<Longrightarrow> R = segList(polygon P) \<Longrightarrow> a \<in> set(R) \<and> b \<in> set(R) \<and> a \<noteq> b
   \<longrightarrow> sPoint(a) \<noteq> sPoint(b) \<and> ePoint(a) \<noteq> ePoint(b)"
@@ -133,10 +118,8 @@ sorry
 definition circuit_list :: "line list \<Rightarrow> bool" where
 "connected segList \<Longrightarrow> circuit_list segList = (sPoint(hd segList) = ePoint (last segList))"*)
 
-
 (*definition polygon_eq :: "line list \<Rightarrow> line list \<Rightarrow> bool" where
 "polygon_eq P R \<equiv> list_eq_iff_nth_eq P R"*)
-
 
 (*intersection(Polygon, Line)*)
 definition lineIntersect :: "point2d list \<Rightarrow> line \<Rightarrow> bool" where
@@ -151,14 +134,4 @@ lemma "pointList P  \<Longrightarrow> L = segList P \<Longrightarrow> \<forall> 
   apply (auto simp add: intersect_def pointList_def)
 done
 *)
-(*lemma even_induct:
-assumes "even n"
-shows "P 0 \<Longrightarrow> ( \<And>m. Q m \<Longrightarrow> P (Suc m)) \<Longrightarrow> (\<And>m. P m \<Longrightarrow> Q (Suc m)) \<Longrightarrow> P n"
-apply(atomize (full))
-apply(cut_tac assms)
-apply(unfold even_def)
-apply(drule spec[where x=P])
-apply(drule spec[where x=Q])
-apply(assumption)
-done*)
 end
