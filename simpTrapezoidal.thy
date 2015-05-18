@@ -70,16 +70,16 @@ lemma "pointList L \<Longrightarrow> VARS (xs :: point2d list) i {pointList L}
 oops
 
 (*Welche TrapezStrecken schneiden das Segment*)
-(*ich brauche doch segment-datentypen?*)
+(*ich brauche doch ein segment-datentypen?*)
 fun trapezInter :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> real list" where
   "trapezInter [] A B = []"
  | " trapezInter [p] A B = []"
   | "trapezInter (p#r#xs) A B = (if (segment A B \<and> intersect A B p r) then (getX p # trapezInter xs A B) else trapezInter xs A B)"
 
 (*S = Menge von Strecken. keine gleiche x-Koordinate. Strecken Kreuzugsfrei*)
-fun trapezoidalMap ::  "point2d list \<Rightarrow> real list" where
+(*fun trapezoidalMap ::  "point2d list \<Rightarrow> real list" where
 "trapezoidalMap [] = []"
-| "trapezoidalMap (x#xs) = insort_insert (getX x) (trapezoidalMap xs)"
+| "trapezoidalMap (x#xs) = insort_insert (getX x) (trapezoidalMap xs)"*)
 
 
 end

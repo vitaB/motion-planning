@@ -32,7 +32,7 @@ definition crossing ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<R
   let c = signedArea A B P in
   let d = signedArea A B R in
    ((a > 0 \<and> b < 0) \<or> (a < 0 \<and> b > 0)) \<and> ((c > 0 \<and> d < 0) \<or> (c < 0 \<and> d > 0))"
-
+(*Schnitt, auch wenn Endpunkt auf Strecke liegt*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv>
   let a = signedArea P R A in

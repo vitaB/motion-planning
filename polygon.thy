@@ -21,6 +21,7 @@ fun pointsCl :: "point2d list \<Rightarrow> bool" where
 |  "pointsCl [a] = True"
 |  "pointsCl [a,b] = True"
 |  "pointsCl (a#b#c#xs) = (signedArea a b c < 0 \<and> pointsCl (b#c#xs))"
+(*conv. Polygon der Im Uhrzeigersinn angeordnet ist, ist bei umgekehrter Anordnung immer noch convex*)
 lemma pointsClRev : "pointList P \<Longrightarrow> pointsCl P \<longleftrightarrow> pointsACl (rev P)"
   apply (rule iffI)
   (*apply (cases P rule: pointsCl.cases)
@@ -32,7 +33,7 @@ sorry
 definition conv_polygon :: "point2d list \<Rightarrow> bool" where
 "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> conv_polygon P \<equiv> (pointsCl P \<or> pointsACl P)"
 
-(*Punkt inside Polygon*)
+(*Punkt inside Polygon. Testweise*)
 definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
 "conv_polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j k. 0 \<le> i \<and> j = i + 1 \<and> k = j + 1 \<longrightarrow> signedArea (P!i) (P!j) (P!k) > 0"
 

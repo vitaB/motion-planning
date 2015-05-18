@@ -21,7 +21,7 @@ lemma distVertex : "pointList P \<Longrightarrow> \<forall> a b c d::point2d. a 
   apply (auto)
   apply (cut_tac a=a and b=b in pointsSegments) apply (erule_tac x=P in allE)
   apply (cut_tac a=c and b=d in pointsSegments) apply (erule_tac x=P in allE)
-  apply (auto simp add: segment_Same_def pointsEqual_def)
+  apply (auto simp add: segment_Same_def distEdge)
 done
 
 (*for trapezoidalmap. Sollte noch mit Lambda abstrakter definiert werden*)
@@ -39,12 +39,16 @@ lemma YCoordSorted : "sorted (yCoordList P)"
   apply (induct P rule: yCoordList.induct, simp)
   apply (simp add: sorted_insort_insert)
 done
+
+(*nach alternative in der Isabelle-Library suchen*)
 lemma inInsort : "a \<in> set (insort_insert x xs) \<Longrightarrow> a \<in> set (xs) \<or> a = x"
 sorry
+(*alle xCoordinaten sind in der neuen Liste*)
 lemma inXCoord : "a \<in> set xs \<and> (getX a) \<in> set (xCoordList xs)"
 sorry
 lemma inYCoord : "a \<in> set xs \<and> (getY a) \<in> set (yCoordList xs)"
 sorry
+(*Liste ist sortiert*)
 lemma xCoordSorted1 : "pointList L \<Longrightarrow> last (xCoordList L) - hd (xCoordList L) \<ge> 0"
   apply (induction L rule: xCoordList.induct)
   apply (simp add: pointList_def)
