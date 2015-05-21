@@ -1,55 +1,59 @@
 theory simpTrapezoidal
-imports polygon
+imports polygon "~~/src/HOL/Hoare/Hoare_Logic"
 begin
 
 (*4eckige Box um pointListe herum ist selbst eine pointList*)
-lemma rBoxPointList: "pointList L \<Longrightarrow> let dist = 1 in
-  pointList ([\<lparr>xCoord = hd (xCoordList L) - dist, yCoord = hd (yCoordList L) - dist\<rparr> ,\<lparr>xCoord = last (xCoordList L) + dist, yCoord = hd (yCoordList L) - dist\<rparr>,
-  \<lparr>xCoord = last (xCoordList L) + dist, yCoord = last (yCoordList L) + dist\<rparr>,\<lparr>xCoord = hd (xCoordList L) - dist, yCoord = last (yCoordList L) + dist\<rparr>])"
-  apply (subst pointList_def, auto)
+lemma rBoxPointList: "pointList L \<Longrightarrow> 
+  pointList ([\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr> ,\<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>,
+  \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>,\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>])"
+  apply (cut_tac P=L in YCoordSorted)
+  apply (cut_tac P=L in XCoordSorted)
+  apply (cases L rule: xCoordList.cases)
+  apply (subst (asm) pointList_def, simp)
+  apply (simp only: xCoordList.simps)
+  apply (simp only: pointList_def)
+  apply (rule conjI)
   apply (simp add: pointList_def)
-  apply (induction L rule: xCoordList.induct)
-  apply (simp, simp)
+  (*apply (subgoal_tac "x \<notin> set xs")
+  apply (auto)*)
 sorry
+
 (*4eckige Box um pointListe herum*)
 definition rBox :: "point2d list \<Rightarrow> point2d list" where
-"pointList L \<Longrightarrow> rBox L \<equiv> let dist = 1 in polygon([\<lparr>xCoord = hd (xCoordList L) - dist, yCoord = hd (yCoordList L) - dist\<rparr>
- ,\<lparr>xCoord = last (xCoordList L) + dist, yCoord = hd (yCoordList L) - dist\<rparr>, \<lparr>xCoord = last (xCoordList L) + dist, yCoord = last (yCoordList L) + dist\<rparr>,
-\<lparr>xCoord = hd (xCoordList L) - dist, yCoord = last (yCoordList L) + dist\<rparr>])"
+"pointList L \<Longrightarrow> rBox L \<equiv> polygon([\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr>
+ ,\<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>, \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>,
+\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>])"
+
 (*ersetzte den Term Polygon im Satz. Funktioniert noch nicht!*)
-lemma rBox1 : "pointList L \<Longrightarrow> let dist = 1 in
-  (polygon([\<lparr>xCoord = hd (xCoordList L) - dist, yCoord = hd (yCoordList L) - dist\<rparr>,\<lparr>xCoord = last (xCoordList L) + dist, yCoord = hd (yCoordList L) - dist\<rparr>,
-  \<lparr>xCoord = last (xCoordList L) + dist, yCoord = last (yCoordList L) + dist\<rparr>,\<lparr>xCoord = hd (xCoordList L) - dist, yCoord = last (yCoordList L) + dist\<rparr>]))
-  = [\<lparr>xCoord = hd (xCoordList L) - dist, yCoord = hd (yCoordList L) - dist\<rparr> ,\<lparr>xCoord = last (xCoordList L) + dist, yCoord = hd (yCoordList L) - dist\<rparr>,
-  \<lparr>xCoord = last (xCoordList L) + dist, yCoord = last (yCoordList L) + dist\<rparr>, \<lparr>xCoord = hd (xCoordList L) - dist, yCoord = last (yCoordList L) + dist\<rparr>,
-  \<lparr>xCoord = hd (xCoordList L) - dist, yCoord = hd (yCoordList L) - dist\<rparr>]"
+lemma rBoxPoly : "pointList L \<Longrightarrow>
+  (polygon([\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr>,\<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>,
+  \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>,\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>]))
+  = [\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr> ,\<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>,
+  \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>, \<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>,
+  \<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr>]"
   apply (cut_tac L=L in rBoxPointList, assumption)
   apply (auto simp add: rBox_def polygon_def)
 done
+
 (*rBox ist ein Convexes Polygon*)
 lemma rBoxConvex : "pointList L \<Longrightarrow> conv_polygon (rBox L)"
   apply (cut_tac L=L in rBoxPointList, assumption)
   apply (simp add: rBox_def)
-  apply (cut_tac L="[\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr>, \<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>,
-     \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>, \<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>]"
-     and P="rBox L" in conv_polygon_def)
-  apply (simp)
-  apply (simp add: rBox_def)
-  apply (simp add: conv_polygon_def polygon_def)
+  apply (simp add: conv_polygon_def)  
   apply (rule disjI2)
-  apply (rule conjI)
-  apply (simp add: signedArea_def)
-  apply (cases "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
-  apply (cases "last (yCoordList L) - hd (yCoordList L) \<ge> 0")
-  apply (simp)
-  apply (simp add: yCoordSorted1)
-  apply (simp add: xCoordSorted1)
-  apply (rule conjI)
-  apply (simp add: signedArea_def)
-  apply (cases "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
-  apply (cases "hd (yCoordList L) - last (yCoordList L) \<le> 0")
-  apply (simp)
-sorry
+  apply (subst rBoxPoly, assumption)
+  apply (auto simp add: signedArea_def)
+  apply (subgoal_tac "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
+  apply (subgoal_tac "last (yCoordList L) - hd (yCoordList L) \<ge> 0", simp)
+  apply (auto simp add: yCoordOrd1 le_diff_eq xCoordOrd1)
+  apply (subgoal_tac "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
+  apply (subgoal_tac "hd (yCoordList L) - last (yCoordList L) \<le> 0")
+  apply (simp add: mult_less_0_iff)
+  apply (auto simp add: yCoordOrd1 le_diff_eq xCoordOrd1)
+  apply (subgoal_tac "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
+  apply (subgoal_tac "last (yCoordList L) - hd (yCoordList L) \<ge> 0", simp)
+  apply (auto simp add: le_diff_eq yCoordOrd1 xCoordOrd1)
+done
   
 (*alle Punkte von L sind innerhalb von rBox L*)
 lemma "pointList L \<Longrightarrow> VARS (xs :: point2d list) i {pointList L}
@@ -65,7 +69,7 @@ lemma "pointList L \<Longrightarrow> VARS (xs :: point2d list) i {pointList L}
   apply (cut_tac L=L in rBoxConvex, assumption)
   apply (simp add: insidePolygonACl_def)
   apply (simp add: rBox_def)
-  apply (cut_tac L=L in  rBox1, assumption)
+  apply (cut_tac L=L in  rBoxPoly, assumption)
   apply (simp)
 oops
 

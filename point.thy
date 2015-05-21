@@ -65,12 +65,18 @@ lemma leftTurnRotate2 [simp]: "leftTurn b a c = leftTurn a c b" by (simp add: le
 lemma leftTurnDiffPoints [intro]: "leftTurn a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
 by (auto simp add: leftTurn_def)
 
+
 (*punkt A zwischen B und C*)
 definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "midpoint a b c = (2 * getY a = getY b + getY c \<and> 2 * getX a = getX b + getX c)"
 definition betwpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "betwpoint a b c = (\<forall> n. n > 1 \<longrightarrow> (n * getY a = getY b + getY c \<and> n * getX a = getX b + getX c))"
 lemma swapBetween [simp]: "betwpoint a c b = betwpoint a b c" by(auto simp add: betwpoint_def)
+lemma notBetweenSamePoint [dest]: "betwpoint a b b \<Longrightarrow> False"
+  apply (simp add: betwpoint_def)
+  apply (erule_tac x = 2 in allE)
+  apply (auto)
+oops
 
 (*3 Punkte sind auf einer geraden*)
 definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -131,8 +137,9 @@ lemma notLeftTurn [simp]: "(\<not> leftTurn a c b) = (leftTurn a b c \<or> colli
   apply (simp add:leftTurn_def)
   apply (subst colliniearRight)
   apply (auto)
-  apply (simp add: signedArea_def)
-oops
+  apply (auto simp add: signedArea_def)
+  apply (auto simp add: mult.commute)
+done
 lemma notBetweenSelf [simp]: "\<not> (betwpoint a a b)"
   apply (rule notI)
   apply (simp add: betwpoint_def)
@@ -140,41 +147,30 @@ lemma notBetweenSelf [simp]: "\<not> (betwpoint a a b)"
   apply (erule_tac x = 2 in allE) apply (simp)
   apply (auto simp add: pointsEqual1)
 oops
+
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
-" isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
+" isBetween b a c \<equiv> collinear a b c \<and> a \<noteq> c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
 (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
 0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 )"
-lemma notBetweenSelf [simp]: "\<not> (isBetween a a b)"
-  apply (rule notI)
+lemma "isBetween a b c \<longleftrightarrow> betwpoint a b c"
+  apply (rule iffI)
   apply (simp add: isBetween_def)
-  apply (auto simp add: pointsEqual1)
-done
-lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
-  apply (simp add: collinear_def)
-  apply (auto)
-sorry
-lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
-sorry
+  apply (subst (asm) colliniearRight)
+  apply (safe, erule_tac x=d in allE)
+  apply (simp add: signedArea_def betwpoint_def)
+oops
+lemma notBetweenSelf [simp]: "\<not> (isBetween a a b)"
+  by (rule notI, auto simp add: pointsEqual1 isBetween_def)
+lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c" by (auto)
+lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c" sorry
 lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow>
-isBetween a b c \<or> isBetween b a c \<or> isBetween c a b"
-  apply (simp add: collinear_def)
-sorry
-lemma areaContra [dest]: " signedArea a c b < 0\<Longrightarrow> signedArea a b c < 0  \<Longrightarrow> False"
-  apply (simp add: signedArea_def)
-sorry
-lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea a b c \<Longrightarrow> False"
-sorry
-lemma notBetweenSamePoint [dest]: "betwpoint a b b \<Longrightarrow> False"
-  apply (simp add: betwpoint_def)
-  apply (erule_tac x = 2 in allE)
-  apply (auto)
-sorry
+isBetween a b c \<or> isBetween b a c \<or> isBetween c a b" sorry
+lemma areaContra [dest]: " signedArea a c b < 0\<Longrightarrow> signedArea a b c < 0  \<Longrightarrow> False" sorry
+lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea a b c \<Longrightarrow> False" sorry
 lemma notBetween [dest]: "betwpoint A B C \<Longrightarrow>betwpoint B A C  \<Longrightarrow> False" sorry
 lemma notBetween2 [dest]: "betwpoint A B C \<Longrightarrow>betwpoint C A B  \<Longrightarrow> False" sorry
 lemma notBetween3 [dest]: "betwpoint B A C \<Longrightarrow>betwpoint C A B \<Longrightarrow> False" sorry
-lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False"
-  apply (simp add: leftTurn_def)            
-sorry
+lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False" sorry
 lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False" sorry
 lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False" sorry
 end

@@ -1,6 +1,10 @@
 theory segmentList
-imports line "~~/src/HOL/Hoare/Hoare_Logic"
+imports line
 begin
+
+(*nach alternative in der Isabelle-Library suchen*)
+lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in> set (xs) \<or> a = x"
+by (auto simp add: List.linorder_class.set_insort_insert)
 
 (*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor.
 hat damit also nur 2 Nachbarn*)
@@ -25,12 +29,15 @@ lemma distVertex : "pointList P \<Longrightarrow> \<forall> a b c d::point2d. a 
 done
 
 (*for trapezoidalmap. Sollte noch mit Lambda abstrakter definiert werden*)
+(*insort_insert damit neue Liste distinct ist*)
 fun yCoordList ::  "point2d list \<Rightarrow> real list" where
 "yCoordList [] = []" 
 | "yCoordList (x#xs) = insort_insert (getY x) (yCoordList xs)"
 fun xCoordList ::  "point2d list \<Rightarrow> real list" where
 "xCoordList [] = []" 
 | "xCoordList (x#xs) = insort_insert (getX x) (xCoordList xs)"
+
+(*xCoordList gibt eine sortierte Liste zurück*)
 lemma XCoordSorted : "sorted (xCoordList P)"
   apply (induct P rule: xCoordList.induct, simp)
   apply (simp add: sorted_insort_insert)
@@ -40,24 +47,49 @@ lemma YCoordSorted : "sorted (yCoordList P)"
   apply (simp add: sorted_insort_insert)
 done
 
-(*nach alternative in der Isabelle-Library suchen*)
-lemma inInsort : "a \<in> set (insort_insert x xs) \<Longrightarrow> a \<in> set (xs) \<or> a = x"
-sorry
 (*alle xCoordinaten sind in der neuen Liste*)
-lemma inXCoord : "a \<in> set xs \<and> (getX a) \<in> set (xCoordList xs)"
+lemma inXCoord : "a \<in> set xs \<longrightarrow> (getX a) \<in> set (xCoordList xs)"
+  apply (rule impI)
+  apply (induct xs rule: yCoordList.induct, simp)
+  apply (simp, erule disjE, simp)
+  apply (simp add: inInsort)
+  apply (simp add: inInsort)
+done
+lemma inYCoord : "a \<in> set xs \<longrightarrow> (getY a) \<in> set (yCoordList xs)"
+  apply (rule impI)
+  apply (induct xs rule: xCoordList.induct, simp)
+  apply (simp, erule disjE, simp)
+  apply (simp add: inInsort)
+  apply (simp add: inInsort)
+done
+(*xCoordList gibt eine sortierte Liste zurück*)
+theorem XCoordSorted1 : "sorted (xCoordList (x # xs)) = (sorted (xCoordList xs) \<and> (\<forall> y \<in> set (xCoordList xs). getX x \<le> y))"
+  apply (auto)
+  apply (simp add: XCoordSorted)
 sorry
-lemma inYCoord : "a \<in> set xs \<and> (getY a) \<in> set (yCoordList xs)"
-sorry
-(*Liste ist sortiert*)
-lemma xCoordSorted1 : "pointList L \<Longrightarrow> last (xCoordList L) - hd (xCoordList L) \<ge> 0"
-  apply (induction L rule: xCoordList.induct)
-  apply (simp add: pointList_def)
+theorem YCoordSorted1 : "sorted (yCoordList (x # xs)) = (sorted (yCoordList xs) \<and> (\<forall> y \<in> set (yCoordList xs). getY x \<le> y))"
   apply (simp)
 sorry
-lemma yCoordSorted1 : "pointList L \<Longrightarrow> last (yCoordList L) - hd (yCoordList L) \<ge> 0"
-  apply (induction L rule: yCoordList.induct)
+
+(*Liste ist sortiert*)
+lemma xCoordOrd1 : "pointList L \<Longrightarrow> last (xCoordList L) \<ge> hd (xCoordList L)"
+  apply (cases L rule: xCoordList.cases)
   apply (simp add: pointList_def)
-sorry
+  apply (cut_tac P=L in YCoordSorted)
+  apply (cut_tac P=L in XCoordSorted)
+  apply (simp)
+  apply (metis XCoordSorted XCoordSorted1 getX_def inInsort select_convs(1) xCoordList.simps(2))
+done
+  
+lemma yCoordOrd1 : "pointList L \<Longrightarrow> last (yCoordList L) \<ge> hd (yCoordList L)"
+  apply (cases L rule: xCoordList.cases)
+  apply (simp add: pointList_def)
+  apply (cut_tac P=L in YCoordSorted)
+  apply (cut_tac P=L in XCoordSorted)
+  apply (simp)
+  apply (metis XCoordSorted XCoordSorted1 getX_def inInsort select_convs(1) xCoordList.simps(2))
+done
+
 
 
 
