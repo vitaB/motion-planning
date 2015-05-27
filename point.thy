@@ -7,12 +7,6 @@ record point2d =
   xCoord :: real
   yCoord :: real
 
-(*selectop von x des Punkts*)
-definition getX :: "'a point2d_scheme \<Rightarrow> real" where "getX p \<equiv> xCoord p"
-definition getY :: "'a point2d_scheme \<Rightarrow> real" where "getY p \<equiv> yCoord p"
-lemma [simp]: "getX p = xCoord p" by (simp add: getX_def)
-lemma [simp]: "getY p = yCoord p" by (simp add: getY_def)
-
 (*update Points*)
 definition setX :: "'a point2d_scheme \<Rightarrow> real \<Rightarrow> 'a point2d_scheme" where
 "setX p a \<equiv> p\<lparr> xCoord := a\<rparr>"
@@ -20,7 +14,7 @@ definition setY :: "'a point2d_scheme \<Rightarrow> real \<Rightarrow> 'a point2
 "setY p a \<equiv> p\<lparr> yCoord := a\<rparr>"
 definition incX :: "'a point2d_scheme \<Rightarrow> 'a point2d_scheme" where
 "incX p \<equiv> \<lparr>xCoord = xCoord p + 1, yCoord = yCoord p,\<dots> = point2d.more p\<rparr>"
-lemma "incX p = setX p (getX p + 1)" by (simp add: setX_def incX_def)
+lemma "incX p = setX p (xCoord p + 1)" by (simp add: setX_def incX_def)
 
 (*points equal*)
 lemma pointSameCoord : "p\<lparr>xCoord := a\<rparr> = p\<lparr> xCoord := a'\<rparr> \<Longrightarrow> a = a'"
@@ -28,8 +22,8 @@ by (drule_tac f = xCoord in arg_cong, simp)
   (*apply (rule_tac r = p in point2d.cases_scheme) (*apply (cases p)*)
   apply (simp)*)
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"pointsEqual r p \<longleftrightarrow> (getX r = getX p \<and> getY r = getY p)"
-lemma pointsNotEqual : " \<not>pointsEqual r p \<longleftrightarrow> (getX r \<noteq> getX p \<or> getY r \<noteq> getY p)"
+"pointsEqual r p \<longleftrightarrow> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
+lemma pointsNotEqual : " \<not>pointsEqual r p \<longleftrightarrow> (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
 by (simp add: pointsEqual_def) 
 lemma pointsEqualSame : "pointsEqual p p" by (simp add: pointsEqual_def)
 lemma pointsEqual : "pointsEqual p r \<longleftrightarrow> xCoord p = xCoord r \<and> yCoord p = yCoord r"
@@ -42,7 +36,7 @@ done
 
 (*Punkt a links vom Punkt b?*)
 definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"leftFromPoint a b = (getX a < getX b)"
+"leftFromPoint a b = (xCoord a < xCoord b)"
 lemma "a < b \<longleftrightarrow> leftFromPoint (| xCoord = a, yCoord = c |) (| xCoord = b, yCoord = d |)"
 by (auto simp add: leftFromPoint_def)
 
@@ -50,8 +44,8 @@ by (auto simp add: leftFromPoint_def)
 - if the points are ordered anti-clockwise, the area is positive
 - if the points are ordered clockwise, the area is negative.*)
 definition signedArea :: "[point2d, point2d, point2d] \<Rightarrow> real" where
-"signedArea a b c \<equiv> (getX b - getX a)*(getY c - getY a)
-- (getY b - getY a)*(getX c - getX a)"
+"signedArea a b c \<equiv> (xCoord b - xCoord a)*(yCoord c - yCoord a)
+- (yCoord b - yCoord a)*(xCoord c - xCoord a)"
 lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c" by (simp add: signedArea_def, algebra)
 lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b" by (simp add: signedArea_def,  algebra)
 lemma areaDoublePoint [simp]: "signedArea a a b = 0" by (simp add: signedArea_def)
@@ -68,9 +62,9 @@ by (auto simp add: leftTurn_def)
 
 (*punkt A zwischen B und C*)
 definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"midpoint a b c = (2 * getY a = getY b + getY c \<and> 2 * getX a = getX b + getX c)"
+"midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"
 definition betwpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"betwpoint a b c = (\<forall> n. n > 1 \<longrightarrow> (n * getY a = getY b + getY c \<and> n * getX a = getX b + getX c))"
+"betwpoint a b c = (\<forall> n. n > 1 \<longrightarrow> (n * yCoord a = yCoord b + yCoord c \<and> n * xCoord a = xCoord b + xCoord c))"
 lemma swapBetween [simp]: "betwpoint a c b = betwpoint a b c" by(auto simp add: betwpoint_def)
 lemma notBetweenSamePoint [dest]: "betwpoint a b b \<Longrightarrow> False"
   apply (simp add: betwpoint_def)
@@ -80,7 +74,7 @@ oops
 
 (*3 Punkte sind auf einer geraden*)
 definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"collinear a b c = ((getX a - getX b)*(getY b - getY c) = (getY a- getY b)*(getX b - getX c))"
+"collinear a b c = ((xCoord a - xCoord b)*(yCoord b - yCoord c) = (yCoord a- yCoord b)*(xCoord b - xCoord c))"
 lemma "midpoint a b c \<longrightarrow> collinear a b c"
   apply (rule impI)
   apply (simp add: midpoint_def collinear_def)

@@ -29,9 +29,9 @@ done
 
 (*Definiere ordnung von pointList nach x-Coord und nach y-Coord.*)
 definition xCoordSorted :: "point2d list \<Rightarrow> point2d list" where
-"xCoordSorted P \<equiv> sort_key (getX) P"
+"xCoordSorted P \<equiv> sort_key (xCoord) P"
 definition yCoordSorted :: "point2d list \<Rightarrow> point2d list" where
-"yCoordSorted P \<equiv> sort_key (getY) P"
+"yCoordSorted P \<equiv> sort_key (yCoord) P"
 
 (*alle xCoordinaten sind in der neuen Liste*)
 lemma inXCoord : "a \<in> set xs \<longrightarrow> a \<in> set (xCoordSorted xs)"
@@ -41,20 +41,18 @@ lemma inYCoord : "a \<in> set xs \<longrightarrow>  a \<in> set (yCoordSorted xs
   by (auto simp add: yCoordSorted_def)
   
 (*xCoordSorted gibt eine sortierte Liste zurück*)
-lemma xCoordSorted1 :  "sorted (map getX (xCoordSorted xs))"
-  apply (induct xs)
-  apply (auto simp:sorted_insort_key xCoordSorted_def)
-by (metis getX_def map_eq_conv sort_key_simps(2) sorted_sort_key)
-theorem xCoordSorted2 :  "xCoordSorted (x # xs) = (x # xs) \<longleftrightarrow> (sorted (map getX (xCoordSorted xs)) \<and> (\<forall> y \<in> set (xCoordSorted xs). getX x \<le> getX y))"
+lemma xCoordSorted1 :  "sorted (map xCoord (xCoordSorted xs))"
+by(induct xs, auto simp:sorted_insort_key xCoordSorted_def)
+
+theorem xCoordSorted2 :  "xCoordSorted (x # xs) = (x # xs) \<longleftrightarrow> (sorted (map xCoord (xCoordSorted xs)) \<and> (\<forall> y \<in> set (xCoordSorted xs). xCoord x \<le> xCoord y))"
   apply (auto simp add: xCoordSorted1)
   apply (induct xs)
   apply (auto simp:sorted_insort_key xCoordSorted_def)
 sorry
-lemma yCoordSorted1 :  "sorted (map getY (yCoordSorted xs))"
-  apply (induct xs)
-  apply (auto simp:sorted_insort_key yCoordSorted_def)
-by (metis getY_def map_eq_conv sort_key_simps(2) sorted_sort_key)
-theorem yCoordSorted2 :  "yCoordSorted (x # xs) = (x # xs) \<longleftrightarrow> (sorted (map getY (yCoordSorted xs)) \<and> (\<forall> y \<in> set (yCoordSorted xs). getY x \<le> getY y))"
+lemma yCoordSorted1 :  "sorted (map yCoord (yCoordSorted xs))"
+by (induct xs, auto simp:sorted_insort_key yCoordSorted_def)
+
+theorem yCoordSorted2 :  "yCoordSorted (x # xs) = (x # xs) \<longleftrightarrow> (sorted (map yCoord (yCoordSorted xs)) \<and> (\<forall> y \<in> set (yCoordSorted xs). yCoord x \<le> yCoord y))"
 sorry
 
 lemma xCoordOrd1 : "pointList L \<Longrightarrow> xCoord (last (xCoordSorted L)) \<ge> xCoord (hd (xCoordSorted L))"
@@ -96,10 +94,10 @@ done*)
 (*insort_insert damit neue Liste distinct ist*)
 (*fun yCoordList ::  "point2d list \<Rightarrow> real list" where
 "yCoordList [] = []" 
-| "yCoordList (x#xs) = insort_insert (getY x) (yCoordList xs)"
+| "yCoordList (x#xs) = insort_insert (yCoord x) (yCoordList xs)"
 fun xCoordList ::  "point2d list \<Rightarrow> real list" where
 "xCoordList [] = []" 
-| "xCoordList (x#xs) = insort_insert (getX x) (xCoordList xs)"*)
+| "xCoordList (x#xs) = insort_insert (xCoord x) (xCoordList xs)"*)
 
 (*xCoordList gibt eine sortierte Liste zurück*)
 (*lemma XCoordSorted : "sorted (xCoordList P)"
@@ -112,14 +110,14 @@ lemma YCoordSorted : "sorted (yCoordList P)"
 done*)
 
 (*alle xCoordinaten sind in der neuen Liste*)
-(*lemma inXCoord : "a \<in> set xs \<longrightarrow> (getX a) \<in> set (xCoordList xs)"
+(*lemma inXCoord : "a \<in> set xs \<longrightarrow> (xCoord a) \<in> set (xCoordList xs)"
   apply (rule impI)
   apply (induct xs rule: yCoordList.induct, simp)
   apply (simp, erule disjE, simp)
   apply (simp add: inInsort)
   apply (simp add: inInsort)
 done
-lemma inYCoord : "a \<in> set xs \<longrightarrow> (getY a) \<in> set (yCoordList xs)"
+lemma inYCoord : "a \<in> set xs \<longrightarrow> (yCoord a) \<in> set (yCoordList xs)"
   apply (rule impI)
   apply (induct xs rule: xCoordList.induct, simp)
   apply (simp, erule disjE, simp)
@@ -127,11 +125,11 @@ lemma inYCoord : "a \<in> set xs \<longrightarrow> (getY a) \<in> set (yCoordLis
   apply (simp add: inInsort)
 done*)
 (*xCoordList gibt eine sortierte Liste zurück*)
-(*theorem XCoordSorted1 : "sorted (xCoordList (x # xs)) = (sorted (xCoordList xs) \<and> (\<forall> y \<in> set (xCoordList xs). getX x \<le> y))"
+(*theorem XCoordSorted1 : "sorted (xCoordList (x # xs)) = (sorted (xCoordList xs) \<and> (\<forall> y \<in> set (xCoordList xs). xCoord x \<le> y))"
   apply (auto)
   apply (simp add: XCoordSorted)
 sorry
-theorem YCoordSorted1 : "sorted (yCoordList (x # xs)) = (sorted (yCoordList xs) \<and> (\<forall> y \<in> set (yCoordList xs). getY x \<le> y))"
+theorem YCoordSorted1 : "sorted (yCoordList (x # xs)) = (sorted (yCoordList xs) \<and> (\<forall> y \<in> set (yCoordList xs). yCoord x \<le> y))"
   apply (simp)
 sorry*)
 
@@ -142,7 +140,7 @@ sorry*)
   apply (cut_tac P=L in YCoordSorted)
   apply (cut_tac P=L in XCoordSorted)
   apply (simp)
-  apply (metis XCoordSorted XCoordSorted1 getX_def inInsort select_convs(1) xCoordList.simps(2))
+  apply (metis XCoordSorted XCoordSorted1 xCoord_def inInsort select_convs(1) xCoordList.simps(2))
 done
   
 lemma yCoordOrd1 : "pointList L \<Longrightarrow> last (yCoordList L) \<ge> hd (yCoordList L)"
@@ -151,7 +149,7 @@ lemma yCoordOrd1 : "pointList L \<Longrightarrow> last (yCoordList L) \<ge> hd (
   apply (cut_tac P=L in YCoordSorted)
   apply (cut_tac P=L in XCoordSorted)
   apply (simp)
-  apply (metis XCoordSorted XCoordSorted1 getX_def inInsort select_convs(1) xCoordList.simps(2))
+  apply (metis XCoordSorted XCoordSorted1 xCoord_def inInsort select_convs(1) xCoordList.simps(2))
 done*)
 
 

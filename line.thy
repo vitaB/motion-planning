@@ -11,9 +11,9 @@ definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d 
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
 
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"segment A B \<Longrightarrow> point_on_segment p A B \<equiv>  min (getX A)(getX B) \<le> getX p \<and>
-getX p \<le> max (getX A)(getX B) \<and> min (getY A)(getY B) \<le> getY p
-\<and> getY p \<le> max (getY A)(getY B)"
+"segment A B \<Longrightarrow> point_on_segment p A B \<equiv>  min (xCoord A)(xCoord B) \<le> xCoord p \<and>
+xCoord p \<le> max (xCoord A)(xCoord B) \<and> min (yCoord A)(yCoord B) \<le> yCoord p
+\<and> yCoord p \<le> max (yCoord A)(yCoord B)"
 
 (* zwischenPunkt p von segment A B liegt auf A B*)
 lemma segment_betwpoint : "segment A B \<Longrightarrow> betwpoint p A B \<longrightarrow> point_on_segment p A B"
@@ -91,9 +91,9 @@ done
 
 (*Punkt auf der line*)
 definition point_on_segment :: "line \<Rightarrow> point2d \<Rightarrow> bool" where
-"segment A \<Longrightarrow> (point_on_segment A p \<equiv> min (getX (sPoint A))(getX (ePoint A)) \<le> getX p
-\<and> getX p \<le> max (getX (sPoint A))(getX (ePoint A)) \<and> min (getY (sPoint A))(getY (ePoint A)) \<le> getY p
-\<and> getY p \<le> max (getY (sPoint A))(getY (ePoint A)))"
+"segment A \<Longrightarrow> (point_on_segment A p \<equiv> min (xCoord (sPoint A))(xCoord (ePoint A)) \<le> xCoord p
+\<and> xCoord p \<le> max (xCoord (sPoint A))(xCoord (ePoint A)) \<and> min (yCoord (sPoint A))(yCoord (ePoint A)) \<le> yCoord p
+\<and> yCoord p \<le> max (yCoord (sPoint A))(yCoord (ePoint A)))"
 (* zwischenPunkt p von segment A liegt A*)
 lemma segment_betwpoint : " segment A \<Longrightarrow> betwpoint p (sPoint A) (ePoint A) \<longrightarrow> point_on_segment A p"
   apply (rule impI)
