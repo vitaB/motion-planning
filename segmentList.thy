@@ -2,12 +2,19 @@ theory segmentList
 imports line
 begin
 
+(*Zusätzliche Sätze die ich brauche*)
 lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in> set (xs) \<or> a = x"
-by (auto simp add: List.linorder_class.set_insort_insert)
+  by (auto simp add: List.linorder_class.set_insort_insert)
 theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<forall> y \<in> set xs. f x \<le> f y))"
   apply (auto)
   apply (metis list.simps(9) remove1.simps(2) sorted_map_remove1)
 sorry
+lemma distinctElem : "L \<noteq> [] \<and> distinct L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1)  \<longrightarrow> (L!i) \<noteq> (L!(i+1))"
+  apply (auto)
+  apply (cut_tac xs=L in distinct_conv_nth)
+  apply (simp)
+done
+
 
 (*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor.
 hat damit also nur 2 Nachbarn*)
@@ -16,19 +23,20 @@ definition pointList :: "point2d list \<Rightarrow> bool" where
 
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> \<forall> a b::point2d. a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
-by (auto simp add: pointsEqual_def)
+  by (auto simp add: pointsEqual_def)
 
 (*alle Kanten von pointList sind segmente*)
-lemma pointsSegments : "\<forall> P::point2d list. a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> segment a b"
-by (auto simp add: pointList_def segment_def pointsEqual_def)
-
+lemma pointsSegments : "pointList L \<Longrightarrow> \<forall> i. 0 \<le> i \<and> i < (size L - 1) \<longrightarrow> segment (L!i) (L!(i+1))"
+  apply (auto simp add: segment_def pointList_def pointsEqual_def)
+  apply (cut_tac L=L and i=i in distinctElem, auto)
+done
 (*keine der Kanten kann sich wiederholen*)
 lemma distVertex : "pointList P \<Longrightarrow> \<forall> a b c d::point2d. a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
   \<and> a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<longrightarrow> \<not> segment_Same a b c d"  
   apply (auto)
-  apply (cut_tac a=a and b=b in pointsSegments) apply (erule_tac x=P in allE)
-  apply (cut_tac a=c and b=d in pointsSegments) apply (erule_tac x=P in allE)
+  apply (subgoal_tac "segment a b", subgoal_tac "segment c d")
   apply (auto simp add: segment_Same_def distEdge)
+  apply (auto simp add: segment_def pointsEqual_def)
 done
 
 (*Definiere ordnung von pointList nach x-Coord und nach y-Coord.*)
@@ -44,24 +52,23 @@ lemma inYCoord : "a \<in> set xs \<longrightarrow>  a \<in> set (yCoordSort xs)"
   by (auto simp add: yCoordSort_def)
   
 (*xCoordSort gibt eine sortierte Liste zurück*)
-lemma xCoordSort1 :  "sorted (map xCoord (xCoordSort xs))"
+lemma xCoordSorted :  "sorted (map xCoord (xCoordSort xs))"
   by(induct xs, auto simp:sorted_insort_key xCoordSort_def)
-theorem xCoordSort2 : "sorted (map xCoord (x # xs)) = (sorted (map xCoord xs) \<and> (\<forall> y \<in> set xs. xCoord x \<le> xCoord y))"
+theorem xCoordSorted1 : "sorted (map xCoord (x # xs)) \<longleftrightarrow> (sorted (map xCoord xs) \<and> (\<forall> y \<in> set xs. xCoord x \<le> xCoord y))"
   by (rule sortedKey) 
-
-lemma yCoordSort1 :  "sorted (map yCoord (yCoordSort xs))"
+lemma yCoordSorted :  "sorted (map yCoord (yCoordSort xs))"
   by (induct xs, auto simp:sorted_insort_key yCoordSort_def)
-theorem yCoordSort2 :  "sorted (map yCoord (x # xs)) =  (sorted (map yCoord xs) \<and> (\<forall> y \<in> set xs. yCoord x \<le> yCoord y))"
+theorem yCoordSorted1 :  "sorted (map yCoord (x # xs)) \<longleftrightarrow> (sorted (map yCoord xs) \<and> (\<forall> y \<in> set xs. yCoord x \<le> yCoord y))"
   by (rule sortedKey) 
 
-lemma xCoordOrd1 : "size L > 0 \<Longrightarrow> xCoord (last (xCoordSort L)) \<ge> xCoord (hd (xCoordSort L))"
+(*erstes element der sortierten Liste ist kleiner gleich als das letzte*)
+lemma xCoordOrd : "size L > 0 \<Longrightarrow> xCoord (last (xCoordSort L)) \<ge> xCoord (hd (xCoordSort L))"
   apply (cases L, simp)
-by (metis empty_iff inXCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl xCoordSort1 xCoordSort2)
-
-lemma yCoordOrd1 : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<ge> yCoord (hd (yCoordSort L))"
+  by (metis empty_iff inXCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl xCoordSorted xCoordSorted1)
+lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<ge> yCoord (hd (yCoordSort L))"
   apply (cases L, simp)
-by (metis empty_iff inYCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl yCoordSort1 yCoordSort2)
-
+  by (metis empty_iff inYCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl yCoordSorted yCoordSorted1)
+lemma [dest]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
 
 
 

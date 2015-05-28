@@ -6,6 +6,20 @@ begin
 definition polygon :: "point2d list \<Rightarrow> point2d list" where
 "pointList P \<Longrightarrow> polygon P \<equiv> P @ [hd P]"
 
+(*alle Kanten von polygon sind segmente*)
+lemma [simp]: "pointList L \<Longrightarrow> hd L \<noteq> last L"
+  by (cases L, auto simp add: pointList_def)
+lemma polygonLastSegment : "pointList L \<Longrightarrow> segment (last L) (last (polygon L))"
+  apply (simp add: polygon_def segment_def pointsEqual1)
+  apply (subst neq_commute, simp)
+done
+theorem polygonSegments : "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> \<forall> i. 0 \<le> i \<and> i < (size P - 1) \<longrightarrow> segment (P!i) (P!(i+1))"
+  apply (cut_tac L=L in pointsSegments, assumption)
+  apply (auto simp add: segment_def pointList_def pointsEqual_def polygon_def)
+  apply (erule_tac x=i in allE)
+  apply (subgoal_tac "last L \<noteq> hd L")
+sorry
+
 lemma isPolygon : "pointList P  \<Longrightarrow> distinct P \<and> size (polygon P) \<ge> 4 \<and> hd P = last (polygon P)"
 by (induct P, auto simp add: polygon_def pointList_def)
 
@@ -27,7 +41,6 @@ lemma pointsClRev : "pointList P \<Longrightarrow> pointsCl P \<longleftrightarr
   (*apply (cases P rule: pointsCl.cases)
   apply (auto)*)
   apply (cases P rule: pointsCl.cases)
-  apply (auto)
 sorry
 
 definition conv_polygon :: "point2d list \<Rightarrow> bool" where
@@ -35,7 +48,7 @@ definition conv_polygon :: "point2d list \<Rightarrow> bool" where
 
 (*Punkt inside Polygon. Testweise*)
 definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
-"conv_polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j k. 0 \<le> i \<and> j = i + 1 \<and> k = j + 1 \<longrightarrow> signedArea (P!i) (P!j) (P!k) > 0"
+"conv_polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j k. 0 \<le> i \<and> j = i + 1 \<and> k = j + 1 \<and> k < size P \<longrightarrow> signedArea (P!i) (P!j) (P!k) > 0"
 
 (*Punkt outside Polygon*)
 
@@ -46,15 +59,15 @@ fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point
 | "linePolygonInters [a] P R = False"
 | "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters xs P R))"
 (*wenn ein Segment aus dem Polygon die Strecke A B schneidet*)
-lemma "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> segment A B \<Longrightarrow> linePolygonInters P A B \<longleftrightarrow> (\<exists> i j. 0 \<le> i \<and> i < j \<and> j \<le> size L \<longrightarrow>
-  intersect (nth P i) (nth P j) A B)"
+lemma "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> segment A B \<Longrightarrow> linePolygonInters P A B \<longleftrightarrow> (\<exists> i j. 0 \<le> i \<and> i < j \<and> j < size L \<longrightarrow>
+  intersect (P!i) (P!j) A B)"
   apply (rule iffI)
   apply (rule_tac x="(P ,A, B)" in linePolygonInters.cases)
   apply (simp, simp)
   apply (simp)
   apply (rule_tac x=0 in exI) apply (rule_tac x=1 in exI)
   apply (simp, rule impI)
-  apply (cut_tac a=a and b=b in pointsSegments) apply (erule_tac x=P in allE)
+  apply (cut_tac a=a and b=b in pointsSegments)
   apply (simp add: intersect_def)
 sorry
 
