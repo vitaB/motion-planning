@@ -14,11 +14,17 @@ lemma polygonLastSegment : "pointList L \<Longrightarrow> segment (last L) (last
   apply (subst neq_commute, simp)
 done
 theorem polygonSegments : "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> \<forall> i. 0 \<le> i \<and> i < (size P - 1) \<longrightarrow> segment (P!i) (P!(i+1))"
-  apply (cut_tac L=L in pointsSegments, assumption)
-  apply (auto simp add: segment_def pointList_def pointsEqual_def polygon_def)
-  apply (erule_tac x=i in allE)
-  apply (subgoal_tac "last L \<noteq> hd L")
-sorry
+  apply (rule allI, rule impI, unfold polygon_def)
+  apply (simp)
+  apply (cut_tac L=L and a="hd L" in pointsSegments1, simp)
+  apply (erule iffE)
+  apply (erule impE, erule impE, rule)
+  apply (auto)
+  apply (cut_tac L=L in pointsSegments, simp)
+  apply (erule_tac x=ia in allE, auto)
+  apply (cut_tac L=L in polygonLastSegment, simp)
+  apply (simp add: polygon_def)
+done
 
 lemma isPolygon : "pointList P  \<Longrightarrow> distinct P \<and> size (polygon P) \<ge> 4 \<and> hd P = last (polygon P)"
 by (induct P, auto simp add: polygon_def pointList_def)

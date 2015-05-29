@@ -6,9 +6,7 @@ begin
 lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in> set (xs) \<or> a = x"
   by (auto simp add: List.linorder_class.set_insort_insert)
 theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<forall> y \<in> set xs. f x \<le> f y))"
-  apply (auto)
-  apply (metis list.simps(9) remove1.simps(2) sorted_map_remove1)
-sorry
+  by (auto simp add: linorder_class.sorted_Cons)
 lemma distinctElem : "L \<noteq> [] \<and> distinct L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1)  \<longrightarrow> (L!i) \<noteq> (L!(i+1))"
   apply (auto)
   apply (cut_tac xs=L in distinct_conv_nth)
@@ -30,6 +28,10 @@ lemma pointsSegments : "pointList L \<Longrightarrow> \<forall> i. 0 \<le> i \<a
   apply (auto simp add: segment_def pointList_def pointsEqual_def)
   apply (cut_tac L=L and i=i in distinctElem, auto)
 done
+lemma pointsSegments1 : "pointList L \<Longrightarrow> (\<forall> i. 0 \<le> i \<and> i < (size (L @ [a]) - 1) \<longrightarrow> segment ((L @ [a])!i) ((L @ [a])!(i+1)))
+  \<longleftrightarrow> (\<forall> i. 0 \<le> i \<and> i < (size L - 1) \<longrightarrow> segment (L!i) (L !(i+1))) \<and> segment (last L) a"
+sorry
+
 (*keine der Kanten kann sich wiederholen*)
 lemma distVertex : "pointList P \<Longrightarrow> \<forall> a b c d::point2d. a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
   \<and> a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<longrightarrow> \<not> segment_Same a b c d"  
