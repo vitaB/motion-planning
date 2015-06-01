@@ -28,10 +28,26 @@ lemma pointsSegments : "pointList L \<Longrightarrow> \<forall> i. 0 \<le> i \<a
   apply (auto simp add: segment_def pointList_def pointsEqual_def)
   apply (cut_tac L=L and i=i in distinctElem, auto)
 done
-lemma pointsSegments1 : "pointList L \<Longrightarrow> (\<forall> i. 0 \<le> i \<and> i < (size (L @ [a]) - 1) \<longrightarrow> segment ((L @ [a])!i) ((L @ [a])!(i+1)))
-  \<longleftrightarrow> (\<forall> i. 0 \<le> i \<and> i < (size L - 1) \<longrightarrow> segment (L!i) (L !(i+1))) \<and> segment (last L) a"
-sorry
-
+lemma pointsSegmentsAppend1: "pointList L \<Longrightarrow> \<forall>i<length L - 1. segment (L ! i) (L ! Suc i) \<and> segment (last L) a \<Longrightarrow>
+  \<forall> k::nat. k < (length (L @ [a]) - 1) \<longrightarrow>  segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
+  apply(auto)
+  apply(erule_tac x="k - 1" in allE) 
+  apply(erule impE)
+  apply(simp add: Groups.ordered_ab_group_add_class.diff_strict_right_mono)
+  apply (metis Suc_leI Suc_lessI add_2_eq_Suc' diff_0_eq_0 diff_less_mono le_numeral_Suc monoid_add_class.add.left_neutral neq0_conv not_less old.nat.distinct(2) pointList_def pred_numeral_simps(3))
+  apply (auto)
+  apply (metis One_nat_def Suc_leI Suc_lessI add_Suc_right diff_Suc_Suc diff_less_mono diff_zero last_conv_nth le0 length_0_conv monoid_add_class.add.right_neutral nth_append nth_append_length pointsSegments zero_less_Suc)
+done
+theorem pointsSegmentsAppend : "pointList L \<Longrightarrow> (\<forall> i::nat. i < (size (L @ [a]) - 1) \<longrightarrow> segment ((L @ [a])!i) ((L @ [a])!(i+1)))
+  \<longleftrightarrow> (\<forall> k::nat. k < (size L - 1) \<longrightarrow> segment (L!k) (L !(k+1))) \<and> segment (last L) a"
+  apply (auto)
+  apply (erule_tac x="i+1" in allE)
+  apply (metis One_nat_def add_Suc_right le0 monoid_add_class.add.right_neutral pointsSegments)
+  apply (erule_tac x="length L - 1" in allE)
+  apply (metis One_nat_def Suc_pred diff_less eq_numeral_simps(4) last_conv_nth le_0_eq length_greater_0_conv list.size(3) nth_append nth_append_length pointList_def zero_less_Suc)
+  apply (simp add: pointsSegmentsAppend1)
+done
+ 
 (*keine der Kanten kann sich wiederholen*)
 lemma distVertex : "pointList P \<Longrightarrow> \<forall> a b c d::point2d. a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
   \<and> a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<longrightarrow> \<not> segment_Same a b c d"  
@@ -72,6 +88,20 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
   by (metis empty_iff inYCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl yCoordSorted yCoordSorted1)
 lemma [dest]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
 
+(*wenn eine Strecke aus der segment-Liste das Segment A B schneidet, dann schneidet auch die
+Erweiterung dieser Liste das Segment A B*)
+lemma listIntersection: "segment A B \<Longrightarrow>
+  \<exists>i j::nat. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! i) (L ! j) A B \<Longrightarrow>
+  \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length L + 2 \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
+ by (auto)
+(*lemma listIntersection: "segment A B \<Longrightarrow>
+  \<exists>i j. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<longrightarrow> intersect (L ! 0) (L ! j) A B \<Longrightarrow>
+  \<exists>k l. 0 \<le> k \<and> l = k + 1 \<and> l < length L \<longrightarrow> intersect ((a # b # L) ! 10) ((a # b # L) ! 8) A B"
+  by (cases L, auto)
+lemma listIntersection1: "segment A B \<Longrightarrow>
+  \<exists>i j. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! 1) (L ! j) A B \<Longrightarrow>
+  \<exists>k l. 0 \<le> k \<and> l = k + 1 \<and> l < length L + 2 \<longrightarrow> intersect ((a # b # L) ! 10) ((a # b # L) ! 20) A B"
+  by (erule exE, rule_tac x="k + 2" in exI, auto)*)
 
 
 
