@@ -90,10 +90,13 @@ lemma [dest]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: poin
 
 (*wenn eine Strecke aus der segment-Liste das Segment A B schneidet, dann schneidet auch die
 Erweiterung dieser Liste das Segment A B*)
-lemma listIntersection: "segment A B \<Longrightarrow>
+lemma listIntersectionAppend: "segment A B \<Longrightarrow>
   \<exists>i j::nat. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! i) (L ! j) A B \<Longrightarrow>
   \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length L + 2 \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
  by (auto)
+lemma listIntersection : "segment A B \<Longrightarrow>
+  intersect ((a # b # L) ! k) ((a # b # L) ! l) A B \<longleftrightarrow> (intersect a b A B \<or> intersect ( L ! (k - 2)) ( L ! (l - 2)) A B)"
+oops
 (*lemma listIntersection: "segment A B \<Longrightarrow>
   \<exists>i j. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<longrightarrow> intersect (L ! 0) (L ! j) A B \<Longrightarrow>
   \<exists>k l. 0 \<le> k \<and> l = k + 1 \<and> l < length L \<longrightarrow> intersect ((a # b # L) ! 10) ((a # b # L) ! 8) A B"
