@@ -7,15 +7,6 @@ record point2d =
   xCoord :: real
   yCoord :: real
 
-(*update Points*)
-definition setX :: "'a point2d_scheme \<Rightarrow> real \<Rightarrow> 'a point2d_scheme" where
-"setX p a \<equiv> p\<lparr> xCoord := a\<rparr>"
-definition setY :: "'a point2d_scheme \<Rightarrow> real \<Rightarrow> 'a point2d_scheme" where
-"setY p a \<equiv> p\<lparr> yCoord := a\<rparr>"
-definition incX :: "'a point2d_scheme \<Rightarrow> 'a point2d_scheme" where
-"incX p \<equiv> \<lparr>xCoord = xCoord p + 1, yCoord = yCoord p,\<dots> = point2d.more p\<rparr>"
-lemma "incX p = setX p (xCoord p + 1)" by (simp add: setX_def incX_def)
-
 (*points equal*)
 lemma pointSameCoord : "p\<lparr>xCoord := a\<rparr> = p\<lparr> xCoord := a'\<rparr> \<Longrightarrow> a = a'"
 by (drule_tac f = xCoord in arg_cong, simp)
