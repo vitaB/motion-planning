@@ -4,14 +4,12 @@ begin
 
 (*Zusätzliche Sätze die ich brauche*)
 lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in> set (xs) \<or> a = x"
-  by (auto simp add: List.linorder_class.set_insort_insert)
+  by (auto simp add: linorder_class.set_insort_insert)
 theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<forall> y \<in> set xs. f x \<le> f y))"
   by (auto simp add: linorder_class.sorted_Cons)
 lemma distinctElem : "L \<noteq> [] \<and> distinct L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1)  \<longrightarrow> (L!i) \<noteq> (L!(i+1))"
-  apply (auto)
-  apply (cut_tac xs=L in distinct_conv_nth)
-  apply (simp)
-done
+  by (auto simp add: distinct_conv_nth)
+
 
 
 (*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor.
@@ -20,16 +18,16 @@ definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
 
 (*keine der Ecken kann sich wiederholen*)
-lemma distEdge : "pointList P \<Longrightarrow> \<forall> a b::point2d. a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
+lemma distEdge : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
   by (auto simp add: pointsEqual_def)
 
 (*alle Kanten von pointList sind segmente*)
-lemma pointsSegments : "pointList L \<Longrightarrow> \<forall> i. 0 \<le> i \<and> i < (size L - 1) \<longrightarrow> segment (L!i) (L!(i+1))"
+lemma pointsSegments : "pointList L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1) \<longrightarrow> segment (L!i) (L!(i+1))"
   apply (auto simp add: segment_def pointList_def pointsEqual_def)
   apply (cut_tac L=L and i=i in distinctElem, auto)
 done
 lemma pointsSegmentsAppend1: "pointList L \<Longrightarrow> \<forall>i<length L - 1. segment (L ! i) (L ! Suc i) \<and> segment (last L) a \<Longrightarrow>
-  \<forall> k::nat. k < (length (L @ [a]) - 1) \<longrightarrow>  segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
+  k < (length (L @ [a]) - 1) \<longrightarrow>  segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
   apply(auto)
   apply(erule_tac x="k - 1" in allE) 
   apply(erule impE)
@@ -49,8 +47,8 @@ theorem pointsSegmentsAppend : "pointList L \<Longrightarrow> (\<forall> i::nat.
 done
  
 (*keine der Kanten kann sich wiederholen*)
-lemma distVertex : "pointList P \<Longrightarrow> \<forall> a b c d::point2d. a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
-  \<and> a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<longrightarrow> \<not> segment_Same a b c d"  
+lemma distVertex : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
+  \<and> a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<Longrightarrow> \<not> segment_Same a b c d"  
   apply (auto)
   apply (subgoal_tac "segment a b", subgoal_tac "segment c d")
   apply (auto simp add: segment_Same_def distEdge)
@@ -91,12 +89,32 @@ lemma [dest]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: poin
 (*wenn eine Strecke aus der segment-Liste das Segment A B schneidet, dann schneidet auch die
 Erweiterung dieser Liste das Segment A B*)
 lemma listIntersectionAppend: "segment A B \<Longrightarrow>
-  \<exists>i j::nat. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! i) (L ! j) A B \<Longrightarrow>
-  \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length L + 2 \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
- by (auto)
-lemma listIntersection : "segment A B \<Longrightarrow>
+  0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! i) (L ! j) A B \<Longrightarrow>
+  \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
+  apply (auto)
+done
+lemma listIntersectionDel : "segment A B \<Longrightarrow> 
+\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B \<longleftrightarrow> intersect (L ! i) ( L ! j) A B"
+  apply (rule iffI)
+  apply (cases k)
+  apply (cases l)
+  apply (auto)
+  apply (subst intersect_def) apply (auto)
+sorry
+theorem listIntersection : "segment A B \<Longrightarrow>
   intersect ((a # b # L) ! k) ((a # b # L) ! l) A B \<longleftrightarrow> (intersect a b A B \<or> intersect ( L ! (k - 2)) ( L ! (l - 2)) A B)"
-oops
+  apply (rule iffI)
+  apply (cases "intersect a b A B", simp)
+  apply (rule disjI2)
+  apply (cut_tac A=A and B=B and L=L and a=a and b=b and k=k and l=l and i="k - 2" and j="l - 2"  in listIntersectionDel)
+  apply (assumption+, simp)
+  apply (erule disjE)
+  apply (cut_tac L="[a, b]" and A=A and B=B and a=a and b=b and i=0 and j=1 in listIntersectionAppend)
+  apply (assumption, simp)
+  apply ((erule exE)+, (erule conjE)+, safe)
+  apply (metis drop_1_Cons listIntersectionDel nth_via_drop)
+  by (metis drop_1_Cons listIntersectionDel nth_via_drop)
+
 (*lemma listIntersection: "segment A B \<Longrightarrow>
   \<exists>i j. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<longrightarrow> intersect (L ! 0) (L ! j) A B \<Longrightarrow>
   \<exists>k l. 0 \<le> k \<and> l = k + 1 \<and> l < length L \<longrightarrow> intersect ((a # b # L) ! 10) ((a # b # L) ! 8) A B"

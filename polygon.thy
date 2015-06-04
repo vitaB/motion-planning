@@ -14,15 +14,13 @@ lemma polygonLastSegment : "pointList L \<Longrightarrow> segment (last L) (last
   apply (subst neq_commute, simp)
 done
 
-theorem polygonSegments : "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> \<forall> i::nat. i < (size P - 1) \<longrightarrow> segment (P!i) (P!(i+1))"
-  apply (rule allI, rule impI, unfold polygon_def)
+theorem polygonSegments : "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> i < (size P - 1) \<Longrightarrow> segment (P!i) (P!(i+1))"
+  apply (unfold polygon_def)
   apply (simp)
   apply (cut_tac L=L and a="hd L" in pointsSegmentsAppend, simp)
-  apply (erule iffE)
-  apply (erule impE, erule impE, rule)
   apply (auto)
-  apply (cut_tac L=L in pointsSegments, simp)
-  apply (erule_tac x=k in allE, auto)
+  apply (cut_tac L=L and i=k in pointsSegments, simp)
+  apply (auto)
   apply (cut_tac L=L in polygonLastSegment, simp)
   apply (simp add: polygon_def)
 done
@@ -45,7 +43,7 @@ definition conv_polygon :: "point2d list \<Rightarrow> bool" where
 
 (*Punkt inside Polygon. Testweise*)
 definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
-"conv_polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j k. 0 \<le> i \<and> j = i + 1 \<and> k = j + 1 \<and> k < size P \<longrightarrow> signedArea (P!i) (P!j) (P!k) > 0"
+"conv_polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a > 0"
 
 (*Punkt outside Polygon*)
 
@@ -56,18 +54,14 @@ fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point
 | "linePolygonInters [a] P R = False"
 | "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters xs P R))"
 
-(*\<exists> i. (0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! i) (L ! j) A B \<longrightarrow> linePolygonInters L A B)"*)
-lemma linePolygonInters1: "segment A B \<Longrightarrow> \<exists> i. 0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! 2) (L ! 5) A B \<longrightarrow> linePolygonInters L A B"
-    apply (rule_tac x="(L ,A, B)" in linePolygonInters.cases) (*lemma ist blödsinn; mann kann alles reinschreiben*)
-    apply (simp add: pointList_def) apply (simp add: pointList_def)
-    apply (auto)
-done
-lemma linePolygonInters2 : "segment A B \<Longrightarrow> (\<forall>i. 0 \<le> i \<and> j = i + 1 \<and> j < length L - 1 \<longrightarrow> intersect (L ! i) (L ! j) A B) \<longrightarrow> linePolygonInters L A B"
+
+(*wann gibt es ein Schnittpunkt zwischen Polygon und Strecke AB?*)
+lemma linePolygonInters1 : "segment A B \<Longrightarrow> (\<forall>i. 0 \<le> i \<and> j = i + 1 \<and> j < length L - 1 \<longrightarrow> intersect (L ! i) (L ! j) A B) \<Longrightarrow> linePolygonInters L A B"
     apply (rule_tac x="(L ,A, B)" in linePolygonInters.cases)
     apply (simp add: pointList_def) apply (simp add: pointList_def) apply (rule impI) apply (erule_tac x=0 in allE)
     apply (simp) apply (rule disjI1) apply ((erule conjE)+) apply (simp)
 oops
-lemma linePolygonInters3: "segment A B \<Longrightarrow> (\<exists> i. 0 \<le> i \<and> j = i + 1 \<and> j < length L - 1 \<and> intersect (L ! i) (L ! j) A B) \<longrightarrow> linePolygonInters L A B"
+lemma linePolygonInters2: "segment A B \<Longrightarrow> (\<exists> i. 0 \<le> i \<and> j = i + 1 \<and> j < length L - 1 \<and> intersect (L ! i) (L ! j) A B) \<Longrightarrow> linePolygonInters L A B"
     apply (rule_tac x="(L ,A, B)" in linePolygonInters.cases)
     apply (simp, simp)
     apply (rule impI)

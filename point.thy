@@ -15,7 +15,7 @@ by (drule_tac f = xCoord in arg_cong, simp)
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "pointsEqual r p \<longleftrightarrow> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
 lemma pointsNotEqual : " \<not>pointsEqual r p \<longleftrightarrow> (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
-by (simp add: pointsEqual_def) 
+by (simp add: pointsEqual_def)
 lemma pointsEqualSame : "pointsEqual p p" by (simp add: pointsEqual_def)
 lemma pointsEqual : "pointsEqual p r \<longleftrightarrow> xCoord p = xCoord r \<and> yCoord p = yCoord r"
   by (simp add: pointsEqual_def)
