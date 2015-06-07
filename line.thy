@@ -45,9 +45,8 @@ definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<R
    \<or> (c = 0 \<or> point_on_segment P A B)
    \<or> (d = 0 \<or> point_on_segment R A B)"
 
-
-
-
+lemma intersectSym : "intersect A B P R \<longleftrightarrow> intersect B A P R" sorry
+lemma intersectSym1 : "intersect A B P R \<longleftrightarrow> intersect P R A B" sorry
 
 
 (* Line soll kein eigener Datentyp mehr sein!
