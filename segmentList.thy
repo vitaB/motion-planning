@@ -116,7 +116,7 @@ theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Lon
   apply (simp)
   apply (metis One_nat_def diff_self_eq_0 hd_conv_nth le_imp_less_Suc length_0_conv less_2_cases less_imp_le_nat not_less nth_Cons')
   apply (simp)
-apply (metis One_nat_def Suc_eq_plus1 listIntersection1 nth_Cons_Suc)
+  apply (metis One_nat_def Suc_eq_plus1 listIntersection1 nth_Cons_Suc)
   apply (simp)
   apply (metis Suc_1 diff_0_eq_0 diff_Suc_eq_diff_pred diff_self_eq_0 diffs0_imp_equal nth_Cons' nth_Cons_Suc old.nat.exhaust)
   apply (simp) apply (metis One_nat_def Suc_1 Suc_pred diff_Suc_eq_diff_pred neq0_conv nth_Cons')
@@ -289,4 +289,3 @@ lemma distVertex : "pointList P \<Longrightarrow> L = segList P \<Longrightarrow
 oops
 *)
 end
-apply (metis Suc_eq_plus1 listIntersection1)

@@ -3,6 +3,7 @@ imports segmentList
 begin
 
 (*Polygon. mit mehr als 3 Ecken. und Kreislauf*)
+(*polygon kann sich hier noch überschneiden*)
 definition polygon :: "point2d list \<Rightarrow> point2d list" where
 "pointList P \<Longrightarrow> polygon P \<equiv> P @ [hd P]"
 
@@ -13,20 +14,56 @@ lemma polygonLastSegment : "pointList L \<Longrightarrow> segment (last L) (last
   apply (simp add: polygon_def segment_def pointsEqual1)
   apply (subst neq_commute, simp)
 done
-
 theorem polygonSegments : "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> i < (size P - 1) \<Longrightarrow> segment (P!i) (P!(i+1))"
   apply (unfold polygon_def)
-  apply (simp)
-  apply (cut_tac L=L and a="hd L" in pointsSegmentsAppend, simp)
-  apply (auto)
-  apply (cut_tac L=L and i=k in pointsSegments, simp)
-  apply (auto)
-  apply (cut_tac L=L in polygonLastSegment, simp)
-  apply (simp add: polygon_def)
+  apply (cut_tac L=L and a="hd L" in pointsSegmentsAppend, auto)
+  apply (cut_tac L=L and i=k in pointsSegments, auto)
+  apply (cut_tac L=L in polygonLastSegment, auto simp add: polygon_def)
 done
 
 lemma isPolygon : "pointList P  \<Longrightarrow> distinct P \<and> size (polygon P) \<ge> 4 \<and> hd P = last (polygon P)"
 by (induct P, auto simp add: polygon_def pointList_def)
+
+
+(*intersection(Polygon, Strecke A B)*)
+fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "linePolygonInters [] P R = False"
+| "linePolygonInters [a] P R = False"
+| "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters (b#xs) P R))"
+lemma [simp]: "segment P R \<Longrightarrow> \<not> linePolygonInters (b # xs) P R
+    \<Longrightarrow> linePolygonInters (a # b # xs) P R = intersect a b P R"
+    by (simp)
+(*wann gibt es ein Schnittpunkt zwischen Polygon und Strecke AB?*)
+lemma linePolygonInters1: "segment A B \<Longrightarrow> linePolygonInters L A B \<longrightarrow>
+  (\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
+  apply (induct_tac  rule:linePolygonInters.induct) apply (simp, simp)
+  apply (safe) apply (simp only: linePolygonInters.simps, erule conjE)
+  apply (rule_tac x=0 in exI, simp)
+  apply (auto)
+  apply (metis nth_Cons_0)
+by (metis nth_Cons_Suc)
+lemma intersectNeg : "segment A B  \<Longrightarrow>
+  \<not> linePolygonInters L A B \<longrightarrow> \<not>(\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
+  apply (rule classical)
+  apply (rule_tac x="(L ,A, B)" in linePolygonInters.cases) apply (safe)
+  apply (auto)
+sorry
+lemma linePolygonInters2: "segment A B \<Longrightarrow> length L \<ge> 2 \<Longrightarrow> (intersect (L ! i) (L ! Suc i) A B) \<Longrightarrow> linePolygonInters L A B"
+  apply (induct L A B rule:linePolygonInters.induct)
+  apply (auto)
+  apply (subgoal_tac "intersect ((a # b # xs) ! i) ((b # xs) ! i) P R \<longleftrightarrow> linePolygonInters (a # b # xs) P R")
+  apply (auto)
+  apply (cut_tac A=P and B=R and L="(b#xs)" in intersectNeg, auto)
+by (metis nth_Cons')
+
+theorem linePolygonIntersEquiv : "segment A B \<Longrightarrow> length L \<ge> 2 \<Longrightarrow> linePolygonInters L A B \<longleftrightarrow>
+  (\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
+  by (auto simp add: linePolygonInters1 linePolygonInters2)
+
+
+(*wenn ein punkt einer Strecke inside Polygon und ein Punkt einer Strecke outside, dann gibt es eine intersection*)
+
+(*intersection(Polygon, Polygon)*)
 
 (*wann ist ein polygon convex?*)
 (*conv. Polygone die im Uhrzeigersinn gespeichert werden, werden damit nicht erkannt!*)
@@ -48,60 +85,9 @@ definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow>
 (*Punkt outside Polygon*)
 
 
-(*intersection(Polygon, Strecke A B)*)
-fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "linePolygonInters [] P R = False"
-| "linePolygonInters [a] P R = False"
-| "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters xs P R))"
-
-
-(*wann gibt es ein Schnittpunkt zwischen Polygon und Strecke AB?*)
-lemma linePolygonInters1 : "segment A B \<Longrightarrow> (\<forall>i. 0 \<le> i \<and> j = i + 1 \<and> j < length L - 1 \<longrightarrow> intersect (L ! i) (L ! j) A B) \<Longrightarrow> linePolygonInters L A B"
-    apply (rule_tac x="(L ,A, B)" in linePolygonInters.cases)
-    apply (simp add: pointList_def) apply (simp add: pointList_def) apply (rule impI) apply (erule_tac x=0 in allE)
-    apply (simp) apply (rule disjI1) apply ((erule conjE)+) apply (simp)
-oops
-lemma linePolygonInters2: "segment A B \<Longrightarrow> (\<exists> i. 0 \<le> i \<and> j = i + 1 \<and> j < length L - 1 \<and> intersect (L ! i) (L ! j) A B) \<Longrightarrow> linePolygonInters L A B"
-    apply (rule_tac x="(L ,A, B)" in linePolygonInters.cases)
-    apply (simp, simp)
-    apply (rule impI)
-    apply (simp)
-    apply (erule exE)
-    apply ((erule conjE)+)
-    apply (simp)
-    apply (cut_tac a=a and b=b and L=xs and A=P and B=R and k=i and l=j in listIntersection, simp)
-    apply (erule iffE, erule impE, simp, erule impE, simp)
-    apply (erule disjE, simp)
-    apply (simp, rule disjI2)
-    (*apply (induction rule: linePolygonInters.induct)
-    apply (simp add: pointList_def) apply (simp add: pointList_def)
-    apply (rule impI) apply (erule exE, (erule conjE)+)apply (simp)
-    apply (rule disjI2)
-    apply (erule impE, rule conjI)
-    apply (auto)*)
-    
-oops
-
-(*wenn ein Segment aus dem Polygon die Strecke A B schneidet*)
-lemma "segment A B \<Longrightarrow> linePolygonInters P A B \<longleftrightarrow> (\<exists> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P - 1 \<and> intersect (P!i) (P!j) A B)"
-  apply (rule iffI)
-  apply (rule_tac x="(P ,A, B)" in linePolygonInters.cases)
-    apply (simp, simp) apply (safe) apply (simp only: linePolygonInters.simps)
-    apply (erule conjE)
-    apply (erule disjE)
-    apply (rule_tac x="0" in exI) apply (rule_tac x="1" in exI) apply (simp)
-    apply (rule_tac x="i + 2" in exI) apply (rule_tac x=" i + 2 + 1" in exI)
-    apply (bestsimp)
-    apply (cut_tac L=P and A=A and B=B and j=j in bla2, assumption)
-    apply (erule impE)
-  apply (erule exE)    
-oops
-
-(*wenn ein punkt einer Strecke inside Polygon und ein Punkt einer Strecke outside, dann gibt es eine intersection*)
-
-(*intersection(Polygon, Polygon)*)
-
 (*move Polygon*)
+
+
 
 
 
