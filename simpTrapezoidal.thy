@@ -49,7 +49,6 @@ done
 lemma "pointList L \<Longrightarrow> \<forall> a \<in> set L. insidePolygonACl (rBox L) a"
   apply (cut_tac L=L in rBoxConvex, assumption)
   apply (simp add: insidePolygonACl_def)
-  apply (rule impI)
   apply (simp add: rBox_def)
 oops
 

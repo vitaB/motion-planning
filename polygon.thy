@@ -24,30 +24,40 @@ done
 lemma isPolygon : "pointList P  \<Longrightarrow> distinct P \<and> size (polygon P) \<ge> 4 \<and> hd P = last (polygon P)"
 by (induct P, auto simp add: polygon_def pointList_def)
 
-
 (*intersection(Polygon, Strecke A B)*)
 fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "linePolygonInters [] P R = False"
 | "linePolygonInters [a] P R = False"
 | "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters (b#xs) P R))"
-lemma [simp]: "segment P R \<Longrightarrow> \<not> linePolygonInters (b # xs) P R
-    \<Longrightarrow> linePolygonInters (a # b # xs) P R = intersect a b P R"
-    by (simp)
+(*some simple Lemmas. Erleichtert die Beweisführung*)
+lemma [simp]: "segment A B \<Longrightarrow> \<not>linePolygonInters (b#L) A B \<Longrightarrow> linePolygonInters (a#b#L) A B = linePolygonInters [a,b] A B"
+  by (simp)
+lemma [simp]: "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> linePolygonInters (b#L) A B \<Longrightarrow> \<not>intersect b (hd L) A B"
+  by (cases L, auto)
+lemma [simp]: "segment A B \<Longrightarrow> \<not>linePolygonInters [a,b] A B \<Longrightarrow> linePolygonInters (a#b#L) A B = linePolygonInters (b#L) A B"
+  by (simp)
+lemma "segment A B \<Longrightarrow> \<not>linePolygonInters (a#b#L) A B \<Longrightarrow> \<not>linePolygonInters [a,b] A B \<and>  \<not>linePolygonInters (b#L) A B"
+  by (simp)
+
 (*wann gibt es ein Schnittpunkt zwischen Polygon und Strecke AB?*)
 lemma linePolygonInters1: "segment A B \<Longrightarrow> linePolygonInters L A B \<longrightarrow>
   (\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
-  apply (induct_tac  rule:linePolygonInters.induct) apply (simp, simp)
-  apply (safe) apply (simp only: linePolygonInters.simps, erule conjE)
-  apply (rule_tac x=0 in exI, simp)
-  apply (auto)
-  apply (metis nth_Cons_0)
+  apply (induct L A B rule:linePolygonInters.induct) apply (simp, simp)
+  apply (auto) apply (rule_tac x=0 in exI, simp)
+  apply (rule_tac x="i + 1" in exI, simp)
 by (metis nth_Cons_Suc)
+(**************TODO*)
+lemma [simp]: "segment A B \<Longrightarrow>  length L \<ge> 1 \<Longrightarrow> \<not> linePolygonInters (a # L) A B
+    \<Longrightarrow> \<not> intersect ((a # L) ! i) ((a # L) ! Suc i) A B"
+    apply (cases L, auto)
+oops
 lemma intersectNeg : "segment A B  \<Longrightarrow>
   \<not> linePolygonInters L A B \<longrightarrow> \<not>(\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
-  apply (rule classical)
-  apply (rule_tac x="(L ,A, B)" in linePolygonInters.cases) apply (safe)
-  apply (auto)
-sorry
+  apply (rule ccontr)
+  apply (induct L A B rule:linePolygonInters.induct) apply (safe)
+  apply (auto) 
+sorry  
+(**************TODO*)
 lemma linePolygonInters2: "segment A B \<Longrightarrow> length L \<ge> 2 \<Longrightarrow> (intersect (L ! i) (L ! Suc i) A B) \<Longrightarrow> linePolygonInters L A B"
   apply (induct L A B rule:linePolygonInters.induct)
   apply (auto)
@@ -55,6 +65,13 @@ lemma linePolygonInters2: "segment A B \<Longrightarrow> length L \<ge> 2 \<Long
   apply (auto)
   apply (cut_tac A=P and B=R and L="(b#xs)" in intersectNeg, auto)
 by (metis nth_Cons')
+(**************TODO*)
+lemma [simp]: "segment A B \<Longrightarrow> length xs \<ge> 1 \<Longrightarrow> intersect ((a # b # xs) ! i) ((a # b # xs) ! Suc i) A B \<Longrightarrow>
+  \<not> linePolygonInters (b # xs) A B \<Longrightarrow> linePolygonInters [a,b] A B"
+  apply (simp)
+  apply (cut_tac A=A and B=B and a=a and b=b and L=xs and k=i in listIntersection, simp, simp)
+  apply (simp) 
+oops
 
 theorem linePolygonIntersEquiv : "segment A B \<Longrightarrow> length L \<ge> 2 \<Longrightarrow> linePolygonInters L A B \<longleftrightarrow>
   (\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
