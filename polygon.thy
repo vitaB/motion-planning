@@ -30,13 +30,13 @@ fun linePolygonInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point
 | "linePolygonInters [a] P R = False"
 | "linePolygonInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> linePolygonInters (b#xs) P R))"
 (*some simple Lemmas. Erleichtert die Beweisführung*)
-lemma [simp]: "segment A B \<Longrightarrow> \<not>linePolygonInters (b#L) A B \<Longrightarrow> linePolygonInters (a#b#L) A B = linePolygonInters [a,b] A B"
+lemma linePolygonIntersSimp [simp]: "segment A B \<Longrightarrow> \<not>linePolygonInters (b#L) A B \<Longrightarrow> linePolygonInters (a#b#L) A B = linePolygonInters [a,b] A B"
   by (simp)
-lemma [simp]: "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> linePolygonInters (b#L) A B \<Longrightarrow> \<not>intersect b (hd L) A B"
+lemma linePolygonIntersSimp1 [simp]: "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> linePolygonInters (b#L) A B \<Longrightarrow> \<not>intersect b (hd L) A B"
   by (cases L, auto)
-lemma [simp]: "segment A B \<Longrightarrow> \<not>linePolygonInters [a,b] A B \<Longrightarrow> linePolygonInters (a#b#L) A B = linePolygonInters (b#L) A B"
+lemma linePolygonIntersSimp2 [simp]: "segment A B \<Longrightarrow> \<not>linePolygonInters [a,b] A B \<Longrightarrow> linePolygonInters (a#b#L) A B = linePolygonInters (b#L) A B"
   by (simp)
-lemma "segment A B \<Longrightarrow> \<not>linePolygonInters (a#b#L) A B \<Longrightarrow> \<not>linePolygonInters [a,b] A B \<and>  \<not>linePolygonInters (b#L) A B"
+lemma linePolygonIntersNeg : "segment A B \<Longrightarrow> \<not>linePolygonInters (a#b#L) A B \<Longrightarrow> \<not>linePolygonInters [a,b] A B \<and>  \<not>linePolygonInters (b#L) A B"
   by (simp)
 
 (*wann gibt es ein Schnittpunkt zwischen Polygon und Strecke AB?*)
@@ -47,7 +47,7 @@ lemma linePolygonInters1: "segment A B \<Longrightarrow> linePolygonInters L A B
   apply (rule_tac x="i + 1" in exI, simp)
 by (metis nth_Cons_Suc)
 (**************TODO*)
-lemma [simp]: "segment A B \<Longrightarrow>  length L \<ge> 1 \<Longrightarrow> \<not> linePolygonInters (a # L) A B
+lemma linePolygonIntersSimp3 [simp]: "segment A B \<Longrightarrow>  length L \<ge> 1 \<Longrightarrow> \<not> linePolygonInters (a # L) A B
     \<Longrightarrow> \<not> intersect ((a # L) ! i) ((a # L) ! Suc i) A B"
     apply (cases L, auto)
 oops
@@ -66,7 +66,7 @@ lemma linePolygonInters2: "segment A B \<Longrightarrow> length L \<ge> 2 \<Long
   apply (cut_tac A=P and B=R and L="(b#xs)" in intersectNeg, auto)
 by (metis nth_Cons')
 (**************TODO*)
-lemma [simp]: "segment A B \<Longrightarrow> length xs \<ge> 1 \<Longrightarrow> intersect ((a # b # xs) ! i) ((a # b # xs) ! Suc i) A B \<Longrightarrow>
+lemma linePolygonIntersSimp3 [simp]: "segment A B \<Longrightarrow> length xs \<ge> 1 \<Longrightarrow> intersect ((a # b # xs) ! i) ((a # b # xs) ! Suc i) A B \<Longrightarrow>
   \<not> linePolygonInters (b # xs) A B \<Longrightarrow> linePolygonInters [a,b] A B"
   apply (simp)
   apply (cut_tac A=A and B=B and a=a and b=b and L=xs and k=i in listIntersection, simp, simp)
@@ -108,73 +108,4 @@ definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow>
 
 
 
-
-
-(* Line/Segment soll kein eigener Datentyp mehr sein!
-lemma polygonCompl : "pointList P \<Longrightarrow> L = segList P \<Longrightarrow> R = segList(polygon P) \<Longrightarrow> a \<in> set(L) \<longrightarrow> a \<in> set(R)"
-  apply (auto)
-  apply (cut_tac P=P and p="[hd P]" and a=a in segListapp)
-  apply (auto simp add: pointList_def polygon_def)
-done
-
-lemma polygonCompl1 : "pointList P \<Longrightarrow> L = segList P \<Longrightarrow> R = segList(polygon P) \<Longrightarrow> (a = \<lparr>sPoint= last P, ePoint= hd P\<rparr> \<or> a \<in> set(L)) \<longleftrightarrow> a \<in> set(R)"
-sorry
-
-lemma segmentPolygon [simp] : "pointList P \<Longrightarrow> R = segList(polygon P) \<Longrightarrow> a \<in> set(R) \<longrightarrow> segment a"
-  apply (simp add: polygon_def pointList_def)
-  apply (induct_tac rule: segList.induct)
-  apply (simp, simp)
-  apply (erule impE)
-  apply (simp add: segment_def)
-
-  apply (simp add: polygon_def pointList_def)
-  apply (cases "a \<in> set (segList (P))")
-  apply (cut_tac P=P and a=a and p="[hd P]" in segListapp)
-  apply (simp add: pointList_def, assumption)
-  apply (cut_tac P=P and L="segList P" and a=a in segmentList)
-  apply (simp add: pointList_def, simp+)
-  apply (rule_tac x = P in segList.cases, simp, simp)
-  apply (safe)
-  apply (simp only: List.list.sel(1))
-sorry
-  
-(*kein segment wiederholt sich*)
-lemma segPolygonDistinct : "pointList P \<Longrightarrow> R = segList(polygon P) \<Longrightarrow> a \<in> set(R) \<and> b \<in> set(R) \<and> a \<noteq> b
-  \<longrightarrow> sPoint(a) \<noteq> sPoint(b) \<and> ePoint(a) \<noteq> ePoint(b)"
-  apply (simp)
-  apply (rule impI, rule conjI,erule conjE, erule conjE)
-  apply (cut_tac P=P and R = R and a=a in segmentPolygon)
-  apply (assumption+)
-  apply (erule impE)
-  apply (simp)
-  apply (cut_tac P=P and R = R and a=b in segmentPolygon)
-  apply (assumption+)
-  apply (erule impE)
-  apply (simp)
-thm segListdistinct
-  apply (cut_tac P=P and L=R and a=a and b=b in segListdistinct)
-  apply (assumption)
-  apply (simp add: segment_def)
-sorry
-
-(*Beweis: Kreislauf mit Punkten wo Anfangspunkt und Endpunk gleich sind. mehr als 2 Ecken
-definition circuit_list :: "line list \<Rightarrow> bool" where
-"connected segList \<Longrightarrow> circuit_list segList = (sPoint(hd segList) = ePoint (last segList))"*)
-
-(*definition polygon_eq :: "line list \<Rightarrow> line list \<Rightarrow> bool" where
-"polygon_eq P R \<equiv> list_eq_iff_nth_eq P R"*)
-
-(*intersection(Polygon, Line)*)
-definition lineIntersect :: "point2d list \<Rightarrow> line \<Rightarrow> bool" where
-"pointList P  \<Longrightarrow> segment l \<Longrightarrow> lineIntersect P l \<equiv> (\<exists> a ::line. a \<in> set(segList(polygon P))
-\<and> intersect l a)"
-
-lemma "pointList P  \<Longrightarrow> L = segList P \<Longrightarrow> \<forall> a::line. a \<in> set L \<longrightarrow> lineIntersect P a"
-  apply (auto simp add: lineIntersect_def pointList_def)
-  apply (rule_tac x=a in exI)
-  apply (rule conjI)
-  apply (cut_tac P=P and L="segList P" and R = "segList (polygon P)" in polygonCompl)
-  apply (auto simp add: intersect_def pointList_def)
-done
-*)
 end
