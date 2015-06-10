@@ -32,7 +32,7 @@ definition pointList :: "point2d list \<Rightarrow> bool" where
 
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
-  by (auto simp add: pointsEqual_def)
+  by (metis pointsEqual1)
 
 (*alle Kanten von pointList sind segmente*)
 lemma pointsSegments : "pointList L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1) \<longrightarrow> segment (L!i) (L!(i+1))"
@@ -121,7 +121,7 @@ theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Lon
   apply (metis One_nat_def diff_self_eq_0 hd_conv_nth le_imp_less_Suc length_0_conv less_2_cases less_imp_le_nat not_less nth_Cons')
   apply (metis One_nat_def Suc_eq_plus1 listIntersection1 nth_Cons_Suc)
   apply (simp)
-  apply (metis Suc_1 diff_0_eq_0 diff_Suc_eq_diff_pred diff_self_eq_0 diffs0_imp_equal nth_Cons' nth_Cons_Suc old.nat.exhaust)
+  apply (metis Suc_1 diff_0_eq_0 diff_Suc_eq_diff_pred diff_self_eq_0 diffs0_imp_equal nth_Cons' old.nat.exhaust)
   apply (simp) apply (metis One_nat_def Suc_1 Suc_pred diff_Suc_eq_diff_pred neq0_conv nth_Cons')
   apply (metis Suc_1 diff_Suc_1 diff_Suc_eq_diff_pred intersectNext nth_Cons' nth_Cons_Suc)
   apply (metis Suc_eq_plus1 listIntersection1)

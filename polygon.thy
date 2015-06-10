@@ -11,7 +11,7 @@ definition polygon :: "point2d list \<Rightarrow> point2d list" where
 lemma [simp]: "pointList L \<Longrightarrow> hd L \<noteq> last L"
   by (cases L, auto simp add: pointList_def)
 lemma polygonLastSegment : "pointList L \<Longrightarrow> segment (last L) (last (polygon L))"
-  apply (simp add: polygon_def segment_def pointsEqual1)
+  apply (simp add: polygon_def segment_def)
   apply (subst neq_commute, simp)
 done
 theorem polygonSegments : "pointList L \<Longrightarrow> P = polygon L \<Longrightarrow> i < (size P - 1) \<Longrightarrow> segment (P!i) (P!(i+1))"

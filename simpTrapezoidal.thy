@@ -4,24 +4,24 @@ begin
 
 (*4eckige Box um pointListe herum ist selbst eine pointList*)
 lemma rBoxPointList: "pointList L \<Longrightarrow> 
- pointList ([\<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>,
-  \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>, \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>,
-  \<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>])"
+ pointList ([Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+  Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1)])"
 sorry
 (*4eckige Box um pointListe herum*)
 definition rBox :: "point2d list \<Rightarrow> point2d list" where
-"pointList L \<Longrightarrow> rBox L \<equiv> polygon([\<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>,
-  \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>, \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>,
-  \<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>])"
+"pointList L \<Longrightarrow> rBox L \<equiv> polygon([Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+  Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1)])"
 
 (*ersetzte den Term Polygon im Satz*)
 lemma rBoxPoly [simp] : "pointList L \<Longrightarrow>
-  polygon([\<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>,
-  \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>, \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>,
-  \<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>])
-  \<equiv> [\<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>,
-  \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>, \<lparr>xCoord = xCoord (last (xCoordSort L)) + 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>,
-  \<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (last (yCoordSort L)) + 1\<rparr>, \<lparr>xCoord = xCoord (hd (xCoordSort L)) - 1, yCoord = yCoord (hd (yCoordSort L)) - 1\<rparr>]"
+  polygon([Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+  Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1)])
+  \<equiv> [Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+  Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1), Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (hd (yCoordSort L)) - 1)]"
   apply (cut_tac L=L in rBoxPointList, assumption)
   apply (auto simp add: rBox_def polygon_def)
 done

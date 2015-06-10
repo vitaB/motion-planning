@@ -3,33 +3,33 @@ imports Complex_Main
 begin
 
 (*defintion von Punkten*)
-record point2d =
-  xCoord :: real
-  yCoord :: real
+typedef point2d = "{p::(real*real). True}" by(auto)
+definition xCoord :: "point2d \<Rightarrow> real" where "xCoord P \<equiv> fst(Rep_point2d P)"
+definition yCoord :: "point2d \<Rightarrow> real" where "yCoord P \<equiv> snd(Rep_point2d P)"
+lemma [simp]: "xCoord (Abs_point2d (a, b)) = a" by (simp add: xCoord_def Abs_point2d_inverse)
+lemma [simp]: "yCoord (Abs_point2d (a, b)) = b" by (simp add: yCoord_def Abs_point2d_inverse)
 
 (*points equal*)
-lemma pointSameCoord : "p\<lparr>xCoord := a\<rparr> = p\<lparr> xCoord := a'\<rparr> \<Longrightarrow> a = a'"
-by (drule_tac f = xCoord in arg_cong, simp)
-  (*apply (rule_tac r = p in point2d.cases_scheme) (*apply (cases p)*)
-  apply (simp)*)
+lemma pointSameCoord : "Abs_point2d(a, b) = Abs_point2d(a', c)\<Longrightarrow> a = a' \<and> b = c"
+  by (auto, (metis Abs_point2d_inverse mem_Collect_eq fst_conv snd_conv)+)
+
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "pointsEqual r p \<longleftrightarrow> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
-lemma pointsNotEqual : " \<not>pointsEqual r p \<longleftrightarrow> (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
+lemma pointsNotEqual : "\<not>pointsEqual r p \<longleftrightarrow> (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
 by (simp add: pointsEqual_def)
+lemma pointsNotEqual1 [simp]: "(xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p) \<longleftrightarrow> r \<noteq> p"
+  by (metis Rep_point2d_inverse prod.collapse xCoord_def yCoord_def)
 lemma pointsEqualSame : "pointsEqual p p" by (simp add: pointsEqual_def)
-lemma pointsEqual : "pointsEqual p r \<longleftrightarrow> xCoord p = xCoord r \<and> yCoord p = yCoord r"
-  by (simp add: pointsEqual_def)
-theorem pointsEqual1 : "pointsEqual p r \<longleftrightarrow> p = r"
+theorem pointsEqual1 [simp] : "pointsEqual p r \<longleftrightarrow> p = r"
   apply (rule iffI)
-    apply (simp add: pointsEqual)
-    apply (simp add: pointsEqualSame)
+  apply (simp add: pointsEqual_def)
+  apply (metis Rep_point2d_inverse prod.collapse xCoord_def yCoord_def)
+  apply (simp add: pointsEqualSame)
 done
 
 (*Punkt a links vom Punkt b?*)
 definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"leftFromPoint a b = (xCoord a < xCoord b)"
-lemma "a < b \<longleftrightarrow> leftFromPoint (| xCoord = a, yCoord = c |) (| xCoord = b, yCoord = d |)"
-by (auto simp add: leftFromPoint_def)
+"leftFromPoint a b \<equiv> (xCoord a < xCoord b)"
 
 (*signed area of a triangle; with the convention being that
 - if the points are ordered anti-clockwise, the area is positive
