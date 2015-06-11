@@ -11,15 +11,31 @@ lemma distinctElem : "L \<noteq> [] \<and> distinct L \<Longrightarrow> 0 \<le> 
   by (auto simp add: distinct_conv_nth)
 lemma intersectNext: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow> intersect ((b # L) ! k) ((b # L) ! Suc k) A B \<Longrightarrow>
   intersect (L ! (k - 1)) (L ! (Suc k - 1)) A B"
-  apply (cases "k = 0", simp)
-  apply (metis Suc_n_not_le_n hd_conv_nth length_0_conv)
-  apply (auto)
+  apply (cases "k = 0", simp) apply (metis Suc_n_not_le_n hd_conv_nth length_0_conv, auto)
 done
+lemma intersectNext1: "length L \<ge> 1 \<Longrightarrow> intersect (L ! k) (L ! Suc k) A B \<Longrightarrow> intersect ((b # L) ! (k + 1)) ((b # L) ! Suc (k + 1)) A B"
+  by (auto)
+(*value " 0 - 2::nat" funktioniert nur wenn man numeral verwendet! nth_Cons_numeral*)
+lemma intersectNext2: "length L \<ge> 1 \<Longrightarrow> intersect (L ! (k - 1)) (L ! Suc (k - 1)) A B \<Longrightarrow> k \<ge> 1" 
+  apply (auto)
+  apply (cases k, simp)
+oops
+lemma intersectNext3: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow> intersect ((b # L) ! k) ((b # L) ! (k + 1)) A B \<Longrightarrow> k \<ge> 1" 
+  apply (cases k, auto) apply (subgoal_tac "L ! 0 = hd L", simp)
+  by (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero)
+lemma intersectNext4: " k \<ge> 1 \<Longrightarrow> intersect ((b # L) ! k) ((b # L) ! (k + 1)) A B = intersect (L ! (k - 1)) (L ! Suc (k - 1)) A B"
+  by(auto)
+lemma intersectNext5: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow>
+  intersect ((b # L) ! numeral k) ((b # L) ! (numeral k + 1)) A B = intersect (L ! (numeral k - 1)) (L ! Suc (numeral k - 1)) A B"
+  apply (rule iffI)
+  apply (metis Suc_eq_plus1 Suc_numeral diff_Suc_1 nth_Cons_numeral numeral_eq_Suc)
+by (metis Suc_eq_plus1_left add.commute add_diff_cancel_left' nth_Cons' numeral_eq_Suc old.nat.distinct(2))
+
 
 (*wie kann man nth als prädikat darstellen? *)
 lemma sizeOfList1 : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B \<Longrightarrow> k \<ge> 1"
   by (cases k, auto)
-lemma sizeOfList : "intersect (L ! k) (L !(k + 1)) A B \<Longrightarrow> length L \<ge> k"
+lemma sizeOfList : "intersect (L ! k) (L !(k + 1)) A B \<Longrightarrow> length L > k"
   apply (cases k)
   apply (auto)
   apply (rule classical)

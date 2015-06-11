@@ -11,8 +11,7 @@ lemma [simp]: "yCoord (Abs_point2d (a, b)) = b" by (simp add: yCoord_def Abs_poi
 
 (*points equal*)
 lemma pointSameCoord : "Abs_point2d(a, b) = Abs_point2d(a', c)\<Longrightarrow> a = a' \<and> b = c"
-  by (auto, (metis Abs_point2d_inverse mem_Collect_eq fst_conv snd_conv)+)
-
+  by (metis (full_types) Abs_point2d_inject fst_conv mem_Collect_eq snd_conv)
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "pointsEqual r p \<longleftrightarrow> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
 lemma pointsNotEqual : "\<not>pointsEqual r p \<longleftrightarrow> (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
@@ -47,8 +46,7 @@ definition leftTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
 "leftTurn a b c \<equiv> 0 < signedArea a b c"
 lemma leftTurnRotate [simp]: "leftTurn b c a = leftTurn a b c" by (simp add: leftTurn_def)
 lemma leftTurnRotate2 [simp]: "leftTurn b a c = leftTurn a c b" by (simp add: leftTurn_def)
-lemma leftTurnDiffPoints [intro]: "leftTurn a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
-by (auto simp add: leftTurn_def)
+lemma leftTurnDiffPoints [intro]: "leftTurn a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c" by (auto simp add: leftTurn_def)
 
 
 (*punkt A zwischen B und C*)
@@ -140,7 +138,7 @@ lemma notBetweenSelf [simp]: "\<not> (betwpoint a a b)"
   apply (simp add: betwpoint_def)
   apply (cut_tac  r=a and p=b in pointsNotEqual)
   apply (erule_tac x = 1 in allE) apply (simp)
-  apply (auto simp add: pointsEqual1)
+  apply (auto)
 oops
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where (*a \<noteq> c ?*)
 " isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
@@ -154,7 +152,7 @@ lemma "isBetween a b c \<longleftrightarrow> betwpoint a b c"
   apply (simp add: signedArea_def betwpoint_def)
 oops
 lemma notBetweenSelf [simp]: "\<not> (isBetween a a b)"
-  by (rule notI, auto simp add: pointsEqual1 isBetween_def)
+  by (rule notI, auto simp add: isBetween_def)
 lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
   by (auto simp add: isBetween_def) 
 lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow>
