@@ -6,8 +6,8 @@ begin
 (*Evtl. wäre ein eigener Datentyp besser*)
 definition segment :: "point2d \<Rightarrow> point2d  \<Rightarrow> bool" where
 "segment a b \<equiv> \<not> pointsEqual a b"
-
-lemma segment_Sym [simp]: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
+(*dieses lemma nicht zu simp hinzufügen!*)
+lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
 
 definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"

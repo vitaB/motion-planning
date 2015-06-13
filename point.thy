@@ -55,11 +55,11 @@ definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Ri
 definition betwpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "betwpoint a b c = (\<forall> n. n > 1 \<longrightarrow> (n * yCoord a = yCoord b + yCoord c \<and> n * xCoord a = xCoord b + xCoord c))"
 lemma swapBetween [simp]: "betwpoint a c b = betwpoint a b c" by(auto simp add: betwpoint_def)
-lemma notBetweenSamePoint [dest]: "betwpoint a b b \<Longrightarrow> False"
+(*lemma notBetweenSamePoint [dest]: "betwpoint a b b \<Longrightarrow> False"
   apply (simp add: betwpoint_def)
   apply (erule_tac x = 2 in allE)
   apply (auto)
-oops
+oops*)
 
 (*3 Punkte sind auf einer geraden*)
 definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -91,12 +91,12 @@ lemma betwpointCollinear3 [intro] : "betwpoint c a b \<longrightarrow> collinear
   apply (simp)
   apply algebra
 done
-lemma "collinear a b c \<longleftrightarrow> betwpoint a b c \<or> betwpoint b a c \<or> betwpoint c a b"
+(*lemma "collinear a b c \<longleftrightarrow> betwpoint a b c \<or> betwpoint b a c \<or> betwpoint c a b"
   apply (rule iffI)
   apply (simp add: collinear_def) apply (auto)
   apply (simp add: collinear_def betwpoint_def)
   apply (rule allI)
-oops
+oops*)
 
 (*degenerate cases where the points may be collinear, or equivalently, the area of the triangle they define is zero:*)
 lemma colliniearRight : "collinear a b c \<longleftrightarrow> (signedArea a b c = 0)"
@@ -133,18 +133,18 @@ lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea 
 
 
 (*Zusätliche lemmas. alternative definition für isBetween. Nochmal anschauen!*)
-lemma notBetweenSelf [simp]: "\<not> (betwpoint a a b)"
+(*lemma notBetweenSelf [simp]: "\<not> (betwpoint a a b)"
   apply (rule notI)
   apply (simp add: betwpoint_def)
   apply (cut_tac  r=a and p=b in pointsNotEqual)
   apply (erule_tac x = 1 in allE) apply (simp)
   apply (auto)
-oops
+oops*)
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where (*a \<noteq> c ?*)
 " isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
 (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
 0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 )"
-lemma "isBetween a b c \<longleftrightarrow> betwpoint a b c"
+(*lemma "isBetween a b c \<longleftrightarrow> betwpoint a b c"
   apply (rule iffI)
   apply (simp add: isBetween_def)
   apply (subst (asm) colliniearRight)
@@ -160,5 +160,5 @@ isBetween a b c \<or> isBetween b a c \<or> isBetween c a b" sorry
 lemma notBetween [dest]: "betwpoint A B C \<Longrightarrow>betwpoint B A C  \<Longrightarrow> False" sorry
 lemma notBetween2 [dest]: "betwpoint A B C \<Longrightarrow>betwpoint C A B  \<Longrightarrow> False" sorry
 lemma notBetween3 [dest]: "betwpoint B A C \<Longrightarrow>betwpoint C A B \<Longrightarrow> False" sorry
-
+*)
 end

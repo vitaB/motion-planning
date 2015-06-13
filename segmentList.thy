@@ -16,10 +16,10 @@ done
 lemma intersectNext1: "length L \<ge> 1 \<Longrightarrow> intersect (L ! k) (L ! Suc k) A B \<Longrightarrow> intersect ((b # L) ! (k + 1)) ((b # L) ! Suc (k + 1)) A B"
   by (auto)
 (*value " 0 - 2::nat" funktioniert nur wenn man numeral verwendet! nth_Cons_numeral*)
-lemma intersectNext2: "length L \<ge> 1 \<Longrightarrow> intersect (L ! (k - 1)) (L ! Suc (k - 1)) A B \<Longrightarrow> k \<ge> 1" 
+(*lemma intersectNext2: "length L \<ge> 1 \<Longrightarrow> intersect (L ! (k - 1)) (L ! Suc (k - 1)) A B \<Longrightarrow> k \<ge> 1" 
   apply (auto)
   apply (cases k, simp)
-oops
+oops*)
 lemma intersectNext3: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow> intersect ((b # L) ! k) ((b # L) ! (k + 1)) A B \<Longrightarrow> k \<ge> 1" 
   apply (cases k, auto) apply (subgoal_tac "L ! 0 = hd L", simp)
   by (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero)
@@ -35,11 +35,11 @@ by (metis Suc_eq_plus1_left add.commute add_diff_cancel_left' nth_Cons' numeral_
 (*wie kann man nth als prädikat darstellen? *)
 lemma sizeOfList1 : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B \<Longrightarrow> k \<ge> 1"
   by (cases k, auto)
-lemma sizeOfList : "intersect (L ! k) (L !(k + 1)) A B \<Longrightarrow> length L > k"
+(*lemma sizeOfList : "intersect (L ! k) (L !(k + 1)) A B \<Longrightarrow> length L > k"
   apply (cases k)
   apply (auto)
   apply (rule classical)
-oops
+oops*)
 
 (*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor.
 hat damit also nur 2 Nachbarn*)

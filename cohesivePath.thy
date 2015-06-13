@@ -42,16 +42,18 @@ lemma lineCohesivePathInters1: "segment A B \<Longrightarrow> lineCohesivePathIn
   apply (auto) apply (rule_tac x=0 in exI, simp)
   apply (rule_tac x="i + 1" in exI, simp)
 by (metis nth_Cons_Suc)
-lemma lineCohesivePathIntersSimp3 [simp]: "segment A B \<Longrightarrow>  length L \<ge> 1 \<Longrightarrow> \<not> lineCohesivePathInters (a # L) A B
+(*lemma lineCohesivePathIntersSimp3 [simp]: "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> lineCohesivePathInters (a # L) A B
     \<Longrightarrow> \<not> intersect ((a # L) ! i) ((a # L) ! Suc i) A B"
-    apply (cases L, auto)
-oops
-lemma intersectNeg : "segment A B  \<Longrightarrow>
+    apply (subgoal_tac "\<not> intersect a (hd L) A B")
+    apply (induct L A B rule:lineCohesivePathInters.induct, simp, simp)
+    apply (cases i, simp, simp)  
+oops*)
+(*lemma intersectNeg : "segment A B  \<Longrightarrow>
   \<not> lineCohesivePathInters L A B \<longrightarrow> \<not>(\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
   apply (rule ccontr)
   apply (induct L A B rule:lineCohesivePathInters.induct) apply (safe)
   apply (auto) 
-oops
+oops*)
 lemma lineCohesivePathInters2: "segment A B \<Longrightarrow> length L \<ge> 2 \<Longrightarrow> (intersect (L ! i) (L ! Suc i) A B) \<Longrightarrow> lineCohesivePathInters L A B"
   apply (induct L A B rule:lineCohesivePathInters.induct)
   apply (auto)
@@ -60,12 +62,12 @@ lemma lineCohesivePathInters2: "segment A B \<Longrightarrow> length L \<ge> 2 \
   (*apply (cut_tac A=P and B=R and L="(b#xs)" in intersectNeg, auto)
 by (metis nth_Cons')*)
 sorry
-lemma lineCohesivePathIntersSimp3 [simp]: "segment A B \<Longrightarrow> length xs \<ge> 1 \<Longrightarrow> intersect ((a # b # xs) ! i) ((a # b # xs) ! Suc i) A B \<Longrightarrow>
+(*lemma lineCohesivePathIntersSimp3 [simp]: "segment A B \<Longrightarrow> length xs \<ge> 1 \<Longrightarrow> intersect ((a # b # xs) ! i) ((a # b # xs) ! Suc i) A B \<Longrightarrow>
   \<not> lineCohesivePathInters (b # xs) A B \<Longrightarrow> lineCohesivePathInters [a,b] A B"
   apply (simp)
   apply (cut_tac A=A and B=B and a=a and b=b and L=xs and k=i in listIntersection, simp, simp)
   apply (simp) 
-oops
+oops*)
 theorem lineCohesivePathIntersEquiv : "segment A B \<Longrightarrow> length L \<ge> 2 \<Longrightarrow> lineCohesivePathInters L A B \<longleftrightarrow>
   (\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
   by (auto simp add: lineCohesivePathInters1 lineCohesivePathInters2)
