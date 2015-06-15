@@ -3,43 +3,12 @@ imports line
 begin
 
 (*Zusätzliche Sätze die ich brauche*)
-lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in> set (xs) \<or> a = x"
-  by (auto simp add: linorder_class.set_insort_insert)
-theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<forall> y \<in> set xs. f x \<le> f y))"
-  by (auto simp add: linorder_class.sorted_Cons)
-lemma distinctElem : "L \<noteq> [] \<and> distinct L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1)  \<longrightarrow> (L!i) \<noteq> (L!(i+1))"
+lemma distinctElem : "L \<noteq> [] \<and> distinct L \<Longrightarrow> i < (size L - 1) \<Longrightarrow> (L!i) \<noteq> (L! Suc i)"
   by (auto simp add: distinct_conv_nth)
 lemma intersectNext: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow> intersect ((b # L) ! k) ((b # L) ! Suc k) A B \<Longrightarrow>
   intersect (L ! (k - 1)) (L ! (Suc k - 1)) A B"
   apply (cases "k = 0", simp) apply (metis Suc_n_not_le_n hd_conv_nth length_0_conv, auto)
 done
-lemma intersectNext1: "length L \<ge> 1 \<Longrightarrow> intersect (L ! k) (L ! Suc k) A B \<Longrightarrow> intersect ((b # L) ! (k + 1)) ((b # L) ! Suc (k + 1)) A B"
-  by (auto)
-(*value " 0 - 2::nat" funktioniert nur wenn man numeral verwendet! nth_Cons_numeral*)
-(*lemma intersectNext2: "length L \<ge> 1 \<Longrightarrow> intersect (L ! (k - 1)) (L ! Suc (k - 1)) A B \<Longrightarrow> k \<ge> 1" 
-  apply (auto)
-  apply (cases k, simp)
-oops*)
-lemma intersectNext3: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow> intersect ((b # L) ! k) ((b # L) ! (k + 1)) A B \<Longrightarrow> k \<ge> 1" 
-  apply (cases k, auto) apply (subgoal_tac "L ! 0 = hd L", simp)
-  by (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero)
-lemma intersectNext4: " k \<ge> 1 \<Longrightarrow> intersect ((b # L) ! k) ((b # L) ! (k + 1)) A B = intersect (L ! (k - 1)) (L ! Suc (k - 1)) A B"
-  by(auto)
-lemma intersectNext5: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow>
-  intersect ((b # L) ! numeral k) ((b # L) ! (numeral k + 1)) A B = intersect (L ! (numeral k - 1)) (L ! Suc (numeral k - 1)) A B"
-  apply (rule iffI)
-  apply (metis Suc_eq_plus1 Suc_numeral diff_Suc_1 nth_Cons_numeral numeral_eq_Suc)
-by (metis Suc_eq_plus1_left add.commute add_diff_cancel_left' nth_Cons' numeral_eq_Suc old.nat.distinct(2))
-
-
-(*wie kann man nth als prädikat darstellen? *)
-lemma sizeOfList1 : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B \<Longrightarrow> k \<ge> 1"
-  by (cases k, auto)
-(*lemma sizeOfList : "intersect (L ! k) (L !(k + 1)) A B \<Longrightarrow> length L > k"
-  apply (cases k)
-  apply (auto)
-  apply (rule classical)
-oops*)
 
 (*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor.
 hat damit also nur 2 Nachbarn*)
@@ -49,61 +18,59 @@ definition pointList :: "point2d list \<Rightarrow> bool" where
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
   by (metis pointsEqual1)
-
-(*alle Kanten von pointList sind segmente*)
-lemma pointsSegments : "pointList L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1) \<longrightarrow> segment (L!i) (L!(i+1))"
-  apply (auto simp add: segment_def pointList_def pointsEqual_def)
-  apply (cut_tac L=L and i=i in distinctElem, auto)
-done
-lemma pointsSegmentsAppend1: "pointList L \<Longrightarrow> \<forall>i<length L - 1. segment (L ! i) (L ! Suc i) \<and> segment (last L) a \<Longrightarrow>
-  k < (length (L @ [a]) - 1) \<longrightarrow>  segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
-  apply(auto)
-  apply(erule_tac x="k - 1" in allE) 
-  apply(erule impE)
-  apply(simp add: Groups.ordered_ab_group_add_class.diff_strict_right_mono)
-  apply (metis Suc_leI Suc_lessI add_2_eq_Suc' diff_0_eq_0 diff_less_mono le_numeral_Suc monoid_add_class.add.left_neutral neq0_conv not_less old.nat.distinct(2) pointList_def pred_numeral_simps(3))
-  apply (auto)
-  apply (metis One_nat_def Suc_leI Suc_lessI add_Suc_right diff_Suc_Suc diff_less_mono diff_zero last_conv_nth le0 length_0_conv monoid_add_class.add.right_neutral nth_append nth_append_length pointsSegments zero_less_Suc)
-done
-theorem pointsSegmentsAppend : "pointList L \<Longrightarrow> (\<forall> i::nat. i < (size (L @ [a]) - 1) \<longrightarrow> segment ((L @ [a])!i) ((L @ [a])!(i+1)))
-  \<longleftrightarrow> (\<forall> k::nat. k < (size L - 1) \<longrightarrow> segment (L!k) (L !(k+1))) \<and> segment (last L) a"
-  apply (auto simp add: pointsSegmentsAppend1)
-  apply (erule_tac x="i+1" in allE)
-  apply (metis One_nat_def add_Suc_right le0 monoid_add_class.add.right_neutral pointsSegments)
-  apply (erule_tac x="length L - 1" in allE)
-  apply (metis One_nat_def Suc_pred diff_less eq_numeral_simps(4) last_conv_nth le_0_eq length_greater_0_conv list.size(3) nth_append nth_append_length pointList_def zero_less_Suc)
-done
- 
+lemma distEdge1 : "pointList L \<Longrightarrow> i < size L \<Longrightarrow> k < size L \<Longrightarrow> k \<noteq> i \<Longrightarrow> \<not> pointsEqual (L ! i) (L ! k)"
+  by (auto simp add: pointList_def distinct_conv_nth)
+   
 (*keine der Kanten kann sich wiederholen*)
 lemma distVertex : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
   \<and> a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<Longrightarrow> \<not> segment_Same a b c d"  
-  apply (auto)
-  apply (subgoal_tac "segment a b", subgoal_tac "segment c d")
-  apply (auto simp add: segment_Same_def distEdge)
-  apply (auto simp add: segment_def pointsEqual_def)
+  apply (auto, subgoal_tac "segment a b", subgoal_tac "segment c d")
+  apply (auto simp add: segment_Same_def distEdge segment_def pointsEqual_def)
 done
 
+(*alle Kanten von pointList sind segmente*)
+lemma pointsSegments: "pointList L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1) \<Longrightarrow> segment (L!i) (L! Suc i)"
+  apply (auto simp add: segment_def pointList_def pointsEqual_def)
+  apply (cut_tac L=L and i=i in distinctElem, auto)
+done
+(*wenn man PointList um ein segment erweitert, sind alle Elemente der neuen Liste auch segmente*)
+lemma pointsSegmentsAppend1: "pointList L \<Longrightarrow> segment (last L) a \<Longrightarrow>
+  k < (length (L @ [a]) - 1) \<Longrightarrow> segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
+  apply (auto)
+  apply (metis One_nat_def Suc_leI Suc_lessI diff_Suc_Suc diff_less_mono diff_zero last_conv_nth le0 length_0_conv nth_append nth_append_length pointsSegments zero_less_Suc)
+done
+lemma pointsSegmentsAppend2: "length L \<ge> 1 \<Longrightarrow> \<forall>i < length L. segment ((L @ [a]) ! i) ((L @ [a]) ! Suc i)
+  \<Longrightarrow> segment (last L) a"
+  apply (erule_tac x="length L - 1" in allE)
+  apply (simp)
+  apply (auto simp add: nth_append)
+  apply (smt2 Suc_eq_plus1 Suc_pred add.commute diff_self_eq_0 last_conv_nth le_Suc_ex less_not_refl list.size(3) monoid_add_class.add.left_neutral neq0_conv nth_Cons_0 old.nat.distinct(2))
+done
+theorem pointsSegmentsAppend: "pointList L \<Longrightarrow> k < size L - 1 \<Longrightarrow> (\<forall>i < (size (L @ [a]) - 1). segment ((L @ [a])!i) ((L @ [a])! Suc i))
+  = (segment (L!k) (L ! Suc k) \<and> segment (last L) a)"
+  apply (rule iffI) 
+  apply (rule conjI)
+  apply (simp add: pointsSegments)
+  apply (simp add: pointsSegmentsAppend2)
+by (metis pointsSegmentsAppend1)
+
 (*wenn an der ersten stelle keine intersection, dann an der zweiten Stelle*)
-lemma listIntersectNth [simp]: "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! i) ((a # b # L) ! Suc i) A B \<Longrightarrow>
+lemma sizeOfList : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B \<Longrightarrow> k \<ge> 1"
+  by (cases k, auto)
+lemma listIntersectNth: "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! i) ((a # b # L) ! Suc i) A B \<Longrightarrow>
   intersect ((b # L) ! (i - 1)) ((b # L) ! (Suc i - 1)) A B"
-  by (cut_tac A=A and B=B and a=a and b=b and L=L and k=i in sizeOfList1, auto)
-lemma listIntersectNth1 [simp]: "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! Suc i) ((a # b # L) ! Suc (Suc i)) A B =
-  intersect ((b # L) ! i) ((b # L) ! Suc i) A B"
-  by (auto)
-lemma listIntersectNth2 [simp]: "segment A B \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
-  intersect ((a # b # L) ! (k + 2)) ((a # b # L) ! (k + 3)) A B = intersect (L ! k) ( L ! (k + 1)) A B"
-  by (auto)
+  by (cut_tac A=A and B=B and a=a and b=b and L=L and k=i in sizeOfList, auto)
 
 (*wenn eine Strecke aus der segment-Liste das Segment A B schneidet, dann schneidet auch die
 Erweiterung dieser Liste das Segment A B*)
 lemma listIntersectionAppend: "segment A B \<Longrightarrow>
-  0 \<le> i \<and> j = i + 1 \<and> j < length L \<and> intersect (L ! i) (L ! j) A B \<Longrightarrow>
+  i < length L - 1 \<Longrightarrow> intersect (L ! i) (L ! Suc i) A B \<Longrightarrow>
   \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
-  by (auto)
+  by (rule_tac x="i + 2" in exI, rule_tac x="i + 3" in exI, auto)
 
 lemma listIntersectionDel : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
   (\<exists> k::nat. k \<ge> 0 \<and> (k + 1) < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B)
-  \<longleftrightarrow> ((\<exists> i::nat. i \<ge> 0 \<and> i + 1 < length L \<and> intersect (L ! i) ( L ! (i + 1)) A B)  \<or>  intersect b (hd L) A B)"
+  \<longleftrightarrow> ((\<exists> i::nat. i \<ge> 0 \<and> i + 1 < length L \<and> intersect (L ! i) ( L ! (i + 1)) A B) \<or> intersect b (hd L) A B)"
   apply (auto)
   apply (rule_tac x="k - 2" in exI)
   apply (subgoal_tac "k \<ge> 2")
@@ -151,6 +118,11 @@ definition xCoordSort :: "point2d list \<Rightarrow> point2d list" where
 "xCoordSort P \<equiv> sort_key (xCoord) P"
 definition yCoordSort :: "point2d list \<Rightarrow> point2d list" where
 "yCoordSort P \<equiv> sort_key (yCoord) P"
+(*Zusätzliche Lemmas die ich brauche*)
+lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in> set (xs) \<or> a = x"
+  by (auto simp add: linorder_class.set_insort_insert)
+theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<forall> y \<in> set xs. f x \<le> f y))"
+  by (auto simp add: linorder_class.sorted_Cons)
 
 (*alle xCoordinaten sind in der sortierten Liste*)
 lemma inXCoord : "a \<in> set xs \<longrightarrow> a \<in> set (xCoordSort xs)"
@@ -183,6 +155,45 @@ lemma [dest]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: poin
 
 
 (*alte Definition*)
+(*wie kann man nth als prädikat darstellen? *)
+(*lemma sizeOfList : "intersect (L ! k) (L !(k + 1)) A B \<Longrightarrow> length L > k"
+  apply (cases k, auto) apply (rule classical)
+oops*)
+(*value " 0 - 2::nat" funktioniert nur wenn man numeral verwendet! nth_Cons_numeral*)
+(*lemma intersectNext2: "length L \<ge> 1 \<Longrightarrow> intersect (L ! (k - 1)) (L ! Suc (k - 1)) A B \<Longrightarrow> k \<ge> 1" 
+  apply (auto)
+  apply (cases k, simp)
+oops*)
+(*lemma intersectNext5: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow>
+  intersect ((b # L) ! numeral k) ((b # L) ! (numeral k + 1)) A B = intersect (L ! (numeral k - 1)) (L ! Suc (numeral k - 1)) A B"
+  apply (rule iffI)
+  apply (metis Suc_eq_plus1 Suc_numeral diff_Suc_1 nth_Cons_numeral numeral_eq_Suc)
+by (metis Suc_eq_plus1_left add.commute add_diff_cancel_left' nth_Cons' numeral_eq_Suc old.nat.distinct(2))*)
+(*lemma listIntersectNth1 [simp]: "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! i) ((a # b # L) ! Suc i) A B =
+  intersect ((b # L) ! (i - 1)) ((b # L) ! (Suc i - 1)) A B"
+  apply (auto, subgoal_tac " i \<ge> 1", simp, metis Suc_eq_plus1 nth_Cons_Suc sizeOfList1)
+  apply (subgoal_tac " i \<ge> 1", simp)
+*)
+
+(*
+lemma pointsSegmentsAppend1: "pointList L \<Longrightarrow> \<forall>i<length L - 1. segment (L ! i) (L ! Suc i) \<and> segment (last L) a \<Longrightarrow>
+  k < (length (L @ [a]) - 1) \<Longrightarrow> segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
+  apply(auto)
+  apply(erule_tac x="k - 1" in allE) 
+  apply(erule impE)
+  apply(simp add: Groups.ordered_ab_group_add_class.diff_strict_right_mono)
+  apply (metis Suc_leI Suc_lessI add_2_eq_Suc' diff_0_eq_0 diff_less_mono le_numeral_Suc monoid_add_class.add.left_neutral neq0_conv not_less old.nat.distinct(2) pointList_def pred_numeral_simps(3))
+  apply (auto)
+  apply (metis One_nat_def Suc_leI Suc_lessI add_Suc_right diff_Suc_Suc diff_less_mono diff_zero last_conv_nth le0 length_0_conv monoid_add_class.add.right_neutral nth_append nth_append_length pointsSegments zero_less_Suc)
+done
+theorem pointsSegmentsAppend : "pointList L \<Longrightarrow> (\<forall> i::nat. i < (size (L @ [a]) - 1) \<longrightarrow> segment ((L @ [a])!i) ((L @ [a])!(i+1)))
+  = ((\<forall> k::nat. k < (size L - 1) \<longrightarrow> segment (L!k) (L !(k+1))) \<and> segment (last L) a)"
+  apply (auto simp add: pointsSegmentsAppend1)
+  apply (erule_tac x="i+1" in allE)
+  apply (metis One_nat_def add_Suc_right le0 monoid_add_class.add.right_neutral pointsSegments)
+  apply (erule_tac x="length L - 1" in allE)
+  apply (metis One_nat_def Suc_pred diff_less eq_numeral_simps(4) last_conv_nth le_0_eq length_greater_0_conv list.size(3) nth_append nth_append_length pointList_def zero_less_Suc)
+done*)
 
 (*brauche ich die equivalente beschreibung mit insort_key noch?*)
 (*fun xCoordSort :: "point2d list \<Rightarrow> point2d list" where

@@ -16,7 +16,7 @@ definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" whe
 "pointsEqual r p \<longleftrightarrow> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
 lemma pointsNotEqual : "\<not>pointsEqual r p \<longleftrightarrow> (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
 by (simp add: pointsEqual_def)
-lemma pointsNotEqual1 [simp]: "(xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p) \<longleftrightarrow> r \<noteq> p"
+lemma pointsNotEqual1: "(xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p) \<longleftrightarrow> r \<noteq> p"
   by (metis Rep_point2d_inverse prod.collapse xCoord_def yCoord_def)
 lemma pointsEqualSame : "pointsEqual p p" by (simp add: pointsEqual_def)
 theorem pointsEqual1 [simp] : "pointsEqual p r \<longleftrightarrow> p = r"
