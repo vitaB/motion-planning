@@ -1,7 +1,7 @@
 theory point
 imports Complex_Main
 begin
-
+(*apply (rule ccontr)*)
 (*defintion von Punkten*)
 typedef point2d = "{p::(real*real). True}" by(auto)
 definition xCoord :: "point2d \<Rightarrow> real" where "xCoord P \<equiv> fst(Rep_point2d P)"
@@ -41,6 +41,14 @@ lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b" by (simp a
 lemma areaDoublePoint [simp]: "signedArea a a b = 0" by (simp add: signedArea_def)
 lemma areaDoublePoint2 [simp]: "signedArea a b b = 0" by (simp add: signedArea_def)
 
+(*Punkte sind gleich, wenn*)
+lemma pointsEqualRight: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
+  apply (auto)
+  apply (rule ccontr)
+  apply (simp)
+sorry
+
+
 (*three points a, b and c make a left turn if they make an anti-clockwise cycle:*)
 definition leftTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
 "leftTurn a b c \<equiv> 0 < signedArea a b c"
@@ -63,7 +71,11 @@ oops*)
 
 (*3 Punkte sind auf einer geraden*)
 definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"collinear a b c = ((xCoord a - xCoord b)*(yCoord b - yCoord c) = (yCoord a- yCoord b)*(xCoord b - xCoord c))"
+"collinear a b c \<equiv> ((xCoord a - xCoord b)*(yCoord b - yCoord c) = (yCoord a- yCoord b)*(xCoord b - xCoord c))"
+lemma colliniearRight : "collinear a b c = (signedArea a b c = 0)"
+  apply (simp add: collinear_def signedArea_def)
+  apply (rule iffI)
+by algebra+
 lemma "midpoint a b c \<longrightarrow> collinear a b c"
   apply (rule impI)
   apply (simp add: midpoint_def collinear_def)
@@ -99,10 +111,6 @@ done
 oops*)
 
 (*degenerate cases where the points may be collinear, or equivalently, the area of the triangle they define is zero:*)
-lemma colliniearRight : "collinear a b c \<longleftrightarrow> (signedArea a b c = 0)"
-  apply (simp add: collinear_def signedArea_def)
-  apply (rule iffI)
-by algebra+
 lemma collRotate [simp]: "collinear c a b = collinear a b c" by (simp add: collinear_def, algebra)
 lemma collSwap [simp]: "collinear a c b = collinear a b c" by (simp add: collinear_def, algebra)
 lemma twoPointsColl [simp]: "collinear a b b" by (simp add: collinear_def)
@@ -124,7 +132,35 @@ lemma areaContra [dest]: " signedArea a c b < 0\<Longrightarrow> signedArea a b 
   by (metis colliniearRight leftTurn_def less_trans notLeftTurn) 
 lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea a b c \<Longrightarrow> False"
   by (metis leftTurn_def notLeftTurn) 
+lemma collinearTransitiv1 : "\<exists> a. collinear a b c \<and> collinear a b d \<longrightarrow> collinear a c d"
+  apply (simp add: colliniearRight)
+  apply (rule_tac x=d in exI, rule impI)
+  apply (auto)
+done
+lemma collinearTransitiv : "a \<noteq> b \<Longrightarrow> collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> collinear a c d"
+  apply (simp add: colliniearRight)
+  apply (cases "a = c", simp, cases "a = d", simp)
+  apply (cases "c = d", simp, cases "c = b", simp)
+  apply (cases "b = d", metis collSwap colliniearRight) 
+sorry
 
+lemma collinearOrient :"a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow>a \<noteq> d \<Longrightarrow>
+  collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> signedArea a c e = signedArea a d e"
+  apply (subgoal_tac " collinear a c d", simp add: colliniearRight)
+  apply (cases "collinear a b e")
+  apply (simp add: signedArea_def colliniearRight)
+  apply (metis (erased, hide_lams) collinearTransitiv colliniearRight diff_self signedArea_def)
+  apply (simp add: colliniearRight)
+  apply (cases "signedArea a b e < 0") apply (simp add: signedArea_def)
+sorry
+(*lemma  "(signedArea P R B = 0) 
+  = ((signedArea A B P = 0) \<or> (signedArea A B R = 0) \<or> (signedArea P R A = 0))"
+ apply (auto, subgoal_tac "signedArea B P R = 0", simp)
+ 
+done
+lemma  "(collinear P R B ) = (collinear C D E)"
+  
+done*)
 (*move/translate point*)
 
 
