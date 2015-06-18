@@ -23,25 +23,22 @@ definition lineSeparate :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d 
   "lineSeparate A B P R \<equiv> (signedArea A B R > 0 \<and> signedArea A B P < 0) \<or> (signedArea A B R < 0 \<and> signedArea A B P > 0)"
 lemma lineSeparateEq : "lineSeparate A B P R = (signedArea A B R * signedArea A B P < 0)"
   by (simp add: lineSeparate_def, metis mult_less_0_iff)
+(*wenn lineSeparate true, dann müssen Strecken segmente sein*)
 lemma lineSeparateSegment: "lineSeparate A B P R \<Longrightarrow> segment P R"
   by(simp add: lineSeparate_def segment_def, metis not_less_iff_gr_or_eq)
 lemma lineSeparateSegment1: "lineSeparate A B P R \<Longrightarrow> segment A B"
   by (simp add: lineSeparate_def segment_def, metis areaDoublePoint less_numeral_extra(3))
+(*Zusätzliche Lemmas*)
 lemma [simp]:"\<not> lineSeparate A B A B" by (simp add: lineSeparate_def)
 lemma [simp]:"\<not> lineSeparate A B B A" by (simp add: lineSeparate_def)
 lemma [simp]:"\<not> lineSeparate B A A B" by (simp add: lineSeparate_def)
+(*line Separate ist symmetrisch*)
 lemma lineSeparateSym [simp]: "lineSeparate A B P R = lineSeparate B A P R"
   apply (simp add: lineSeparate_def signedArea_def)
   apply (metis less_diff_eq monoid_add_class.add.left_neutral mult.commute)
 done
 lemma lineSeparateSym1[simp]: "lineSeparate A B P R = lineSeparate A B R P"
  by (auto simp add: lineSeparate_def)
-lemma lineSeparateRigth : "lineSeparate A B P R = (((signedArea A B P) * (signedArea A B R) < 0))"
-  apply (auto simp add: mult_pos_neg lineSeparate_def)
-  apply (cut_tac a="signedArea A B R" and b="signedArea A B P" in mult_pos_neg)
-  apply (assumption+, metis mult.commute)
-  apply (metis mult_less_0_iff)+
-done
 (*lemma lineSeparateSym2 : "\<not>(lineSeparate A B P R \<longleftrightarrow> lineSeparate P R A B)"
   apply (simp , rule iffI)
   apply (simp add: lineSeparate_def signedArea_def leftTurnDiffPoints)
