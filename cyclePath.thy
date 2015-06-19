@@ -58,7 +58,7 @@ lemma lineCyclePathInters2: "segment A B \<Longrightarrow> length L \<ge> 2 \<Lo
   apply (auto)
   (*apply (cut_tac A=P and B=R and L="(b#xs)" in intersectNeg, auto)
 by (metis nth_Cons')*)
-sorry
+oops
 (*lemma lineCyclePathIntersSimp3 [simp]: "segment A B \<Longrightarrow> length xs \<ge> 1 \<Longrightarrow> intersect ((a # b # xs) ! i) ((a # b # xs) ! Suc i) A B \<Longrightarrow>
   \<not> lineCyclePathInters (b # xs) A B \<Longrightarrow> lineCyclePathInters [a,b] A B"
   apply (simp)
@@ -67,7 +67,12 @@ sorry
 oops*)
 theorem lineCyclePathIntersEquiv : "segment A B \<Longrightarrow> length L \<ge> 2 \<Longrightarrow> lineCyclePathInters L A B \<longleftrightarrow>
   (\<exists> i. intersect (L ! i) (L ! Suc i) A B)"
-  by (auto simp add: lineCyclePathInters1 lineCyclePathInters2)
+  (*by (auto simp add: lineCyclePathInters1 lineCyclePathInters2)*)
+oops
+theorem lineCyclePathIntersEq : "segment A B \<Longrightarrow> lineCyclePathInters L A B =
+  (\<exists> i. i < length L - 1 \<and> intersect (L ! i) (L ! Suc i) A B)"
+sorry
+
 
 
 (*intersection(CyclePath, CyclePath)*)

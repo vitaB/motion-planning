@@ -17,6 +17,15 @@ definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> poin
 "segment A B \<Longrightarrow> collinear p A B \<Longrightarrow> point_on_segment p A B \<equiv> min (xCoord A)(xCoord B) \<le> xCoord p \<and>
 xCoord p \<le> max (xCoord A)(xCoord B) \<and> min (yCoord A)(yCoord B) \<le> yCoord p
 \<and> yCoord p \<le> max (yCoord A)(yCoord B)"
+(*point on segment ist Symmetrisch*)
+lemma point_on_segmentSym [simp] : "segment A B \<Longrightarrow> collinear p A B \<Longrightarrow>
+  point_on_segment p A B = point_on_segment p B A"
+  apply (subgoal_tac "collinear p B A \<and> segment B A")
+  apply (simp add: point_on_segment_def)
+  apply (simp add: max.commute min.commute, simp add: segment_Sym)
+done
+lemma point_on_segmentSame [simp]: "segment p B \<Longrightarrow> point_on_segment p p B"
+  by (simp add: point_on_segment_def segment_Sym)
 
 (*Strecke A B "trennt" die Punkte P und R: die Endpunkte von P R liegen auf verschiedenen Seiten von AB.*)
 definition lineSeparate :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -62,7 +71,11 @@ definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<R
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv>
   (crossing A B P R \<or> (collinear A B P \<and> point_on_segment P A B) \<or> (collinear A B R \<and> point_on_segment R A B)
   \<or> (collinear P R A \<and> point_on_segment A P R) \<or> (collinear P R B \<and> point_on_segment B P R))"
-
+lemma intersectSame [simp] : "segment A B \<Longrightarrow> intersect A B A B" by (simp add: intersect_def)
+lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A B P R"
+  apply (subgoal_tac "segment A B \<and> segment P R")
+  apply (auto simp add: intersect_def, simp only: crossingSegment1)
+done
 lemma intersectSym : "intersect A B P R = intersect B A P R" sorry
 lemma intersectSym1 : "intersect A B P R = intersect P R A B" sorry
 
