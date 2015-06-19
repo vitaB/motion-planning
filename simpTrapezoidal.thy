@@ -10,40 +10,34 @@ lemma rBoxPointList: "pointList L \<Longrightarrow>
 sorry
 (*4eckige Box um pointListe herum*)
 definition rBox :: "point2d list \<Rightarrow> point2d list" where
-"pointList L \<Longrightarrow> rBox L \<equiv> polygon([Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+"pointList L \<Longrightarrow> rBox L \<equiv> cyclePath([Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
   Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
   Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1)])"
 
 (*ersetzte den Term Polygon im Satz*)
 lemma rBoxPoly [simp] : "pointList L \<Longrightarrow>
-  polygon([Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+  cyclePath([Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
   Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
   Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1)])
   \<equiv> [Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
   Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
   Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1), Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (hd (yCoordSort L)) - 1)]"
   apply (cut_tac L=L in rBoxPointList, assumption)
-  apply (auto simp add: rBox_def polygon_def)
+  apply (auto simp add: rBox_def cyclePath_def)
 done
 
 (*rBox ist ein Convexes Polygon*)
-lemma rBoxConvex : "pointList L \<Longrightarrow> conv_polygon (rBox L)"
+lemma rBoxConvex : "pointList L \<Longrightarrow> polygon (rBox L)"
   apply (cut_tac L=L in rBoxPointList, assumption)
   apply (simp add: rBox_def)
-  apply (simp add: conv_polygon_def) 
-  apply (rule disjI2)
-  apply (auto simp add: signedArea_def)
-  apply (subgoal_tac "xCoord (last (xCoordSort L)) - xCoord (hd (xCoordSort L)) \<ge> 0")
-  apply (subgoal_tac "yCoord (last (yCoordSort L)) - yCoord (hd (yCoordSort L)) \<ge> 0", simp)
-  apply (auto simp add: le_diff_eq yCoordOrd xCoordOrd)
-  apply (subgoal_tac "xCoord (last (xCoordSort L)) - xCoord (hd (xCoordSort L)) \<ge> 0")
-  apply (subgoal_tac "yCoord (hd (yCoordSort L)) - yCoord (last (yCoordSort L)) \<le> 0")
-  apply (simp add: mult_less_0_iff)
-  apply (auto simp add: yCoordOrd le_diff_eq xCoordOrd)
-  apply (subgoal_tac "xCoord (last (xCoordSort L)) - xCoord (hd (xCoordSort L)) \<ge> 0")
-  apply (subgoal_tac "yCoord (last (yCoordSort L)) - yCoord (hd (yCoordSort L)) \<ge> 0", simp)
-  apply (auto simp add: le_diff_eq yCoordOrd xCoordOrd)
-done
+  apply (simp add: polygon_def) 
+  apply (thin_tac "pointList
+     [Abs_point2d (xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+      Abs_point2d (xCoord (last (xCoordSort L)) + 1, yCoord (hd (yCoordSort L)) - 1),
+      Abs_point2d (xCoord (last (xCoordSort L)) + 1, yCoord (last (yCoordSort L)) + 1),
+      Abs_point2d (xCoord (hd (xCoordSort L)) - 1, yCoord (last (yCoordSort L)) + 1)] ")
+  apply (auto)
+sorry
 
 (*alle Punkte von L sind innerhalb von rBox L*)
 lemma "pointList L \<Longrightarrow> \<forall> a \<in> set L. insidePolygonACl (rBox L) a"
