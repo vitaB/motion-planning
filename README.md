@@ -1,2 +1,2 @@
 # motion-planning
-proof of robot motion planning algorithms with Isabelle
+verification robot motion planning algorithm with Isabelle
