@@ -214,6 +214,10 @@ theorem collinearPointInListEq : "collinearPointInList xs = (\<exists>i. i < len
   apply (simp only: linordered_field_class.sign_simps(4))
 sorry
 
+definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
+ "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<longrightarrow>
+ \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
+
 
 (*alte Definition*)
 (*wie kann man nth als prädikat darstellen? *)

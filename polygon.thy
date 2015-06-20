@@ -14,13 +14,11 @@ lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P
   apply (rule allI)
   apply (simp add: polygon_def collinearPointInListEq)
 by (simp add: colliniearRight)
-
 (*keine 3 Punkte im Polygon sind collinear*)
 lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> a \<noteq> b \<and> a \<noteq> c \<and> c \<noteq> b \<Longrightarrow>  \<not> collinear (P ! a) (P ! b) (P ! c)"
   apply (simp add: polygon_def)
   apply (erule_tac x=a in allE)
 oops
-
 (*alle 3 aufeinander folgenden Punkte im Polygon sind links oder rechts gerichtet*)
 lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) < 0)
   \<or> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
@@ -30,9 +28,8 @@ lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P
 oops
 
 (*in einem polygon kreuzt sich keiner der Strecken*)
-lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> \<forall>i k. (k < length P - 1 \<and> i < length P - 1
-  \<and> i \<noteq> k \<longrightarrow> \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
-  apply (auto simp add: polygon_def)
+lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
+  apply (auto simp add: polygon_def intersectionFreePList_def)
   apply (erule_tac x=i in allE, erule impE, assumption)
   apply (erule_tac x=k in allE)
   apply (simp add: lineSeparate_def)
@@ -44,9 +41,9 @@ sorry
 
 
 
-(*Punkt inside Polygon. Testweise*)
+(*Punkt inside convex Polygon. Testweise*)
 definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
-"conv_polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a > 0"
+"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a > 0"
 
 
 (*wenn ein punkt einer Strecke inside Polygon und ein Punkt einer Strecke outside, dann gibt es eine intersection*)
