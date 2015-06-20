@@ -132,6 +132,8 @@ lemma notRightTurn [simp]: "(\<not> rightTurn a c b) = (rightTurn a b c \<or> co
   apply (subst colliniearRight)
   apply (auto simp add: signedArea_def mult.commute)
 done
+lemma notRightTurn1 [simp]: "(\<not> rightTurn a b c) = (leftTurn a b c \<or> collinear a b c)"
+  by (metis leftRightTurn leftTurnRotate2 notLeftTurn)
 lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False" by (metis notLeftTurn) 
 lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False"
   by (metis betwpointCollinear notLeftTurn swapBetween) 
