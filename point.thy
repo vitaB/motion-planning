@@ -55,6 +55,11 @@ definition leftTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
 lemma leftTurnRotate [simp]: "leftTurn b c a = leftTurn a b c" by (simp add: leftTurn_def)
 lemma leftTurnRotate2 [simp]: "leftTurn b a c = leftTurn a c b" by (simp add: leftTurn_def)
 lemma leftTurnDiffPoints [intro]: "leftTurn a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c" by (auto simp add: leftTurn_def)
+definition rightTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
+  "rightTurn a b c \<equiv> 0 > signedArea a b c"
+lemma leftRightTurn [simp] : "leftTurn a b c = rightTurn c b a"
+  by (simp add: signedArea_def leftTurn_def rightTurn_def less_real_def mult.commute)
+  
 
 
 (*punkt A zwischen B und C*)
@@ -118,7 +123,12 @@ lemma twoPointsColl2 [simp]: "collinear a a b" by (simp add: collinear_def)
 
 (*lemmas for leftTurn, collinear und signedArea*)
 lemma notLeftTurn [simp]: "(\<not> leftTurn a c b) = (leftTurn a b c \<or> collinear a b c)"
-  apply (simp add:leftTurn_def)
+  apply (simp add:leftTurn_def del: leftRightTurn)
+  apply (subst colliniearRight)
+  apply (auto simp add: signedArea_def mult.commute)
+done
+lemma notRightTurn [simp]: "(\<not> rightTurn a c b) = (rightTurn a b c \<or> collinear a b c)"
+  apply (simp add: rightTurn_def)
   apply (subst colliniearRight)
   apply (auto simp add: signedArea_def mult.commute)
 done

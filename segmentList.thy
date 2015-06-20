@@ -168,6 +168,9 @@ lemma collinearPointInList4 [simp]: "length xs > 1 \<Longrightarrow>
   by (cases xs rule: collinearPointInList.cases, auto)
 lemma collinearPointInList5: "\<not>collinearPointInList (a#b#c#xs) = (\<not>collinearPointInList (b#c#xs) \<and> \<not>collinearPointInList [a,b,c])"
   by (auto)
+lemma collinearPointInListRev: "collinearPointInList xs = collinearPointInList (rev xs)"
+  apply (induct xs rule: collinearPointInList.induct, auto)
+sorry
 
 (*collineare Liste erweitert*)
 lemma collinearPointInListAppend1 [simp]: "collinearPointInList xs \<Longrightarrow> collinearPointInList (a # xs)"
@@ -214,6 +217,8 @@ theorem collinearPointInListEq : "collinearPointInList xs = (\<exists>i. i < len
   apply (simp only: linordered_field_class.sign_simps(4))
 sorry
 
+
+(*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
  "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<longrightarrow>
  \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
