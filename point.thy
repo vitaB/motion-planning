@@ -1,11 +1,13 @@
 theory point
 imports Complex_Main
 begin
+(*References
+[1] "Automation for Geometry in Isabelle/HOL", Laura Meikle*)
 (*apply (rule ccontr)*)
 (*defintion von Punkten*)
-typedef point2d = "{p::(real*real). True}" by(auto)
-definition xCoord :: "point2d \<Rightarrow> real" where "xCoord P \<equiv> fst(Rep_point2d P)"
-definition yCoord :: "point2d \<Rightarrow> real" where "yCoord P \<equiv> snd(Rep_point2d P)"
+typedef point2d = "{p::(real*real). True}" by(auto)(*[1]*)
+definition xCoord :: "point2d \<Rightarrow> real" where "xCoord P \<equiv> fst(Rep_point2d P)"(*[1]*)
+definition yCoord :: "point2d \<Rightarrow> real" where "yCoord P \<equiv> snd(Rep_point2d P)"(*[1]*)
 lemma [simp]: "xCoord (Abs_point2d (a, b)) = a" by (simp add: xCoord_def Abs_point2d_inverse)
 lemma [simp]: "yCoord (Abs_point2d (a, b)) = b" by (simp add: yCoord_def Abs_point2d_inverse)
 
@@ -33,13 +35,13 @@ definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" w
 (*signed area of a triangle; with the convention being that
 - if the points are ordered anti-clockwise, the area is positive
 - if the points are ordered clockwise, the area is negative.*)
-definition signedArea :: "[point2d, point2d, point2d] \<Rightarrow> real" where
+definition signedArea :: "[point2d, point2d, point2d] \<Rightarrow> real" where(*[1]*)
 "signedArea a b c \<equiv> (xCoord b - xCoord a)*(yCoord c - yCoord a)
 - (yCoord b - yCoord a)*(xCoord c - xCoord a)"
-lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c" by (simp add: signedArea_def, algebra)
-lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b" by (simp add: signedArea_def,  algebra)
-lemma areaDoublePoint [simp]: "signedArea a a b = 0" by (simp add: signedArea_def)
-lemma areaDoublePoint2 [simp]: "signedArea a b b = 0" by (simp add: signedArea_def)
+lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c"(*[1]*) by (simp add: signedArea_def, algebra)
+lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b"(*[1]*) by (simp add: signedArea_def,  algebra)
+lemma areaDoublePoint [simp]: "signedArea a a b = 0"(*[1]*) by (simp add: signedArea_def)
+lemma areaDoublePoint2 [simp]: "signedArea a b b = 0"(*[1]*) by (simp add: signedArea_def)
 
 (*Punkte sind gleich, wenn*)
 lemma pointsEqualRight: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
@@ -50,11 +52,11 @@ sorry
 
 
 (*three points a, b and c make a left turn if they make an anti-clockwise cycle:*)
-definition leftTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
+definition leftTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where(*[1]*)
 "leftTurn a b c \<equiv> 0 < signedArea a b c"
-lemma leftTurnRotate [simp]: "leftTurn b c a = leftTurn a b c" by (simp add: leftTurn_def)
-lemma leftTurnRotate2 [simp]: "leftTurn b a c = leftTurn a c b" by (simp add: leftTurn_def)
-lemma leftTurnDiffPoints [intro]: "leftTurn a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c" by (auto simp add: leftTurn_def)
+lemma leftTurnRotate [simp]: "leftTurn b c a = leftTurn a b c"(*[1]*) by (simp add: leftTurn_def)
+lemma leftTurnRotate2 [simp]: "leftTurn b a c = leftTurn a c b"(*[1]*) by (simp add: leftTurn_def)
+lemma leftTurnDiffPoints [intro]: "leftTurn a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*) by (auto simp add: leftTurn_def)
 definition rightTurn :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
   "rightTurn a b c \<equiv> 0 > signedArea a b c"
 lemma leftRightTurn [simp] : "leftTurn a b c = rightTurn c b a"
@@ -75,7 +77,7 @@ lemma swapBetween [simp]: "betwpoint a c b = betwpoint a b c" by(auto simp add: 
 oops*)
 
 (*3 Punkte sind auf einer geraden*)
-definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where(*[1]*)
 "collinear a b c \<equiv> ((xCoord a - xCoord b)*(yCoord b - yCoord c) = (yCoord a- yCoord b)*(xCoord b - xCoord c))"
 lemma colliniearRight : "collinear a b c = (signedArea a b c = 0)"
   apply (simp add: collinear_def signedArea_def)
@@ -116,13 +118,13 @@ done
 oops*)
 
 (*degenerate cases where the points may be collinear, or equivalently, the area of the triangle they define is zero:*)
-lemma collRotate [simp]: "collinear c a b = collinear a b c" by (simp add: collinear_def, algebra)
-lemma collSwap [simp]: "collinear a c b = collinear a b c" by (simp add: collinear_def, algebra)
-lemma twoPointsColl [simp]: "collinear a b b" by (simp add: collinear_def)
-lemma twoPointsColl2 [simp]: "collinear a a b" by (simp add: collinear_def)
+lemma collRotate [simp]: "collinear c a b = collinear a b c"(*[1]*) by (simp add: collinear_def, algebra)
+lemma collSwap [simp]: "collinear a c b = collinear a b c"(*[1]*) by (simp add: collinear_def, algebra)
+lemma twoPointsColl [simp]: "collinear a b b"(*[1]*) by (simp add: collinear_def)
+lemma twoPointsColl2 [simp]: "collinear a a b"(*[1]*) by (simp add: collinear_def)
 
 (*lemmas for leftTurn, collinear und signedArea*)
-lemma notLeftTurn [simp]: "(\<not> leftTurn a c b) = (leftTurn a b c \<or> collinear a b c)"
+lemma notLeftTurn [simp]: "(\<not> leftTurn a c b) = (leftTurn a b c \<or> collinear a b c)"(*[1]*)
   apply (simp add:leftTurn_def del: leftRightTurn)
   apply (subst colliniearRight)
   apply (auto simp add: signedArea_def mult.commute)
@@ -134,15 +136,15 @@ lemma notRightTurn [simp]: "(\<not> rightTurn a c b) = (rightTurn a b c \<or> co
 done
 lemma notRightTurn1 [simp]: "(\<not> rightTurn a b c) = (leftTurn a b c \<or> collinear a b c)"
   by (metis leftRightTurn leftTurnRotate2 notLeftTurn)
-lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False" by (metis notLeftTurn) 
-lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False"
+lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False"(*[1]*) by (metis notLeftTurn) 
+lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False"(*[1]*)
   by (metis betwpointCollinear notLeftTurn swapBetween) 
-lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"
+lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"(*[1]*)
   by (metis collSwap notLeftTurn) 
-lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c" by (auto)
-lemma areaContra [dest]: " signedArea a c b < 0\<Longrightarrow> signedArea a b c < 0  \<Longrightarrow> False"
+lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*) by (auto)
+lemma areaContra [dest]: " signedArea a c b < 0\<Longrightarrow> signedArea a b c < 0  \<Longrightarrow> False"(*[1]*)
   by (metis colliniearRight leftTurn_def less_trans notLeftTurn) 
-lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea a b c \<Longrightarrow> False"
+lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea a b c \<Longrightarrow> False"(*[1]*)
   by (metis leftTurn_def notLeftTurn) 
 lemma collinearTransitiv1 : "\<exists> a. collinear a b c \<and> collinear a b d \<longrightarrow> collinear a c d"
   apply (simp add: colliniearRight)
@@ -188,7 +190,7 @@ done*)
   apply (erule_tac x = 1 in allE) apply (simp)
   apply (auto)
 oops*)
-definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where (*a \<noteq> c ?*)
+definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where(*[1]*)
 " isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
 (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
 0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 )"
@@ -199,14 +201,14 @@ definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where (
   apply (safe, erule_tac x=d in allE)
   apply (simp add: signedArea_def betwpoint_def)
 oops
-lemma notBetweenSelf [simp]: "\<not> (isBetween a a b)"
+lemma notBetweenSelf [simp]: "\<not> (isBetween a a b)"(*[1]*)
   by (rule notI, auto simp add: isBetween_def)
-lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
+lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*)
   by (auto simp add: isBetween_def) 
 lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow>
-isBetween a b c \<or> isBetween b a c \<or> isBetween c a b" sorry
-lemma notBetween [dest]: "betwpoint A B C \<Longrightarrow>betwpoint B A C  \<Longrightarrow> False" sorry
-lemma notBetween2 [dest]: "betwpoint A B C \<Longrightarrow>betwpoint C A B  \<Longrightarrow> False" sorry
-lemma notBetween3 [dest]: "betwpoint B A C \<Longrightarrow>betwpoint C A B \<Longrightarrow> False" sorry
+isBetween a b c \<or> isBetween b a c \<or> isBetween c a b"(*[1]*) sorry
+lemma notBetween [dest]: "betwpoint A B C \<Longrightarrow>betwpoint B A C  \<Longrightarrow> False"(*[1]*) sorry
+lemma notBetween2 [dest]: "betwpoint A B C \<Longrightarrow>betwpoint C A B  \<Longrightarrow> False"(*[1]*) sorry
+lemma notBetween3 [dest]: "betwpoint B A C \<Longrightarrow>betwpoint C A B \<Longrightarrow> False"(*[1]*) sorry
 *)
 end
