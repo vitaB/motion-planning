@@ -54,64 +54,6 @@ theorem pointsSegmentsAppend: "pointList L \<Longrightarrow> k < size L - 1 \<Lo
   apply (simp add: pointsSegmentsAppend2)
 by (metis pointsSegmentsAppend1)
 
-(*wenn an der ersten stelle keine intersection, dann an der zweiten Stelle*)
-lemma sizeOfList : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! Suc k) A B \<Longrightarrow> k \<ge> 1"
-  by (cases k, auto)
-lemma listIntersectNth: "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! i) ((a # b # L) ! Suc i) A B \<Longrightarrow>
-  intersect ((b # L) ! (i - 1)) ((b # L) ! (Suc i - 1)) A B"
-  by (cut_tac A=A and B=B and a=a and b=b and L=L and k=i in sizeOfList, auto)
-
-(*wenn eine Strecke aus der segment-Liste das Segment A B schneidet, dann schneidet auch die
-Erweiterung dieser Liste das Segment A B*)
-lemma listIntersectionAppend: "segment A B \<Longrightarrow>
-  i < length L - 1 \<Longrightarrow> intersect (L ! i) (L ! Suc i) A B \<Longrightarrow>
-  \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
-  by (rule_tac x="i + 2" in exI, rule_tac x="i + 3" in exI, auto)
-
-lemma listIntersectionDel : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
-  (\<exists> k::nat. k \<ge> 0 \<and> (k + 1) < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B)
-  \<longleftrightarrow> ((\<exists> i::nat. i \<ge> 0 \<and> i + 1 < length L \<and> intersect (L ! i) ( L ! (i + 1)) A B) \<or> intersect b (hd L) A B)"
-  apply (auto)
-  apply (rule_tac x="k - 2" in exI)
-  apply (subgoal_tac "k \<ge> 2")
-  apply (auto)
-  apply (subgoal_tac "Suc (k - 2) = k - 1 \<and> (k - 2) = k - Suc (Suc 0)")
-  apply (auto)
-  apply (metis One_nat_def Suc_1 hd_conv_nth le_0_eq le_Suc_eq length_0_conv not_less_eq_eq nth_Cons_0 nth_Cons_Suc)
-  apply (rule_tac x="1" in exI, auto)
-  apply (subgoal_tac "L ! 0 = hd L")
-by (auto, metis Suc_n_not_le_n gen_length_code(1) hd_conv_nth length_code)
-
-lemma listIntersection1 : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
-  (intersect ((a # b # L) ! (k)) ((a # b # L) ! (k + 1)) A B \<longleftrightarrow> ( k\<ge>2 \<and> intersect (L ! (k - 2)) ( L ! (k - 1)) A B)) \<or> intersect b (hd L) A B"
-  apply (safe)
-  apply (metis (erased, hide_lams) Suc_eq_plus1 add.commute add_leE hd_conv_nth le_antisym list.size(3) monoid_add_class.add.right_neutral not_less_eq_eq nth_Cons_0 nth_Cons_Suc one_add_one)
-  apply (subgoal_tac "k \<ge> 2")
-  apply (subgoal_tac "(k - Suc (Suc 0)) = k - 2")
-  apply (simp, simp, simp)
-  apply (metis One_nat_def Suc_1 hd_conv_nth le_0_eq le_Suc_eq length_0_conv not_less_eq_eq nth_Cons_0 nth_Cons_Suc)
-  apply (subgoal_tac "(k - Suc (Suc 0)) = k - 2")
-  apply (auto)
-done
-
-theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow>
-  intersect ((a # b # L) ! k) ((a # b # L) ! Suc k) A B \<longleftrightarrow>
-  ((k = 0 \<and> intersect a b A B) \<or> (k = 1 \<and> intersect b (hd L) A B)) \<or> (k\<ge>2 \<and> intersect ( L ! (k - 2)) ( L ! (k - 1)) A B)"
-  apply (safe)
-  apply (simp, simp)
-  apply (metis less_2_cases not_less nth_Cons_0)
-  apply (simp)
-  apply (metis One_nat_def diff_self_eq_0 hd_conv_nth le_imp_less_Suc length_0_conv less_2_cases less_imp_le_nat not_less nth_Cons')
-  apply (metis One_nat_def Suc_eq_plus1 listIntersection1 nth_Cons_Suc)
-  apply (simp)
-  apply (metis Suc_1 diff_0_eq_0 diff_Suc_eq_diff_pred diff_self_eq_0 diffs0_imp_equal nth_Cons' old.nat.exhaust)
-  apply (simp) apply (metis One_nat_def Suc_1 Suc_pred diff_Suc_eq_diff_pred neq0_conv nth_Cons')
-  apply (metis Suc_1 diff_Suc_1 diff_Suc_eq_diff_pred intersectNext nth_Cons' nth_Cons_Suc)
-  apply (metis Suc_eq_plus1 listIntersection1)
-  apply (simp, simp)
-  apply (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero)
-  by (simp, metis One_nat_def Suc_1)
-
 
 (*Definiere ordnung von pointList nach x-Coord und nach y-Coord.*)
 definition xCoordSort :: "point2d list \<Rightarrow> point2d list" where
@@ -129,7 +71,7 @@ lemma inXCoord : "a \<in> set xs \<longrightarrow> a \<in> set (xCoordSort xs)"
   by (auto simp add: xCoordSort_def)
 lemma inYCoord : "a \<in> set xs \<longrightarrow>  a \<in> set (yCoordSort xs)"
   by (auto simp add: yCoordSort_def)
-  
+
 (*xCoordSort gibt eine sortierte Liste zurück*)
 lemma xCoordSorted :  "sorted (map xCoord (xCoordSort xs))"
   by(induct xs, auto simp:sorted_insort_key xCoordSort_def)
@@ -218,11 +160,69 @@ theorem collinearAdjacentEq : "collinearAdjacent xs = (\<exists>i. i < length xs
 sorry
 
 
+
 (*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
  "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<longrightarrow>
  \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
 
+(*wenn an der ersten stelle keine intersection, dann an der zweiten Stelle*)
+lemma sizeOfList : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! Suc k) A B \<Longrightarrow> k \<ge> 1"
+  by (cases k, auto)
+lemma listIntersectNth: "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! i) ((a # b # L) ! Suc i) A B \<Longrightarrow>
+  intersect ((b # L) ! (i - 1)) ((b # L) ! (Suc i - 1)) A B"
+  by (cut_tac A=A and B=B and a=a and b=b and L=L and k=i in sizeOfList, auto)
+
+(*wenn eine Strecke aus der segment-Liste das Segment A B schneidet, dann schneidet auch die
+Erweiterung dieser Liste das Segment A B*)
+lemma listIntersectionAppend: "segment A B \<Longrightarrow>
+  i < length L - 1 \<Longrightarrow> intersect (L ! i) (L ! Suc i) A B \<Longrightarrow>
+  \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
+  by (rule_tac x="i + 2" in exI, rule_tac x="i + 3" in exI, auto)
+
+lemma listIntersectionDel : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
+  (\<exists> k::nat. k \<ge> 0 \<and> (k + 1) < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B)
+  \<longleftrightarrow> ((\<exists> i::nat. i \<ge> 0 \<and> i + 1 < length L \<and> intersect (L ! i) ( L ! (i + 1)) A B) \<or> intersect b (hd L) A B)"
+  apply (auto)
+  apply (rule_tac x="k - 2" in exI)
+  apply (subgoal_tac "k \<ge> 2")
+  apply (auto)
+  apply (subgoal_tac "Suc (k - 2) = k - 1 \<and> (k - 2) = k - Suc (Suc 0)")
+  apply (auto)
+  apply (metis One_nat_def Suc_1 hd_conv_nth le_0_eq le_Suc_eq length_0_conv not_less_eq_eq nth_Cons_0 nth_Cons_Suc)
+  apply (rule_tac x="1" in exI, auto)
+  apply (subgoal_tac "L ! 0 = hd L")
+by (auto, metis Suc_n_not_le_n gen_length_code(1) hd_conv_nth length_code)
+
+lemma listIntersection1 : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
+  (intersect ((a # b # L) ! (k)) ((a # b # L) ! (k + 1)) A B \<longleftrightarrow> ( k\<ge>2 \<and> intersect (L ! (k - 2)) ( L ! (k - 1)) A B)) \<or> intersect b (hd L) A B"
+  apply (safe)
+  apply (metis (erased, hide_lams) Suc_eq_plus1 add.commute add_leE hd_conv_nth le_antisym list.size(3) monoid_add_class.add.right_neutral not_less_eq_eq nth_Cons_0 nth_Cons_Suc one_add_one)
+  apply (subgoal_tac "k \<ge> 2")
+  apply (subgoal_tac "(k - Suc (Suc 0)) = k - 2")
+  apply (simp, simp, simp)
+  apply (metis One_nat_def Suc_1 hd_conv_nth le_0_eq le_Suc_eq length_0_conv not_less_eq_eq nth_Cons_0 nth_Cons_Suc)
+  apply (subgoal_tac "(k - Suc (Suc 0)) = k - 2")
+  apply (auto)
+done
+
+theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow>
+  intersect ((a # b # L) ! k) ((a # b # L) ! Suc k) A B \<longleftrightarrow>
+  ((k = 0 \<and> intersect a b A B) \<or> (k = 1 \<and> intersect b (hd L) A B)) \<or> (k\<ge>2 \<and> intersect ( L ! (k - 2)) ( L ! (k - 1)) A B)"
+  apply (safe)
+  apply (simp, simp)
+  apply (metis less_2_cases not_less nth_Cons_0)
+  apply (simp)
+  apply (metis One_nat_def diff_self_eq_0 hd_conv_nth le_imp_less_Suc length_0_conv less_2_cases less_imp_le_nat not_less nth_Cons')
+  apply (metis One_nat_def Suc_eq_plus1 listIntersection1 nth_Cons_Suc)
+  apply (simp)
+  apply (metis Suc_1 diff_0_eq_0 diff_Suc_eq_diff_pred diff_self_eq_0 diffs0_imp_equal nth_Cons' old.nat.exhaust)
+  apply (simp) apply (metis One_nat_def Suc_1 Suc_pred diff_Suc_eq_diff_pred neq0_conv nth_Cons')
+  apply (metis Suc_1 diff_Suc_1 diff_Suc_eq_diff_pred intersectNext nth_Cons' nth_Cons_Suc)
+  apply (metis Suc_eq_plus1 listIntersection1)
+  apply (simp, simp)
+  apply (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero)
+  by (simp, metis One_nat_def Suc_1)
 
 (*alte Definition*)
 (*wie kann man nth als prädikat darstellen? *)
