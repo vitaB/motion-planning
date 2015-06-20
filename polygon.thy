@@ -33,6 +33,13 @@ sorry (*Beweis unten*)
   apply (smt2 One_nat_def Suc_1 Suc_leI areaDoublePoint2 diff_Suc_1 less_2_cases not_less not_less_iff_gr_or_eq nth_Cons' numeral_3_eq_3 signedAreaRotate)
   apply (smt2 One_nat_def Suc_1 Suc_lessI Suc_less_eq areaDoublePoint less_2_cases less_numeral_extra(3) not_less nth_Cons' nth_Cons_Suc numeral_3_eq_3 signedAreaRotate)
 done*)
+(*alle Vierecke, die Kreuzugsfrei sind, sind Polygone*)
+lemma quadPolygon:"pointList L \<Longrightarrow> length L = 4 \<Longrightarrow> \<not>collinearAdjacent L \<Longrightarrow> P = cyclePath L \<Longrightarrow> intersectionFreePList P
+  \<Longrightarrow> polygon P"
+  apply (simp add:polygon_def cyclePath_def intersectionFreePList_def)
+  apply (safe)
+  apply (cases L rule: collinearAdjacent.cases, auto)
+sorry
 
 (*keine 3 aufeinander folgenden Punkte im Polygon sind collinear*)
 lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>(\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0)"

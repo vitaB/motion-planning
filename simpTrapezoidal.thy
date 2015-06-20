@@ -27,16 +27,12 @@ lemma rBoxPoly [simp] : "pointList L \<Longrightarrow>
 done
 
 (*rBox ist ein Convexes Polygon*)
-lemma rBoxConvex : "pointList L \<Longrightarrow> polygon (rBox L)"
-  apply (cut_tac L=L in rBoxPointList, assumption)
-  apply (simp add: rBox_def)
-  apply (simp add: polygon_def) 
-  apply (thin_tac "pointList
-     [Abs_point2d (xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
-      Abs_point2d (xCoord (last (xCoordSort L)) + 1, yCoord (hd (yCoordSort L)) - 1),
-      Abs_point2d (xCoord (last (xCoordSort L)) + 1, yCoord (last (yCoordSort L)) + 1),
-      Abs_point2d (xCoord (hd (xCoordSort L)) - 1, yCoord (last (yCoordSort L)) + 1)] ")
-  apply (auto)
+lemma rBoxConvex : "pointList L \<Longrightarrow> polygon (rBox L)"thm quadPolygon
+  apply (cut_tac P="rBox L" and L="[Abs_point2d(xCoord (hd (xCoordSort L)) - 1, yCoord (hd (yCoordSort L)) - 1),
+  Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (hd (yCoordSort L)) - 1),Abs_point2d(xCoord (last (xCoordSort L)) + 1,yCoord (last (yCoordSort L)) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort L)) - 1,yCoord (last (yCoordSort L)) + 1)]" in quadPolygon)
+  apply (simp add: rBoxPointList, simp)
+  
 sorry
 
 (*alle Punkte von L sind innerhalb von rBox L*)
