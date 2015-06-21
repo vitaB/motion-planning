@@ -162,8 +162,10 @@ sorry
 
 
 (*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList*)
+(*im Polygon gibt es hier eine Intersection. Und zwar an der letzten Kante*)
+(*crossing*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
- "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<longrightarrow>
+ "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<and> i \<noteq> Suc k \<and> Suc i \<noteq> k \<longrightarrow>
  \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
 
 (*wenn an der ersten stelle keine intersection, dann an der zweiten Stelle*)

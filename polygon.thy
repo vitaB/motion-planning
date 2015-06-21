@@ -52,19 +52,25 @@ lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P
   apply (erule_tac x=a in allE)
 oops
 (*alle 3 aufeinander folgenden Punkte im Polygon sind links oder rechts gerichtet*)
-lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) < 0)
+theorem "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) < 0)
   \<or> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
   (*apply (simp add: polygon_def lineSeparate_def)
   apply (auto)
   apply (rule disjI1)*)
-oops
+sorry
 
 (*in einem polygon kreuzt sich keiner der Strecken*)
-lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
+theorem "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
   apply (auto simp add: polygon_def intersectionFreePList_def)
   apply (erule_tac x=i in allE, erule impE, assumption)
   apply (erule_tac x=k in allE)
   apply (simp add: lineSeparate_def)
+  apply (safe)
+  apply (metis conflictingRigthTurns1)
+  apply (metis collRotate collSwap notRightTurn)thm intersectRightTurn
+  apply (cut_tac A="(cyclePath L ! i)" and B="(cyclePath L ! Suc i)" and P="(cyclePath L ! k)" and R="(cyclePath L ! Suc k)" in intersectRightTurn)
+    apply ((simp add: cyclePathSegments)+, metis conflictingRigthTurns1)
+  
 sorry
 
 

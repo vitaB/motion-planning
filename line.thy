@@ -52,6 +52,10 @@ lemma lineSeparateSym1[simp]: "lineSeparate A B P R = lineSeparate A B R P"
   apply (simp add: lineSeparate_def signedArea_def leftTurnDiffPoints)
   apply (safe)
 oops*)
+(*eine strecke db die auf der strecke ac steht, trennt ac*)
+lemma "segment a c \<Longrightarrow> a \<noteq> b \<Longrightarrow> b \<noteq> c \<Longrightarrow> segment d b \<Longrightarrow> collinear a b c \<Longrightarrow> \<not>collinear a b d \<Longrightarrow>
+  lineSeparate d b a c"
+by (smt2 collRotate collinearOrient collinearTransitiv leftRightTurn leftTurn_def lineSeparate_def notLeftTurn notRightTurn1 pointsEqualSame segment_def)
 
 (*(echter)Schnitt zwischen Segment A B und Segment P R*)
 definition crossing ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -64,6 +68,14 @@ lemma crossingSym [simp]: "crossing A B P R = crossing B A P R "
   by (auto simp add: crossing_def lineSeparate_def)
 lemma crossingSym1 [simp]: "crossing A B P R = crossing P R A B "
   by (auto simp add: crossing_def lineSeparate_def)
+lemma crossingRightTurn [dest] : "crossing A B P R \<Longrightarrow> rightTurn A B P \<and> rightTurn A B R \<Longrightarrow> False"
+  apply (simp add: crossing_def lineSeparate_def)
+  apply (metis leftRightTurn notRightTurn1)
+done
+lemma crossingLeftTurn [dest] : "crossing A B P R \<Longrightarrow> leftTurn A B P \<and> leftTurn A B R \<Longrightarrow> False"
+  apply (simp add: crossing_def lineSeparate_def)
+  apply(metis leftRightTurn notRightTurn1)  
+done
 
 (*Schnitt, auch wenn Endpunkt auf Strecke liegt*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -77,5 +89,14 @@ lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A 
 done
 lemma intersectSym : "intersect A B P R = intersect B A P R" sorry
 lemma intersectSym1 : "intersect A B P R = intersect P R A B" sorry
+lemma intersectRightTurn : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> B \<noteq> P \<Longrightarrow> B \<noteq> R \<Longrightarrow> 
+  rightTurn A B P \<and> rightTurn A B R \<Longrightarrow> False"
+  apply (simp add: intersect_def)
+  apply (safe)
+  apply (metis crossingRightTurn)
+  apply (metis notRightTurn1)+
+  apply (smt2 areaContra collRotate collinearOrient pointsEqualSame rightTurn_def segment_def signedAreaRotate twoPointsColl)
+  apply (smt2 areaContra2 collRotate collinearOrient leftTurn_def notRightTurn notRightTurn1 pointsEqualSame segment_def signedAreaRotate twoPointsColl)
+done 
 
 end

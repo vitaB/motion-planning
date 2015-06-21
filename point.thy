@@ -125,22 +125,25 @@ lemma twoPointsColl2 [simp]: "collinear a a b"(*[1]*) by (simp add: collinear_de
 
 (*lemmas for leftTurn, collinear und signedArea*)
 lemma notLeftTurn [simp]: "(\<not> leftTurn a c b) = (leftTurn a b c \<or> collinear a b c)"(*[1]*)
-  apply (simp add:leftTurn_def del: leftRightTurn)
-  apply (subst colliniearRight)
+  apply (simp add:leftTurn_def del: leftRightTurn, subst colliniearRight)
   apply (auto simp add: signedArea_def mult.commute)
 done
 lemma notRightTurn [simp]: "(\<not> rightTurn a c b) = (rightTurn a b c \<or> collinear a b c)"
-  apply (simp add: rightTurn_def)
-  apply (subst colliniearRight)
+  apply (simp add: rightTurn_def, subst colliniearRight)
   apply (auto simp add: signedArea_def mult.commute)
 done
 lemma notRightTurn1 [simp]: "(\<not> rightTurn a b c) = (leftTurn a b c \<or> collinear a b c)"
   by (metis leftRightTurn leftTurnRotate2 notLeftTurn)
 lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False"(*[1]*) by (metis notLeftTurn) 
-lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False"(*[1]*)
+lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> betwpoint a b c \<Longrightarrow> False"
   by (metis betwpointCollinear notLeftTurn swapBetween) 
 lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"(*[1]*)
-  by (metis collSwap notLeftTurn) 
+  by (metis collSwap notLeftTurn)
+lemma conflictingRigthTurns [dest]: "rightTurn a b c \<Longrightarrow> rightTurn a c b \<Longrightarrow> False" by (metis notRightTurn) 
+lemma conflictingRigthTurns1 [dest]: "rightTurn a b c \<Longrightarrow> rightTurn b a c \<Longrightarrow> False"
+  by (metis leftRightTurn notLeftTurn)
+lemma conflictingRightTurns2 [dest]: "rightTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"
+  by (metis collSwap notRightTurn)
 lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*) by (auto)
 lemma areaContra [dest]: " signedArea a c b < 0\<Longrightarrow> signedArea a b c < 0  \<Longrightarrow> False"(*[1]*)
   by (metis colliniearRight leftTurn_def less_trans notLeftTurn) 
