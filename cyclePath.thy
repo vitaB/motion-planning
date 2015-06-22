@@ -6,6 +6,7 @@ begin
 definition cyclePath :: "point2d list \<Rightarrow> point2d list" where
 "pointList P \<Longrightarrow> cyclePath P \<equiv> P @ [hd P]"
 lemma [simp]: "pointList L \<Longrightarrow> hd L \<noteq> last L" by (cases L, auto simp add: pointList_def)
+lemma [simp] : "pointList L \<Longrightarrow> length (cyclePath L) = length L + 1" by (simp add: cyclePath_def)
 
 (*alle Kanten von cyclePath sind segmente*)
 lemma cyclePathLastSegment : "pointList L \<Longrightarrow> segment (last L) (last (cyclePath L))"

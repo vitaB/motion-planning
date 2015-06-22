@@ -56,6 +56,8 @@ oops*)
 lemma "segment a c \<Longrightarrow> a \<noteq> b \<Longrightarrow> b \<noteq> c \<Longrightarrow> segment d b \<Longrightarrow> collinear a b c \<Longrightarrow> \<not>collinear a b d \<Longrightarrow>
   lineSeparate d b a c"
 by (smt2 collRotate collinearOrient collinearTransitiv leftRightTurn leftTurn_def lineSeparate_def notLeftTurn notRightTurn1 pointsEqualSame segment_def)
+lemma [dest]:"lineSeparate A B A B \<Longrightarrow> False"
+  by (simp add: lineSeparate_def)
 
 (*(echter)Schnitt zwischen Segment A B und Segment P R*)
 definition crossing ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -98,5 +100,15 @@ lemma intersectRightTurn : "segment A B \<Longrightarrow> segment P R \<Longrigh
   apply (smt2 areaContra collRotate collinearOrient pointsEqualSame rightTurn_def segment_def signedAreaRotate twoPointsColl)
   apply (smt2 areaContra2 collRotate collinearOrient leftTurn_def notRightTurn notRightTurn1 pointsEqualSame segment_def signedAreaRotate twoPointsColl)
 done 
+lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>
+  \<not>collinear a b c \<Longrightarrow> a \<noteq> c \<and> b \<noteq> c "
+  apply (simp add: intersect_def)
+by (metis notCollThenDiffPoints)
+lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow> \<not>collinear d c b \<Longrightarrow> \<not>collinear a c b 
+  \<Longrightarrow> rightTurn a d b \<Longrightarrow> rightTurn a c b \<Longrightarrow> False"
+  apply (simp add: intersect_def, safe)
+  apply (metis crossingLeftTurn notLeftTurn notRightTurn1)
+  apply (metis notRightTurn)
+by (smt2 intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
 
 end

@@ -9,7 +9,7 @@ definition polygon :: "point2d list \<Rightarrow> bool" where
 "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<equiv> \<not>collinearAdjacent P \<and> (\<forall> k < length P - 1.
   \<not>(\<exists> i. i < length P - 1 \<and> lineSeparate (P ! k) (P ! Suc k) (P ! i) (P ! Suc i)))"
 
-(*alle Dreiecke sind Polygone*)
+(*alle Dreiecke sind conv. Polygone*)
 lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearAdjacent L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P"
 sorry (*Beweis unten*)
   (*apply (simp add:polygon_def cyclePath_def, safe)
@@ -42,16 +42,16 @@ lemma quadPolygon:"pointList L \<Longrightarrow> length L = 4 \<Longrightarrow> 
 sorry
 
 (*keine 3 aufeinander folgenden Punkte im Polygon sind collinear*)
-lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>(\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0)"
+lemma polygonNotCollinear1:"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>(\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0)"
   apply (rule allI)
   apply (simp add: polygon_def collinearAdjacentEq)
 by (simp add: colliniearRight)
-(*keine 3 Punkte im Polygon sind collinear*)
-lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> a \<noteq> b \<and> a \<noteq> c \<and> c \<noteq> b \<Longrightarrow>  \<not> collinear (P ! a) (P ! b) (P ! c)"
+(*keine 3 Punkte im conv. Polygon sind collinear*)
+theorem polygonNotCollinear: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> a \<noteq> b \<and> a \<noteq> c \<and> c \<noteq> b \<Longrightarrow>  \<not> collinear (P ! a) (P ! b) (P ! c)"
   apply (simp add: polygon_def)
   apply (erule_tac x=a in allE)
-oops
-(*alle 3 aufeinander folgenden Punkte im Polygon sind links oder rechts gerichtet*)
+sorry
+(*alle 3 aufeinander folgenden conv. Punkte im Polygon sind links oder rechts gerichtet*)
 theorem "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) < 0)
   \<or> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
   (*apply (simp add: polygon_def lineSeparate_def)
@@ -59,19 +59,26 @@ theorem "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon
   apply (rule disjI1)*)
 sorry
 
-(*in einem polygon kreuzt sich keiner der Strecken*)
+(*in einem conv. polygon kreuzt sich keiner der Strecken*)
 theorem "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
   apply (auto simp add: polygon_def intersectionFreePList_def)
-  apply (erule_tac x=i in allE, erule impE, assumption)
-  apply (erule_tac x=k in allE)
+    apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in polygonNotCollinear)
+    apply (simp, simp, simp add: polygon_def, metis n_not_Suc_n)
+    apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in polygonNotCollinear)
+    apply (simp, simp, simp add: polygon_def, metis n_not_Suc_n nat.inject)
+    apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in polygonNotCollinear)
+    apply (simp, simp, simp add: polygon_def, metis n_not_Suc_n nat.inject)
+  apply (erule_tac x=i in allE, erule impE, simp, erule_tac x=k in allE)
   apply (simp add: lineSeparate_def)
   apply (safe)
   apply (metis conflictingRigthTurns1)
-  apply (metis collRotate collSwap notRightTurn)thm intersectRightTurn
   apply (cut_tac A="(cyclePath L ! i)" and B="(cyclePath L ! Suc i)" and P="(cyclePath L ! k)" and R="(cyclePath L ! Suc k)" in intersectRightTurn)
-    apply ((simp add: cyclePathSegments)+, metis conflictingRigthTurns1)
-  
-sorry
+    apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
+    apply (simp add: notCollThenDiffPoints, safe)
+    apply (auto simp add:  conflictingRigthTurns1)
+  apply (cut_tac a="cyclePath L ! i" and b="cyclePath L ! Suc i" and c="cyclePath L ! k" and d="cyclePath L ! Suc k" in intersectNotCollinear1)
+    apply (auto simp add: cyclePathSegments conflictingRigthTurns1)+
+done
 
 
 

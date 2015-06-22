@@ -165,8 +165,8 @@ sorry
 (*im Polygon gibt es hier eine Intersection. Und zwar an der letzten Kante*)
 (*crossing*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
- "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<and> i \<noteq> Suc k \<and> Suc i \<noteq> k \<longrightarrow>
- \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
+ "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<and> (P ! i) \<noteq> (P ! Suc k)
+ \<and> (P ! Suc i) \<noteq> (P ! k) \<longrightarrow> \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
 
 (*wenn an der ersten stelle keine intersection, dann an der zweiten Stelle*)
 lemma sizeOfList : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! Suc k) A B \<Longrightarrow> k \<ge> 1"
