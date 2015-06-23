@@ -48,7 +48,8 @@ lemma lineSeparateSym1[simp]: "lineSeparate A B P R = lineSeparate A B R P"
 oops*)
 
 (*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken), dann trennt AB die Ecken P und R*)
-(****evtl. nicht Beweisbar... für pointOnSegment sollte vielleicht eine andere Definition gesucht werden*)
+(*TODO: hier fehlt noch ein Beweis*)
+(****evtl. nicht Beweisbar... für point_on_segment sollte dann eine andere Definition gesucht werden*)
 lemma point_on_segment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear A P R \<Longrightarrow>
   point_on_segment A P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
   apply (auto simp add: point_on_segment_def)

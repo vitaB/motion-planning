@@ -14,6 +14,7 @@ done
 hat damit also nur 2 Nachbarn*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
+lemma [simp]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
 
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
@@ -33,7 +34,8 @@ lemma pointsSegments: "pointList L \<Longrightarrow> 0 \<le> i \<and> i < (size 
   apply (auto simp add: segment_def pointList_def pointsEqual_def)
   apply (cut_tac L=L and i=i in distinctElem, auto)
 done
-(*wenn man PointList um ein segment erweitert, sind alle Elemente der neuen Liste auch segmente*)
+
+(*wenn man pointList um ein segment erweitert, sind alle Elemente der neuen Liste auch segmente*)
 lemma pointsSegmentsAppend1: "pointList L \<Longrightarrow> segment (last L) a \<Longrightarrow>
   k < (length (L @ [a]) - 1) \<Longrightarrow> segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
   apply (auto)
@@ -55,7 +57,8 @@ theorem pointsSegmentsAppend: "pointList L \<Longrightarrow> k < size L - 1 \<Lo
 by (metis pointsSegmentsAppend1)
 
 
-(*Definiere ordnung von pointList nach x-Coord und nach y-Coord.*)
+(*Definiere ordnung von pointList nach x-Coord und nach y-Coord.
+ Nötig um zusagen welcher Punkt auf der x und y achse ganz rechts/links/unten/oben ist*)
 definition xCoordSort :: "point2d list \<Rightarrow> point2d list" where
 "xCoordSort P \<equiv> sort_key (xCoord) P"
 definition yCoordSort :: "point2d list \<Rightarrow> point2d list" where
@@ -65,13 +68,11 @@ lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in>
   by (auto simp add: linorder_class.set_insort_insert)
 theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<forall> y \<in> set xs. f x \<le> f y))"
   by (auto simp add: linorder_class.sorted_Cons)
-
-(*alle xCoordinaten sind in der sortierten Liste*)
+(*alle punkte sind nach dem sortieren noch da*)
 lemma inXCoord : "a \<in> set xs \<longrightarrow> a \<in> set (xCoordSort xs)"
   by (auto simp add: xCoordSort_def)
 lemma inYCoord : "a \<in> set xs \<longrightarrow>  a \<in> set (yCoordSort xs)"
   by (auto simp add: yCoordSort_def)
-
 (*xCoordSort gibt eine sortierte Liste zurück*)
 lemma xCoordSorted :  "sorted (map xCoord (xCoordSort xs))"
   by(induct xs, auto simp:sorted_insort_key xCoordSort_def)
@@ -89,16 +90,15 @@ lemma xCoordOrd : "size L > 0 \<Longrightarrow> xCoord (last (xCoordSort L)) \<g
 lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<ge> yCoord (hd (yCoordSort L))"
   apply (cases L, simp)
   by (metis empty_iff inYCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl yCoordSorted yCoordSorted1)
-lemma [dest]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
 
-(*3 Punkte hintereinander sind kolliniear*)
+
+(*3 Ecken in der pointList hintereinander sind kolliniear*)
 fun collinearAdjacent :: "point2d list \<Rightarrow> bool" where
   "collinearAdjacent [] = False"
 | "collinearAdjacent [a] = False"
 | "collinearAdjacent [a,b] = False"
 | "collinearAdjacent (a#b#c#xs) = (collinear a b c \<or> collinearAdjacent (b#c#xs))"
-lemma collinearAdjacent1 [simp]: "collinearAdjacent [a,b,c] = collinear a b c"
-  by (simp)
+lemma collinearAdjacent1 [simp]: "collinearAdjacent [a,b,c] = collinear a b c" by (simp)
 lemma collinearAdjacent2 [simp]: "collinearAdjacent (a#b#c#xs) =
   collinearAdjacent [a,b,c] \<or> collinearAdjacent [b,c, hd xs] \<or> collinearAdjacent [c, xs!0, xs!1] \<or> collinearAdjacent xs"
   by (cases xs rule: collinearAdjacent.cases, auto)
@@ -110,9 +110,9 @@ lemma collinearAdjacent4 [simp]: "length xs > 1 \<Longrightarrow>
   by (cases xs rule: collinearAdjacent.cases, auto)
 lemma collinearAdjacent5: "\<not>collinearAdjacent (a#b#c#xs) = (\<not>collinearAdjacent (b#c#xs) \<and> \<not>collinearAdjacent [a,b,c])"
   by (auto)
-lemma collinearAdjacentRev: "collinearAdjacent xs = collinearAdjacent (rev xs)"
+(*lemma collinearAdjacentRev: "collinearAdjacent xs = collinearAdjacent (rev xs)"
   apply (induct xs rule: collinearAdjacent.induct, auto)
-sorry
+sorry*)
 
 (*collineare Liste erweitert*)
 lemma collinearAdjacentAppend1 [simp]: "collinearAdjacent xs \<Longrightarrow> collinearAdjacent (a # xs)"
@@ -124,7 +124,7 @@ lemma collinearAdjacentAppend3 [simp]: "collinearAdjacent xs \<Longrightarrow> c
 (*theorem collinearAdjacentAppend [simp]: "collinearAdjacent xs \<Longrightarrow> collinearAdjacent (x @ xs)"
 *)
 
-(*wann sind 3 Aufeinanderfolgende Punkte in der Liste kollinear*)
+(*wann sind 3 Aufeinanderfolgende Punkte in der Liste kollinear?*)
 lemma collinearAdjacentNeg :"\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k))) \<Longrightarrow> \<not>collinearAdjacent xs"
   apply (rule_tac P="\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k)))" and Q="\<not>collinearAdjacent xs" in impE)
   apply (thin_tac "\<not> (\<exists>k. collinear (xs ! k) (xs ! Suc k) (xs ! Suc (Suc k)))")
@@ -134,36 +134,19 @@ lemma collinearAdjacentNeg :"\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs
   apply (erule_tac x="k+1" in allE, simp)
   apply (erule_tac x=0 in allE, simp)
 done
-lemma "\<not>collinearAdjacent xs \<Longrightarrow> \<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k)))"
-oops
-lemma collinearAdjacentNeg :"\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k))) = (\<not>collinearAdjacent xs)"
-oops
-lemma collinearAdjacentEq1 : "collinearAdjacent xs \<Longrightarrow> \<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k))"
+lemma collinearAdjacentEq1 : "collinearAdjacent xs \<Longrightarrow> \<exists> k. k< length xs - 2 \<and> collinear (xs!k) (xs! Suc k) (xs ! Suc(Suc k))"
   apply (induct xs rule: collinearAdjacent.induct, simp+)
-  apply (auto, rule_tac x=0 in exI, simp)
-  apply (rule_tac x="k+1" in exI, simp)
+  apply (auto, rule_tac x="k + 1" in exI, simp)
 done
-lemma "length xs > 2 \<Longrightarrow> (\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k))) \<longrightarrow> collinearAdjacent xs"
-  apply (induct xs rule: collinearAdjacent.induct)
-  apply (auto)
-  apply (erule_tac x="k - 1" in allE)
-oops
-lemma "length xs > 2 \<Longrightarrow> (\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k))) \<longleftrightarrow> collinearAdjacent xs"
-  apply (cases xs rule: collinearAdjacent.cases, simp+)
-oops
-theorem collinearAdjacentEq : "collinearAdjacent xs = (\<exists>i. i < length xs - 2 \<and> collinear (xs ! i) (xs ! Suc i) (xs ! Suc (Suc i)))"
-  apply (induct xs rule: collinearAdjacent.induct, simp, simp, simp)
-  apply (rule iffI, auto)
-  apply (erule_tac x="i - 1" in allE)
-  apply (erule impE)
-  apply (simp only: linordered_field_class.sign_simps(4))
+(*TODO: hier fehlt noch ein Beweis*)
+lemma collinearAdjacentEq2 : "(\<exists>i. i < length xs - 2 \<and> collinear (xs!i) (xs! Suc i) (xs ! Suc(Suc i))) \<Longrightarrow> collinearAdjacent xs"
 sorry
+theorem collinearAdjacentEq : "collinearAdjacent xs = (\<exists>i. i < length xs - 2 \<and> collinear (xs ! i) (xs ! Suc i) (xs ! Suc (Suc i)))"
+  by (rule iffI, simp add: collinearAdjacentEq1, simp add: collinearAdjacentEq2)
 
 
-
-(*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList*)
-(*im Polygon gibt es hier eine Intersection. Und zwar an der letzten Kante*)
-(*crossing*)
+(*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList
+  (außer natürlich die jeweiligen Nachbarkanten)*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
  "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<and> (P ! i) \<noteq> (P ! Suc k)
  \<and> (P ! Suc i) \<noteq> (P ! k) \<longrightarrow> \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
@@ -181,7 +164,6 @@ lemma listIntersectionAppend: "segment A B \<Longrightarrow>
   i < length L - 1 \<Longrightarrow> intersect (L ! i) (L ! Suc i) A B \<Longrightarrow>
   \<exists>k l::nat. 0 \<le> k \<and> l = k + 1 \<and> l < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! l) A B"
   by (rule_tac x="i + 2" in exI, rule_tac x="i + 3" in exI, auto)
-
 lemma listIntersectionDel : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
   (\<exists> k::nat. k \<ge> 0 \<and> (k + 1) < length (a # b # L) \<and> intersect ((a # b # L) ! k) ((a # b # L) ! (k + 1)) A B)
   \<longleftrightarrow> ((\<exists> i::nat. i \<ge> 0 \<and> i + 1 < length L \<and> intersect (L ! i) ( L ! (i + 1)) A B) \<or> intersect b (hd L) A B)"
@@ -195,7 +177,6 @@ lemma listIntersectionDel : "segment A B \<Longrightarrow> length L \<ge> 1 \<Lo
   apply (rule_tac x="1" in exI, auto)
   apply (subgoal_tac "L ! 0 = hd L")
 by (auto, metis Suc_n_not_le_n gen_length_code(1) hd_conv_nth length_code)
-
 lemma listIntersection1 : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> intersect a b A B \<Longrightarrow>
   (intersect ((a # b # L) ! (k)) ((a # b # L) ! (k + 1)) A B \<longleftrightarrow> ( k\<ge>2 \<and> intersect (L ! (k - 2)) ( L ! (k - 1)) A B)) \<or> intersect b (hd L) A B"
   apply (safe)
@@ -207,7 +188,6 @@ lemma listIntersection1 : "segment A B \<Longrightarrow> length L \<ge> 1 \<Long
   apply (subgoal_tac "(k - Suc (Suc 0)) = k - 2")
   apply (auto)
 done
-
 theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow>
   intersect ((a # b # L) ! k) ((a # b # L) ! Suc k) A B \<longleftrightarrow>
   ((k = 0 \<and> intersect a b A B) \<or> (k = 1 \<and> intersect b (hd L) A B)) \<or> (k\<ge>2 \<and> intersect ( L ! (k - 2)) ( L ! (k - 1)) A B)"
@@ -225,6 +205,10 @@ theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Lon
   apply (simp, simp)
   apply (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero)
   by (simp, metis One_nat_def Suc_1)
+
+
+
+
 
 (*alte Definition*)
 (*wie kann man nth als prädikat darstellen? *)
