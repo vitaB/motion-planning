@@ -89,6 +89,7 @@ lemma conflictingRightTurns2 [dest]: "rightTurn a b c \<Longrightarrow> collinea
 
 (*lemmas for collinear und signedArea*)
 lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*) by (auto)
+lemma notCollThenLfOrRt1 [intro]: "\<not>collinear a b c \<Longrightarrow> leftTurn a b c \<or> rightTurn a b c" by (auto)
 lemma areaContra [dest]: " signedArea a c b < 0 \<Longrightarrow> signedArea a b c < 0  \<Longrightarrow> False"(*[1]*)
   by (metis colliniearRight leftTurn_def less_trans notLeftTurn) 
 lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea a b c \<Longrightarrow> False"(*[1]*)
