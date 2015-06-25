@@ -92,64 +92,34 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
   by (metis empty_iff inYCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl yCoordSorted yCoordSorted1)
 
 
-(*3 Ecken in der pointList hintereinander sind kolliniear*)
-fun collinearAdjacent :: "point2d list \<Rightarrow> bool" where
-  "collinearAdjacent [] = False"
-| "collinearAdjacent [a] = False"
-| "collinearAdjacent [a,b] = False"
-| "collinearAdjacent (a#b#c#xs) = (collinear a b c \<or> collinearAdjacent (b#c#xs))"
-lemma collinearAdjacent1 [simp]: "collinearAdjacent [a,b,c] = collinear a b c" by (simp)
-lemma collinearAdjacent2 [simp]: "collinearAdjacent (a#b#c#xs) =
-  collinearAdjacent [a,b,c] \<or> collinearAdjacent [b,c, hd xs] \<or> collinearAdjacent [c, xs!0, xs!1] \<or> collinearAdjacent xs"
-  by (cases xs rule: collinearAdjacent.cases, auto)
-lemma collinearAdjacent3 [simp]:"length xs > 0 \<Longrightarrow>
-  collinearAdjacent (b#c#xs) = collinearAdjacent [b,c, hd xs] \<or> collinearAdjacent (c#xs)"
-  by (cases xs, auto)
-lemma collinearAdjacent4 [simp]: "length xs > 1 \<Longrightarrow>
-  collinearAdjacent (a#xs) = collinearAdjacent [a, xs!0, xs!1] \<or> collinearAdjacent xs"
-  by (cases xs rule: collinearAdjacent.cases, auto)
-lemma collinearAdjacent5: "\<not>collinearAdjacent (a#b#c#xs) = (\<not>collinearAdjacent (b#c#xs) \<and> \<not>collinearAdjacent [a,b,c])"
-  by (auto)
-(*lemma collinearAdjacentRev: "collinearAdjacent xs = collinearAdjacent (rev xs)"
-  apply (induct xs rule: collinearAdjacent.induct, auto)
-sorry*)
+(*3 Ecken in der pointList sind kolliniear*)
+definition collinearList :: "point2d list \<Rightarrow> bool" where
+  "collinearList L \<equiv> (\<exists> a b c. a < length L \<and> b < length L \<and> c < length L \<and>
+  a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> collinear (L!a) (L!b) (L!c))"
+lemma collinearList1 [simp]: "collinear a b c = collinearList [a,b,c]"
+  apply (simp add: collinearList_def, rule iffI)
+  apply (rule_tac  x=0 in exI, simp, rule_tac  x=1 in exI, simp, rule_tac  x=2 in exI, simp)
+  apply (safe)
+oops
+lemma collinearList2: "\<not>collinearList (a#xs) \<Longrightarrow> \<not>collinearList (xs)"
+oops
+lemma collinearListRev: "collinearList xs = collinearList (rev xs)"
+oops
 
 (*collineare Liste erweitert*)
-lemma collinearAdjacentAppend1 [simp]: "collinearAdjacent xs \<Longrightarrow> collinearAdjacent (a # xs)"
-  by (cases xs rule: collinearAdjacent.cases, simp+)
-lemma collinearAdjacentAppend2 [simp]: "collinearAdjacent xs \<Longrightarrow> collinearAdjacent (a#b# xs)"
-  by (cases xs rule: collinearAdjacent.cases, simp+)
-lemma collinearAdjacentAppend3 [simp]: "collinearAdjacent xs \<Longrightarrow> collinearAdjacent (a#b#c# xs)"
-  by (cases xs rule: collinearAdjacent.cases, simp+)
-(*theorem collinearAdjacentAppend [simp]: "collinearAdjacent xs \<Longrightarrow> collinearAdjacent (x @ xs)"
-*)
-
-(*wann sind 3 Aufeinanderfolgende Punkte in der Liste kollinear?*)
-lemma collinearAdjacentNeg :"\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k))) \<Longrightarrow> \<not>collinearAdjacent xs"
-  apply (rule_tac P="\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k)))" and Q="\<not>collinearAdjacent xs" in impE)
-  apply (thin_tac "\<not> (\<exists>k. collinear (xs ! k) (xs ! Suc k) (xs ! Suc (Suc k)))")
-  apply (induct xs rule: collinearAdjacent.induct, simp+)
-  apply (auto)
-  apply (erule_tac x=0 in allE, simp)
-  apply (erule_tac x="k+1" in allE, simp)
-  apply (erule_tac x=0 in allE, simp)
-done
-lemma collinearAdjacentEq1 : "collinearAdjacent xs \<Longrightarrow> \<exists> k. k< length xs - 2 \<and> collinear (xs!k) (xs! Suc k) (xs ! Suc(Suc k))"
-  apply (induct xs rule: collinearAdjacent.induct, simp+)
-  apply (auto, rule_tac x="k + 1" in exI, simp)
-done
-(*TODO: hier fehlt noch ein Beweis*)
-lemma collinearAdjacentEq2 : "(\<exists>i. i < length xs - 2 \<and> collinear (xs!i) (xs! Suc i) (xs ! Suc(Suc i))) \<Longrightarrow> collinearAdjacent xs"
-sorry
-theorem collinearAdjacentEq : "collinearAdjacent xs = (\<exists>i. i < length xs - 2 \<and> collinear (xs ! i) (xs ! Suc i) (xs ! Suc (Suc i)))"
-  by (rule iffI, simp add: collinearAdjacentEq1, simp add: collinearAdjacentEq2)
+lemma collinearListAppend1 [simp]: "collinearListt xs \<Longrightarrow> collinearList (a#xs)"
+oops
+lemma collinearListAppend2 [simp]: "collinearList xs \<Longrightarrow> collinearList (xs @ [a])"
+oops
+theorem collinearListAppend [simp]: "collinearList xs \<Longrightarrow> collinearList (x @ xs)"
+oops
 
 
 (*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList
   (außer natürlich die jeweiligen Nachbarkanten)*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
- "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1 \<and> i \<noteq> k \<and> (P ! i) \<noteq> (P ! Suc k)
- \<and> (P ! Suc i) \<noteq> (P ! k) \<longrightarrow> \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
+ "intersectionFreePList P \<equiv> \<forall>i k. ((k < length P - 1 \<and> i < length P - 1 \<and> (P!i) \<noteq> (P!k) \<and> (P ! i) \<noteq> (P ! Suc k)
+ \<and> (P ! Suc i) \<noteq> (P ! k)) \<longrightarrow> \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
 
 (*wenn an der ersten stelle keine intersection, dann an der zweiten Stelle*)
 lemma sizeOfList : "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! k) ((a # b # L) ! Suc k) A B \<Longrightarrow> k \<ge> 1"
@@ -330,5 +300,56 @@ lemma yCoordOrd1 : "pointList L \<Longrightarrow> last (yCoordList L) \<ge> hd (
   apply (simp)
   apply (metis XCoordSort XCoordSort1 xCoord_def inInsort select_convs(1) xCoordList.simps(2))
 done*)
+(*
+(*3 Ecken in der pointList hintereinander sind kolliniear*)
+fun collinearList :: "point2d list \<Rightarrow> bool" where
+  "collinearList [] = False"
+| "collinearList [a] = False"
+| "collinearList [a,b] = False"
+| "collinearList (a#b#c#xs) = (collinear a b c \<or> collinearList (b#c#xs))"
+lemma collinearList1 [simp]: "collinearList [a,b,c] = collinear a b c" by (simp)
+lemma collinearList2 [simp]: "collinearList (a#b#c#xs) =
+  collinearList [a,b,c] \<or> collinearList [b,c, hd xs] \<or> collinearList [c, xs!0, xs!1] \<or> collinearList xs"
+  by (cases xs rule: collinearList.cases, auto)
+lemma collinearList3 [simp]:"length xs > 0 \<Longrightarrow>
+  collinearList (b#c#xs) = collinearList [b,c, hd xs] \<or> collinearList (c#xs)"
+  by (cases xs, auto)
+lemma collinearList4 [simp]: "length xs > 1 \<Longrightarrow>
+  collinearList (a#xs) = collinearList [a, xs!0, xs!1] \<or> collinearList xs"
+  by (cases xs rule: collinearList.cases, auto)
+lemma collinearList5: "\<not>collinearList (a#b#c#xs) = (\<not>collinearList (b#c#xs) \<and> \<not>collinearList [a,b,c])"
+  by (auto)
+(*lemma collinearListRev: "collinearList xs = collinearList (rev xs)"
+  apply (induct xs rule: collinearList.induct, auto)
+sorry*)
 
+(*collineare Liste erweitert*)
+lemma collinearListAppend1 [simp]: "collinearList xs \<Longrightarrow> collinearList (a # xs)"
+  by (cases xs rule: collinearList.cases, simp+)
+lemma collinearListAppend2 [simp]: "collinearList xs \<Longrightarrow> collinearList (a#b# xs)"
+  by (cases xs rule: collinearList.cases, simp+)
+lemma collinearListAppend3 [simp]: "collinearList xs \<Longrightarrow> collinearList (a#b#c# xs)"
+  by (cases xs rule: collinearList.cases, simp+)
+(*theorem collinearListAppend [simp]: "collinearList xs \<Longrightarrow> collinearList (x @ xs)"
+*)
+
+(*wann sind 3 Aufeinanderfolgende Punkte in der Liste kollinear?*)
+lemma collinearListNeg :"\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k))) \<Longrightarrow> \<not>collinearList xs"
+  apply (rule_tac P="\<not>(\<exists> k. collinear (xs!k) (xs!Suc k) (xs ! Suc (Suc k)))" and Q="\<not>collinearList xs" in impE)
+  apply (thin_tac "\<not> (\<exists>k. collinear (xs ! k) (xs ! Suc k) (xs ! Suc (Suc k)))")
+  apply (induct xs rule: collinearList.induct, simp+)
+  apply (auto)
+  apply (erule_tac x=0 in allE, simp)
+  apply (erule_tac x="k+1" in allE, simp)
+  apply (erule_tac x=0 in allE, simp)
+done
+lemma collinearListEq1 : "collinearList xs \<Longrightarrow> \<exists> k. k< length xs - 2 \<and> collinear (xs!k) (xs! Suc k) (xs ! Suc(Suc k))"
+  apply (induct xs rule: collinearList.induct, simp+)
+  apply (auto, rule_tac x="k + 1" in exI, simp)
+done
+(*TODO: hier fehlt noch ein Beweis*)
+lemma collinearListEq2 : "(\<exists>i. i < length xs - 2 \<and> collinear (xs!i) (xs! Suc i) (xs ! Suc(Suc i))) \<Longrightarrow> collinearList xs"
+sorry
+theorem collinearListEq : "collinearList xs = (\<exists>i. i < length xs - 2 \<and> collinear (xs ! i) (xs ! Suc i) (xs ! Suc (Suc i)))"
+  by (rule iffI, simp add: collinearListEq1, simp add: collinearListEq2)*)
 end

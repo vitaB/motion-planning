@@ -8,7 +8,7 @@ definition cyclePath :: "point2d list \<Rightarrow> point2d list" where
 lemma [simp]: "pointList L \<Longrightarrow> hd L \<noteq> last L" by (cases L, auto simp add: pointList_def)
 lemma [simp] : "pointList L \<Longrightarrow> length (cyclePath L) = length L + 1" by (simp add: cyclePath_def)
 
-(*alle Kanten von cyclePath sind segmente*)
+(*alle benachbarten Kanten von cyclePath sind segmente*)
 lemma cyclePathLastSegment : "pointList L \<Longrightarrow> segment (last L) (last (cyclePath L))"
   apply (simp add: cyclePath_def segment_def, subst neq_commute, simp)
 done
@@ -17,6 +17,15 @@ theorem cyclePathSegments : "pointList L \<Longrightarrow> P = cyclePath L \<Lon
   apply (cut_tac L=L and a="hd L" in pointsSegmentsAppend1, simp)
   apply (simp add: segment_def, cases L, auto simp add: pointList_def)
 done
+
+(*zwei benachbarte Knoten im cyclePath sind ungleich*)
+lemma cyclePathAdjacentSame: "pointList L \<Longrightarrow> i < length (cyclePath L) - 1 \<Longrightarrow> cyclePath L ! i \<noteq> cyclePath L ! Suc i"
+  apply (cut_tac L=L and P= "cyclePath L" and i=i in cyclePathSegments, simp+)
+  apply (simp add: segment_def)
+done
+lemma cyclePathAdjacentSame1 :"pointList L \<Longrightarrow> i < length (cyclePath L)  - 1 \<Longrightarrow> k < length (cyclePath L) - 1 \<Longrightarrow>
+  cyclePath L ! i \<noteq> cyclePath L ! k \<Longrightarrow> cyclePath L ! Suc i \<noteq> cyclePath L ! Suc k"
+sorry
   
 (*intersection(cyclePath, Strecke A B)*)
 fun lineCyclePathInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -38,7 +47,7 @@ lemma lineCyclePathInters1: "segment A B \<Longrightarrow> lineCyclePathInters L
   (\<exists> i. i<length L - 1 \<and> intersect (L!i) (L ! Suc i) A B)"
   apply (induct L A B rule:lineCyclePathInters.induct) apply (simp, simp)
   apply (auto, rule_tac x="i + 1" in exI, simp)
-done
+done thm lineCyclePathInters.cases
 (*TODO: hier fehlt noch ein Beweis*)
 lemma lineCyclePathInters2: "segment A B \<Longrightarrow> (\<exists> i. i < length L - 1 \<and> intersect (L ! i) (L ! Suc i) A B) \<Longrightarrow>
   lineCyclePathInters L A B"

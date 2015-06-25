@@ -89,15 +89,20 @@ lemma intersectSym : "intersect A B P R = intersect B A P R" sorry
 lemma intersectSym1 : "intersect A B P R = intersect P R A B" sorry
 
 (*wenn die Strecken AB und PR sich schneiden, dann können beide Ecken von PR nicht auf der rechten Seite von AB liegen*)
-lemma intersectRightTurn : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> B \<noteq> P \<Longrightarrow> B \<noteq> R \<Longrightarrow> 
+lemma intersectRightTurn: "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow>
   rightTurn A B P \<and> rightTurn A B R \<Longrightarrow> False"
-  apply (simp add: intersect_def)
-  apply (safe)
-  apply (metis crossing_def lineSeparate_def notRightTurn1)
-  apply (metis notRightTurn1)+
-  apply (metis point_on_segment_noRightTurn)
-  apply (metis point_on_segment_noRightTurn1)
-done
+  apply (simp only:intersect_def)
+by (metis collRotate conflictingRightTurns2 crossingRightTurn notRightTurn point_on_segment_noRightTurn point_on_segment_noRightTurn1)
+lemma intersectRightTurn1 : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow>
+  rightTurn A R P \<and> rightTurn P B R \<Longrightarrow> False"
+  apply (simp only:intersect_def, safe)
+  apply (metis crossingRightTurn crossingSym crossingSym1 rightTurnRotate2)
+  apply (metis intersectRightTurn intersect_def rightTurnRotate2 segment_Sym)
+  apply (metis intersectRightTurn intersect_def rightTurnRotate2 segment_Sym)
+  apply (metis notRightTurn rightTurnRotate2)
+by (metis notRightTurn)
+
+
 
 (*Zusätliche Lemmas*)
 lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>

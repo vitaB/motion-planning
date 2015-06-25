@@ -5,81 +5,76 @@ begin
 (*Convexes Polygon.
 - keiner der Kanten des Polygons trennt irgendeine der übrigen Ecken einer der Kanten des Polygons
 - 3 aufeainder folgenden Kanten sind nicht kollinear*)
+(*Bemerkung: im Polygon gibt es hier collinearität. Und zwar an der letzten+ersten Kante*)
 definition polygon :: "point2d list \<Rightarrow> bool" where
-"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<equiv> \<not>collinearAdjacent P \<and> (\<forall> k < length P - 1.
+"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<equiv> (\<forall> k < length P - 1.
   \<not>(\<exists> i. i < length P - 1 \<and> lineSeparate (P ! k) (P ! Suc k) (P ! i) (P ! Suc i)))"
 
 (*alle Dreiecke sind conv. Polygone*)
-lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearAdjacent L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P"
-sorry (*Beweis unten*)
-  (*apply (simp add:polygon_def cyclePath_def, safe)
-  apply (cases L rule: collinearAdjacent.cases, auto)
-  apply (cases L rule: collinearAdjacent.cases, auto)
+lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P"
+  apply (simp add:polygon_def cyclePath_def, safe)
   apply (simp add: lineSeparate_def, safe)
   apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", safe)
-  apply (auto simp add: rightTurn_def)
-  apply (smt2 Suc_leI Suc_lessI areaDoublePoint2 less_numeral_extra(3) neq0_conv not_less nth_Cons' nth_Cons_Suc numeral_3_eq_3)
-  apply (metis One_nat_def Suc_leI Suc_lessI colliniearRight diff_Suc_1 less_numeral_extra(3) neq0_conv notCollThenDiffPoints not_less nth_Cons_0 nth_Cons_Suc numeral_3_eq_3)
-  apply (metis Suc_eq_plus1_left Suc_leI add_diff_cancel_left' colliniearRight gr0_conv_Suc monoid_add_class.add.right_neutral notCollThenDiffPoints not_less not_less_iff_gr_or_eq nth_Cons_Suc numeral_3_eq_3)  
-  apply (smt2 One_nat_def Suc_1 Suc_leI areaDoublePoint2 less_2_cases not_less not_less_iff_gr_or_eq nth_Cons_Suc numeral_3_eq_3 signedAreaRotate)
-  apply (smt2 One_nat_def Suc_1 Suc_leI areaDoublePoint2 diff_Suc_1 less_2_cases not_less not_less_iff_gr_or_eq nth_Cons' numeral_3_eq_3 signedAreaRotate)
-  apply (smt2 One_nat_def Suc_1 Suc_lessI Suc_less_eq areaDoublePoint less_2_cases less_numeral_extra(3) not_less nth_Cons' nth_Cons_Suc numeral_3_eq_3 signedAreaRotate)
-  apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", safe)
-  apply (auto)
-  apply (smt2 Suc_leI Suc_lessI areaDoublePoint2 less_numeral_extra(3) neq0_conv not_less nth_Cons' nth_Cons_Suc numeral_3_eq_3)
-  apply (metis One_nat_def Suc_leI Suc_lessI colliniearRight diff_Suc_1 less_numeral_extra(3) neq0_conv notCollThenDiffPoints not_less nth_Cons_0 nth_Cons_Suc numeral_3_eq_3)
-  apply (metis Suc_eq_plus1_left Suc_leI add_diff_cancel_left' colliniearRight gr0_conv_Suc monoid_add_class.add.right_neutral notCollThenDiffPoints not_less not_less_iff_gr_or_eq nth_Cons_Suc numeral_3_eq_3)  
-  apply (smt2 One_nat_def Suc_1 Suc_leI areaDoublePoint2 less_2_cases not_less not_less_iff_gr_or_eq nth_Cons_Suc numeral_3_eq_3 signedAreaRotate)
-  apply (smt2 One_nat_def Suc_1 Suc_leI areaDoublePoint2 diff_Suc_1 less_2_cases not_less not_less_iff_gr_or_eq nth_Cons' numeral_3_eq_3 signedAreaRotate)
-  apply (smt2 One_nat_def Suc_1 Suc_lessI Suc_less_eq areaDoublePoint less_2_cases less_numeral_extra(3) not_less nth_Cons' nth_Cons_Suc numeral_3_eq_3 signedAreaRotate)
-done*)
-(*alle Vierecke, die Kreuzugsfrei sind, sind Polygone*)
-lemma quadPolygon:"pointList L \<Longrightarrow> length L = 4 \<Longrightarrow> \<not>collinearAdjacent L \<Longrightarrow> P = cyclePath L \<Longrightarrow> intersectionFreePList P
-  \<Longrightarrow> polygon P"
-  apply (simp add:polygon_def cyclePath_def intersectionFreePList_def)
-  apply (safe)
-  apply (cases L rule: collinearAdjacent.cases, auto)
-sorry
-
-(*keine 3 aufeinander folgenden Punkte im Polygon sind collinear*)
-lemma polygonNotCollinear1:"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>(\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0)"
-  apply (rule allI)
-  apply (simp add: polygon_def collinearAdjacentEq)
-by (simp add: colliniearRight)
-(*keine 3 Punkte im conv. Polygon sind collinear*)
-theorem polygonNotCollinear: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> a \<noteq> b \<and> a \<noteq> c \<and> c \<noteq> b \<Longrightarrow>  \<not> collinear (P ! a) (P ! b) (P ! c)"
-  apply (simp add: polygon_def)
-  apply (erule_tac x=a in allE)
-sorry
-(*alle 3 aufeinander folgenden conv. Punkte im Polygon sind links oder rechts gerichtet*)
-theorem "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) < 0)
-  \<or> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
-  (*apply (simp add: polygon_def lineSeparate_def)
-  apply (auto)
-  apply (rule disjI1)*)
-sorry
-
-(*in einem conv. polygon kreuzt sich keiner der Strecken*)
-theorem "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
-  apply (auto simp add: polygon_def intersectionFreePList_def)
-    apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in polygonNotCollinear)
-    apply (simp, simp, simp add: polygon_def, metis n_not_Suc_n)
-    apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in polygonNotCollinear)
-    apply (simp, simp, simp add: polygon_def, metis n_not_Suc_n nat.inject)
-    apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in polygonNotCollinear)
-    apply (simp, simp, simp add: polygon_def, metis n_not_Suc_n nat.inject)
-  apply (erule_tac x=i in allE, erule impE, simp, erule_tac x=k in allE)
-  apply (simp add: lineSeparate_def)
-  apply (safe)
-  apply (metis conflictingRigthTurns1)
-  apply (cut_tac A="(cyclePath L ! i)" and B="(cyclePath L ! Suc i)" and P="(cyclePath L ! k)" and R="(cyclePath L ! Suc k)" in intersectRightTurn)
-    apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
-    apply (simp add: notCollThenDiffPoints, safe)
-    apply (auto simp add:  conflictingRigthTurns1)
-  apply (cut_tac a="cyclePath L ! i" and b="cyclePath L ! Suc i" and c="cyclePath L ! k" and d="cyclePath L ! Suc k" in intersectNotCollinear1)
-    apply (auto simp add: cyclePathSegments conflictingRigthTurns1)+
+    apply (auto simp add: rightTurn_def)
+    apply (metis Nil_is_append_conv areaDoublePoint2 hd_append2 hd_conv_nth less_numeral_extra(3) list.size(3) nth_append_length signedAreaRotate)
+    apply (metis add_2_eq_Suc' areaDoublePoint less_numeral_extra(3) monoid_add_class.add.left_neutral signedAreaRotate)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt2 Nil_is_append_conv Suc_lessI areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv neq0_conv not_less_iff_gr_or_eq nth_append_length numeral_3_eq_3 signedAreaRotate)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq not_less_iff_gr_or_eq numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt2 Suc_1 Suc_eq_plus1_left areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) monoid_add_class.add.right_neutral numeral_3_eq_3)
+    apply (metis colliniearRight less_2_cases less_Suc_eq less_numeral_extra(3) notCollThenDiffPoints numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt2 Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length numeral_3_eq_3 signedAreaRotate)
+  apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", auto)
+    apply (metis Nil_is_append_conv areaDoublePoint2 hd_append2 hd_conv_nth less_numeral_extra(3) list.size(3) nth_append_length signedAreaRotate)
+    apply (metis add_2_eq_Suc' areaDoublePoint less_numeral_extra(3) monoid_add_class.add.left_neutral)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt2 Nil_is_append_conv Suc_lessI areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv neq0_conv not_less_iff_gr_or_eq nth_append_length numeral_3_eq_3 signedAreaRotate)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq not_less_iff_gr_or_eq numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt2 Suc_1 Suc_eq_plus1_left areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) monoid_add_class.add.right_neutral numeral_3_eq_3)
+    apply (metis colliniearRight less_2_cases less_Suc_eq less_numeral_extra(3) notCollThenDiffPoints numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt2 Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length numeral_3_eq_3 signedAreaRotate)
 done
 
+(*keine 3 aufeinander folgenden Punkte im Polygon sind collinear*)
+lemma polygonNotCollinear1:"pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0)"
+oops
+(*keine 3 Punkte im conv. Polygon sind collinear, ausgenommen letzer Knoten*)
+theorem polygonNotCollinear: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  P!a \<noteq> P!b \<and> P!a \<noteq> P!c \<and> P!c \<noteq> P!b \<Longrightarrow> \<not>collinear (P ! a) (P ! b) (P ! c)"
+sorry
+(*alle 3 aufeinander folgenden conv. Punkte im Polygon sind links oder rechts gerichtet*)
+theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  (\<forall> a < length P - 2. signedArea (P!a) (P ! Suc a) (P ! Suc(Suc a)) < 0)
+  \<or> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
+oops
+
+(*in einem conv. polygon kreuzt sich keiner der Strecken*)
+theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
+  apply (simp add: intersectionFreePList_def, safe)
+  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in polygonNotCollinear)
+    apply (simp add: polygon_def)+
+    apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def)+)
+  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in polygonNotCollinear)
+    apply (simp add: polygon_def)+
+    apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
+  apply (cut_tac L=L and P=P and a="i" and b="Suc k" and c="k" in polygonNotCollinear)
+    apply (simp add: polygon_def)+
+    apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
+  apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in polygonNotCollinear)
+    apply (simp add: polygon_def)+
+    apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
+  apply (simp add: polygon_def)
+  apply (erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
+  apply (simp add: lineSeparate_def, safe)
+  apply (metis conflictingRigthTurns)
+  apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectSym1)
+    apply (simp)
+    apply (cut_tac A="(cyclePath L ! k)" and B="(cyclePath L ! Suc k)" and P="(cyclePath L ! i)" and R="(cyclePath L ! Suc i)" in intersectRightTurn)
+  apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
+  apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
+    apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
+by (metis conflictingRigthTurns1 rightTurnRotate2)
 
 
 (*intersection(Polygon, Polygon)*)
