@@ -35,33 +35,19 @@ lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collin
     apply (smt2 Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length numeral_3_eq_3 signedAreaRotate)
 done
 
-(*keine 3 aufeinander folgenden Punkte im Polygon sind collinear*)
-lemma polygonNotCollinear1:"pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
-  (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0)"
-oops
-(*keine 3 Punkte im conv. Polygon sind collinear, ausgenommen letzer Knoten*)
-theorem polygonNotCollinear: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
-  P!a \<noteq> P!b \<and> P!a \<noteq> P!c \<and> P!c \<noteq> P!b \<Longrightarrow> \<not>collinear (P ! a) (P ! b) (P ! c)"
-sorry
-(*alle 3 aufeinander folgenden conv. Punkte im Polygon sind links oder rechts gerichtet*)
-theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
-  (\<forall> a < length P - 2. signedArea (P!a) (P ! Suc a) (P ! Suc(Suc a)) < 0)
-  \<or> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
-oops
-
 (*in einem conv. polygon kreuzt sich keiner der Strecken*)
 theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
   apply (simp add: intersectionFreePList_def, safe)
-  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in polygonNotCollinear)
+  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in cyclePathNotCollinear)
     apply (simp add: polygon_def)+
     apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def)+)
-  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in polygonNotCollinear)
+  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in cyclePathNotCollinear)
     apply (simp add: polygon_def)+
     apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
-  apply (cut_tac L=L and P=P and a="i" and b="Suc k" and c="k" in polygonNotCollinear)
+  apply (cut_tac L=L and P=P and a="i" and b="Suc k" and c="k" in cyclePathNotCollinear)
     apply (simp add: polygon_def)+
     apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
-  apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in polygonNotCollinear)
+  apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in cyclePathNotCollinear)
     apply (simp add: polygon_def)+
     apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
   apply (simp add: polygon_def)

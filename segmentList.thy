@@ -93,6 +93,7 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
 
 
 (*3 Ecken in der pointList sind kolliniear*)
+(*mit der negation, brauche ich evtl. die Definition von pointList nicht mehr*)
 definition collinearList :: "point2d list \<Rightarrow> bool" where
   "collinearList L \<equiv> (\<exists> a b c. a < length L \<and> b < length L \<and> c < length L \<and>
   a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> collinear (L!a) (L!b) (L!c))"
@@ -114,6 +115,16 @@ oops
 theorem collinearListAppend [simp]: "collinearList xs \<Longrightarrow> collinearList (x @ xs)"
 oops
 
+(*keine 3 Ecken hintereinander sind collinear, wenn \<not>collinearList L*)
+lemma collinearListAdj: "\<not>collinearList L \<Longrightarrow> a < length L - 2 \<Longrightarrow> \<not>collinear (L ! a)(L! Suc a)(L! Suc(Suc a))"
+  apply (simp add: collinearList_def)
+  apply (erule_tac x=a in allE, safe)
+  apply (metis diff_less_Suc lessI less_trans_Suc lift_Suc_mono_less_iff)
+  apply (erule_tac x="Suc a" in allE, safe)
+  apply (metis Suc_lessD add_2_eq_Suc' less_diff_conv)
+  apply (erule_tac x="Suc (Suc a)" in allE, safe)
+  apply (simp add: less_diff_conv n_not_Suc_n)+
+done
 
 (*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList
   (außer natürlich die jeweiligen Nachbarkanten)*)
