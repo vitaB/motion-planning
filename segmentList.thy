@@ -188,6 +188,10 @@ theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Lon
   by (simp, metis One_nat_def Suc_1)
 
 
+(*keiner der Strecken aus der pointList schneidet sich mit einer anderen Strecke der pointList*)
+definition crossingFreePList :: "point2d list \<Rightarrow> bool" where
+ "crossingFreePList P \<equiv> \<forall>i k. ((k < length P - 1 \<and> i < length P - 1) \<longrightarrow>
+ \<not>crossing (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
 
 
 

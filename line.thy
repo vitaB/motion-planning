@@ -70,6 +70,9 @@ lemma crossingSym [simp]: "crossing A B P R = crossing B A P R "
   by (auto simp add: crossing_def lineSeparate_def)
 lemma crossingSym1 [simp]: "crossing A B P R = crossing P R A B "
   by (auto simp add: crossing_def lineSeparate_def)
+lemma crossingCollinear [dest]: "crossing A B P R \<Longrightarrow> collinear A B P \<Longrightarrow> False"
+  apply (simp add: crossing_def)
+  by (metis conflictingLeftTurns3 lineSeparate_def notRightTurn1)
 lemma crossingRightTurn [dest] : "crossing A B P R \<Longrightarrow> rightTurn A B P \<and> rightTurn A B R \<Longrightarrow> False"
   by (simp add: crossing_def lineSeparate_def, metis conflictingRigthTurns)
 lemma crossingLeftTurn [dest] : "crossing A B P R \<Longrightarrow> leftTurn A B P \<and> leftTurn A B R \<Longrightarrow> False"

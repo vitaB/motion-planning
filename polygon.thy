@@ -36,6 +36,16 @@ lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collin
 done
 
 (*in einem conv. polygon kreuzt sich keiner der Strecken*)
+theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> crossingFreePList P"
+  apply (simp add: crossingFreePList_def, safe)
+  apply (simp add: polygon_def)
+  apply (erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
+  apply (simp add: lineSeparate_def, safe)
+  apply (auto simp add: conflictingRigthTurns)
+  apply (metis collRotate crossingCollinear crossingSym1 crossingRightTurn crossingSym rightTurnRotate2)+
+done
+
+(*in einem conv. polygon überschneidet sich keiner der Strecken*)
 theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> intersectionFreePList P"
   apply (simp add: intersectionFreePList_def, safe)
   apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in cyclePathNotCollinear)
