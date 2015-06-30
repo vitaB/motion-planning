@@ -3,12 +3,18 @@ imports point
 begin
 
 (*Definition für Segment.*)
-definition segment :: "point2d \<Rightarrow> point2d  \<Rightarrow> bool" where
+definition segment :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment a b \<equiv> \<not> pointsEqual a b"
 lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
 definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
-   
+
+(*berechnet die yCoordinate für ein bekanntes x für die Strecke AB. Zweipunkteform*)
+(*AB darf keine Vertikale sein*)
+definition lineFunktionY :: "point2d \<Rightarrow> point2d \<Rightarrow> real \<Rightarrow> real" where
+  "segment A B \<Longrightarrow> xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
+  ((yCoord B - yCoord A)/(xCoord B - xCoord A)) * (px -xCoord A) + yCoord B"
+
 (*Punkt befindet sich auf segment*)
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> collinear p A B \<Longrightarrow> point_on_segment p A B \<equiv> min (xCoord A)(xCoord B) \<le> xCoord p \<and>
@@ -119,8 +125,17 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   apply (metis notRightTurn)
 by (smt2 intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
 
+(*punkt P ist links von der Strecke AB. D.h. A oder B ist rechts von P*)
+definition leftFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "segment A B \<Longrightarrow> leftFromSegment A B P \<equiv> leftFromPoint P A \<or> leftFromPoint P B"
 
-
+(*http://afp.sourceforge.net/browser_info/current/AFP/Impossible_Geometry/Impossible_Geometry.html*)
+definition is_intersection_def:
+  "is_intersection M A B C D = (collinear A M B \<and> collinear C M D)"
+lemma "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow> \<exists> M. is_intersection M A B P R"
+  apply (simp add: is_intersection_def intersect_def, safe)
+  apply (simp add: crossing_def lineSeparate_def, safe)
+sorry
 
 (*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
 

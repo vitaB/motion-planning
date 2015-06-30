@@ -29,6 +29,10 @@ theorem pointsEqual1 [simp] : "pointsEqual p r = (p = r)"
   apply (simp add: pointsEqualSame)
 done
 
+(*Punkt a links vom Punkt b?*)
+definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow>bool" where
+  "leftFromPoint a b = (xCoord a < xCoord b)"
+
 (*signed area of a triangle; with the convention being that
 - if the points are ordered anti-clockwise, the area is positive
 - if the points are ordered clockwise, the area is negative.*)
@@ -102,12 +106,6 @@ done
 
 
 
-(*move/translate point*)
-(*Fehlt noch!*)
-
-
-
-
 
 (*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
 (*Punkte sind gleich, wenn*)
@@ -143,9 +141,9 @@ lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow>
   apply (safe)
 sorry
 (*hier findet sledgehammer ein Fehler*)
-lemma notBetween [dest]: "\<lbrakk>betwpoint A B C;betwpoint B A C\<rbrakk>  \<Longrightarrow> False"(*[1]*) sorry
-lemma notBetween2 [dest]: "\<lbrakk>betwpoint A B C ;betwpoint C A B\<rbrakk>  \<Longrightarrow> False"(*[1]*) sorry
-lemma notBetween3 [dest]: "\<lbrakk>betwpoint B A C ;betwpoint C A B\<rbrakk> \<Longrightarrow> False"(*[1]*) sorry*)
+lemma notBetween [dest]: "\<lbrakk>isBetween A B C;isBetween B A C\<rbrakk>  \<Longrightarrow> False"(*[1]*) sorry
+lemma notBetween2 [dest]: "\<lbrakk>isBetween A B C ;isBetween C A B\<rbrakk>  \<Longrightarrow> False"(*[1]*) sorry
+lemma notBetween3 [dest]: "\<lbrakk>isBetween B A C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"(*[1]*) sorry*)
 
 (*
 (*punkt A zwischen B und C*)

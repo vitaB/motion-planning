@@ -12,7 +12,7 @@ definition polygon :: "point2d list \<Rightarrow> bool" where
 
 (*alle Dreiecke sind conv. Polygone*)
 lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P"
-  apply (simp add:polygon_def cyclePath_def, safe)
+ (* apply (simp add:polygon_def cyclePath_def, safe)
   apply (simp add: lineSeparate_def, safe)
   apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", safe)
     apply (auto simp add: rightTurn_def)
@@ -33,7 +33,7 @@ lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collin
     apply (smt2 Suc_1 Suc_eq_plus1_left areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) monoid_add_class.add.right_neutral numeral_3_eq_3)
     apply (metis colliniearRight less_2_cases less_Suc_eq less_numeral_extra(3) notCollThenDiffPoints numeral_eq_Suc pred_numeral_simps(3))
     apply (smt2 Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length numeral_3_eq_3 signedAreaRotate)
-done
+done*)sorry
 
 (*in einem conv. polygon kreuzt sich keiner der Strecken*)
 theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> crossingFreePList P"
