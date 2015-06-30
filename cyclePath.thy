@@ -86,8 +86,6 @@ theorem lineCyclePathIntersEq : "segment A B \<Longrightarrow> lineCyclePathInte
 (*intersection(CyclePath, CyclePath)*)
 
 
-(*move CyclePath*)
-
 
 
 

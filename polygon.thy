@@ -73,22 +73,30 @@ theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P
 by (metis conflictingRigthTurns1 rightTurnRotate2)
 
 
-(*intersection(Polygon, Polygon)*)
-
-
-
 (*Punkt inside convex Polygon. Testweise*)
 definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
-"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygonACl P a \<equiv> \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a > 0"
-
+"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  insidePolygonACl P a \<equiv> \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a > 0"
+definition insidePolygonCCl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+"pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  insidePolygonCCl P a \<equiv> insidePolygonACl (rev P) a"
+theorem insidePolygonCClEq : "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygonCCl P a \<Longrightarrow>
+  \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a < 0"
+sorry
+definition insidePolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  insidePolygon P a \<equiv> insidePolygonCCl P a \<or> insidePolygonACl P a"
+theorem insidePolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygon P a = insidePolygon (rev P) a"
+sorry
 
 (*wenn ein punkt einer Strecke inside Polygon und ein Punkt einer Strecke outside, dann gibt es eine intersection*)
+lemma twoPointPolygonInter : "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygon P a \<Longrightarrow>
+  \<not>insidePolygon P b \<Longrightarrow> lineCyclePathInters P a b"
+  apply (subgoal_tac "segment a b")
+    apply (subst lineCyclePathIntersEq, simp)
+    apply (simp add: insidePolygon_def insidePolygonACl_def, safe)
+sorry
 
-
-(*Punkt outside Polygon*)
-
-
-(*move Polygon*)
 
 
 (*alte Definition

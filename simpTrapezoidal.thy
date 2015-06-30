@@ -39,10 +39,13 @@ definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
   "uniqueXCoord L \<equiv> \<forall> a b. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
 
 (*vertikale Strecken einzeichnen. Eingabe Polygon(ohne last) und simpRBox*)
-fun trapezoidal :: "point2d list \<Rightarrow> point2d list \<Rightarrow> point2d list" where
-  "trapezoidal [] R  = []"
-  | "trapezoidal (x#xs) R = [x , Abs_point2d(xCoord x, yCoord (last (yCoordSort R))),
-      x , Abs_point2d(xCoord x, yCoord (hd (yCoordSort R)))] @ trapezoidal xs R"
+fun slabs :: "point2d list \<Rightarrow> point2d list \<Rightarrow> point2d list" where
+  "slabs [] R  = []"
+  | "slabs (x#xs) R = [x , Abs_point2d(xCoord x, yCoord (last (yCoordSort R))),
+      x , Abs_point2d(xCoord x, yCoord (hd (yCoordSort R)))] @ slabs xs R"
+
+(*mit der slabs lässt sich jeder Punkt in simpRBoxPointList finden*)
+(*slabs und trapeze müssten dafür als datentyp gespeichert werden (?)*)
 
 (*ersetzte Trapez. AB ist ein Segment aus dem Polygon. p ist der "entstehungsknoten" des slab
 (schnittpunkt zwischen pr und AB)*)
@@ -63,25 +66,19 @@ fun trapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> poi
   "trapezoidalMap _ [] = []"
   | "trapezoidalMap _ [p] = []"
   | "trapezoidalMap T (p#r#xs) = trapezoidalMap (trapezInter T p r) xs"
-
 (*definition trapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> point2d list" where
   "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> R = simpRBox L \<Longrightarrow>
   uniqueXCoord L \<Longrightarrow> T=trapezoidal L R \<Longrightarrow> trapezoidalMap P T \<equiv> \<forall> i. i < length P - 1 \<longrightarrow>
   (trapezInter T (P!i) (P!Suc i))  newTrapez p (P!i) (P!Suc i))
   ersetzteTrapez(findeGeschnittenTrapez mit L!i, newTrapez p (P!i) (P!Suc i) )"*)
 
-(*
-(*Welche TrapezStrecken schneiden das Segment*)
-(*ich brauche doch ein segment-datentypen?*)
-fun trapezInter :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> real list" where
-  "trapezInter [] A B = []"
- | "trapezInter [p] A B = []"
- | "trapezInter (p#r#xs) A B = (if (segment A B \<and> intersect A B p r) then (xCoord p # trapezInter xs A B) else trapezInter xs A B)"*)
 
-(*S = Menge von Strecken. keine gleiche x-Koordinate. Strecken Kreuzugsfrei*)
-(*fun trapezoidalMap ::  "point2d list \<Rightarrow> real list" where
-"trapezoidalMap [] = []"
-| "trapezoidalMap (x#xs) = insort_insert (xCoord x) (trapezoidalMap xs)"*)
+(*entferne die übrigen strecken die noch innerhalb der Polygone sind*)
+
+
+(*zeige das die trapezoidalMap jetzt eine Einteilung der Freien-Räume innerhalb der rBox ist*)
+
+
 
 
 
