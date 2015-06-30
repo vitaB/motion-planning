@@ -84,8 +84,6 @@ fun trapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> poi
 
 
 
-
-
 (*alte Definition!*)
 (*(*4eckige Box um pointListe herum ist selbst eine pointList*)
 lemma rBoxPointList: "pointList L \<Longrightarrow> 
@@ -102,41 +100,5 @@ lemma rBoxPointList: "pointList L \<Longrightarrow>
   (*apply (subgoal_tac "x \<notin> set xs")
   apply (auto)*)
 sorry
-
-(*4eckige Box um pointListe herum*)
-definition rBox :: "point2d list \<Rightarrow> point2d list" where
-"pointList L \<Longrightarrow> rBox L \<equiv> polygon([\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr>
- ,\<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>, \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>,
-\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>])"
-*)
-(*(*ersetzte den Term Polygon im Satz*)
-lemma rBoxPoly [simp] : "pointList L \<Longrightarrow>
-  (polygon([\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr>,\<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>,
-  \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>,\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>]))
-  \<equiv> [\<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr> ,\<lparr>xCoord = last (xCoordList L) + 1, yCoord = hd (yCoordList L) - 1\<rparr>,
-  \<lparr>xCoord = last (xCoordList L) + 1, yCoord = last (yCoordList L) + 1\<rparr>, \<lparr>xCoord = hd (xCoordList L) - 1, yCoord = last (yCoordList L) + 1\<rparr>,
-  \<lparr>xCoord = hd (xCoordList L) - 1, yCoord = hd (yCoordList L) - 1\<rparr>]"
-  apply (cut_tac L=L in rBoxPointList, assumption)
-  apply (auto simp add: rBox_def polygon_def)
-done
-*)
-(*(*rBox ist ein Convexes Polygon*)
-lemma rBoxConvex : "pointList L \<Longrightarrow> conv_polygon (rBox L)"
-  apply (cut_tac L=L in rBoxPointList, assumption)
-  apply (simp add: rBox_def)
-  apply (simp add: conv_polygon_def)  
-  apply (rule disjI2)
-  apply (auto simp add: signedArea_def)
-  apply (subgoal_tac "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
-  apply (subgoal_tac "last (yCoordList L) - hd (yCoordList L) \<ge> 0", simp)
-  apply (auto simp add: yCoordOrd1 le_diff_eq xCoordOrd1)
-  apply (subgoal_tac "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
-  apply (subgoal_tac "hd (yCoordList L) - last (yCoordList L) \<le> 0")
-  apply (simp add: mult_less_0_iff)
-  apply (auto simp add: yCoordOrd1 le_diff_eq xCoordOrd1)
-  apply (subgoal_tac "last (xCoordList L) - hd (xCoordList L) \<ge> 0")
-  apply (subgoal_tac "last (yCoordList L) - hd (yCoordList L) \<ge> 0", simp)
-  apply (auto simp add: le_diff_eq yCoordOrd1 xCoordOrd1)
-done
 *)
 end
