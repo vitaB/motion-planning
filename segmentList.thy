@@ -126,6 +126,10 @@ lemma collinearListAdj: "\<not>collinearList L \<Longrightarrow> a < length L - 
   apply (simp add: less_diff_conv n_not_Suc_n)+
 done
 
+(*befindet sich der punkt P collinear mit irgendwelchen der segmente von L*)
+definition collinearListPoint :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+  "collinearListPoint L p \<equiv> \<exists> a. a < length L - 1 \<and> collinear (L!a) (L!Suc a) p"
+
 (*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList
   (außer natürlich die jeweiligen Nachbarkanten)*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where

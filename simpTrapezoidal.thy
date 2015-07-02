@@ -73,13 +73,30 @@ fun trapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> poi
   (trapezInter T (P!i) (P!Suc i))  newTrapez p (P!i) (P!Suc i))
   ersetzteTrapez(findeGeschnittenTrapez mit L!i, newTrapez p (P!i) (P!Suc i) )"*)
 
-
 (*entferne die übrigen strecken die noch innerhalb der Polygone sind*)
+(*so funktioniert es nur mit einem Polygon*)
+fun trapezoidalFreeSpace ::  "point2d list \<Rightarrow> point2d list \<Rightarrow> point2d list" where
+ "trapezoidalFreeSpace [] P = []"
+ | "trapezoidalFreeSpace [p] P = []"
+ | "trapezoidalFreeSpace (p#r#xs) P = (if (collinearListPoint P p \<and> collinearListPoint P r) then (
+  trapezoidalFreeSpace xs P) else (p#r # trapezoidalFreeSpace xs P))"
 
 (*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox nicht schneidet*)
 
 (*zeige das die trapezoidalMap jetzt eine Einteilung der Freien-Räume innerhalb der rBox ist*)
 
+
+(*finde ein Punkt innerhalb trapezoidalFreeSpace*)
+(*gib das slab was sich rechts vom gesuchten Punkt q befindet*)
+fun pointQuery :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d list" where
+  "pointQuery [] q = []"
+  | "pointQuery [p] q = []"
+  | "pointQuery (p#r#xs) q =
+     (if (\<not>leftFromPoint q p) then (pointQuery xs q)
+      else ( if ((yCoord p < yCoord q \<and> yCoord r > yCoord q \<or> yCoord p > yCoord q \<and> yCoord r < yCoord q))
+          then ([p,r])
+          else (pointQuery xs q)
+     ))"
 
 
 
