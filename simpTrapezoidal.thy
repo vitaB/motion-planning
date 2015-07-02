@@ -50,7 +50,7 @@ fun slabs :: "point2d list \<Rightarrow> point2d list \<Rightarrow> point2d list
 (*ersetzte Trapez. AB ist ein Segment aus dem Polygon. p ist der "entstehungsknoten" des slab
 (schnittpunkt zwischen pr und AB)*)
 definition newTrapez :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where
-  "newTrapez p A B \<equiv> [(Abs_point2d (xCoord p, (lineFunktionY A B (xCoord p)))), p]"
+  "newTrapez p A B \<equiv> [p, Abs_point2d (xCoord p, (lineFunktionY A B (xCoord p)))]"
 
 (*welche Trapeze schneiden segment AB. ersetzte gefundene Trapeze, andere bleiben unberührt.*)
 fun trapezInter :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where
@@ -58,9 +58,10 @@ fun trapezInter :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<R
   | "trapezInter [p] A B = []"
   | "trapezInter (p#r#xs) A B =
   (if (leftFromSegment A B p) then (
-    (if (segment A B \<and> intersect A B p r) then ((newTrapez p A B) @ trapezInter xs A B)
-    else (p#r # trapezInter xs A B)) )
-  else [])"
+    (if (segment A B \<and> crossing A B p r) then (
+      (newTrapez p A B) @ trapezInter xs A B)
+    else (p#r # trapezInter xs A B))
+  ) else (p#r#xs))"
 
 fun trapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> point2d list" where
   "trapezoidalMap _ [] = []"
@@ -75,6 +76,7 @@ fun trapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> poi
 
 (*entferne die übrigen strecken die noch innerhalb der Polygone sind*)
 
+(*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox nicht schneidet*)
 
 (*zeige das die trapezoidalMap jetzt eine Einteilung der Freien-Räume innerhalb der rBox ist*)
 
