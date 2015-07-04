@@ -15,6 +15,7 @@ hat damit also nur 2 Nachbarn*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
 lemma [simp]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
+lemma pointListRev[simp] : "pointList L \<Longrightarrow> pointList (rev L)" by (simp add: pointList_def)
 
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
@@ -97,21 +98,31 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
 definition collinearList :: "point2d list \<Rightarrow> bool" where
   "collinearList L \<equiv> (\<exists> a b c. a < length L \<and> b < length L \<and> c < length L \<and>
   a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> collinear (L!a) (L!b) (L!c))"
-lemma collinearList1 [simp]: "collinear a b c = collinearList [a,b,c]"
+lemma collinearList1 : "collinear a b c = collinearList [a,b,c]"
   apply (simp add: collinearList_def, rule iffI)
   apply (rule_tac  x=0 in exI, simp, rule_tac  x=1 in exI, simp, rule_tac  x=2 in exI, simp)
   apply (safe)
 oops
 lemma collinearList2: "\<not>collinearList (a#xs) \<Longrightarrow> \<not>collinearList (xs)"
-oops
+  apply (simp add: collinearList_def, safe)
+  apply (erule_tac x="aa+1" in allE, simp)
+  apply (erule_tac x="b+1" in allE, simp)
+  apply (erule_tac x="c+1" in allE, simp)
+done
 lemma collinearListRev: "collinearList xs = collinearList (rev xs)"
-oops
+  apply (simp add: collinearList_def, rule iffI)
+  apply (safe)
+  apply ((rule_tac x="(length xs - 1) - a" in exI, safe, simp)
+  ,(rule_tac x="(length xs - 1) - b" in exI, safe, simp)
+  ,(rule_tac x="(length xs - 1) - c" in exI, safe, simp)
+  , (simp, simp, simp, simp add: rev_nth))+
+done
 
 (*collineare Liste erweitert*)
-lemma collinearListAppend1 [simp]: "collinearListt xs \<Longrightarrow> collinearList (a#xs)"
-oops
+lemma collinearListAppend1 [simp]: "collinearList xs \<Longrightarrow> collinearList (a#xs)"
+  by (metis collinearList2)
 lemma collinearListAppend2 [simp]: "collinearList xs \<Longrightarrow> collinearList (xs @ [a])"
-oops
+  by (metis collinearList2 collinearListRev rev.simps(2) rev_rev_ident)
 theorem collinearListAppend [simp]: "collinearList xs \<Longrightarrow> collinearList (x @ xs)"
 oops
 
@@ -126,9 +137,15 @@ lemma collinearListAdj: "\<not>collinearList L \<Longrightarrow> a < length L - 
   apply (simp add: less_diff_conv n_not_Suc_n)+
 done
 
-(*befindet sich der punkt P collinear mit irgendwelchen der segmente von L*)
+(*der punkt P befindet sich collinear mit irgendwelchen der segmente von L*)
 definition collinearListPoint :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
   "collinearListPoint L p \<equiv> \<exists> a. a < length L - 1 \<and> collinear (L!a) (L!Suc a) p"
+
+
+(*keiner der Strecken aus der pointList schneidet sich (echt) mit einer anderen Strecke der pointList*)
+definition crossingFreePList :: "point2d list \<Rightarrow> bool" where
+ "crossingFreePList P \<equiv> \<forall>i k. ((k < length P - 1 \<and> i < length P - 1) \<longrightarrow>
+ \<not>crossing (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
 
 (*keiner der Strecken aus der pointList überschneidet sich mit einer anderen Strecke der pointList
   (außer natürlich die jeweiligen Nachbarkanten)*)
@@ -190,12 +207,6 @@ theorem listIntersection : "segment A B \<Longrightarrow> length L \<ge> 1 \<Lon
   apply (simp, simp)
   apply (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero)
   by (simp, metis One_nat_def Suc_1)
-
-
-(*keiner der Strecken aus der pointList schneidet sich mit einer anderen Strecke der pointList*)
-definition crossingFreePList :: "point2d list \<Rightarrow> bool" where
- "crossingFreePList P \<equiv> \<forall>i k. ((k < length P - 1 \<and> i < length P - 1) \<longrightarrow>
- \<not>crossing (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
 
 
 

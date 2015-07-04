@@ -10,6 +10,20 @@ definition polygon :: "point2d list \<Rightarrow> bool" where
 "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<equiv> (\<forall> k < length P - 1.
   \<not>(\<exists> i. i < length P - 1 \<and> lineSeparate (P ! k) (P ! Suc k) (P ! i) (P ! Suc i)))"
 
+lemma polygonRevEq: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon (rev P) \<equiv>
+  (\<forall> k < length (rev P) - 1.
+  \<not>(\<exists> i. i < length (rev P) - 1 \<and> lineSeparate ((rev P) ! k) ((rev P) ! Suc k) ((rev P) ! i) ((rev P) ! Suc i)))"
+  apply (cut_tac P="rev P" and L="hd L # rev (tl L)" in polygon_def)
+  apply (simp, simp add: cyclePath_def)
+  apply (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def rev.simps(2) zero_less_Suc)
+  apply (simp)+
+done
+lemma polygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow> polygon (rev P)"
+  apply (simp add: polygonRevEq polygon_def, auto)
+  apply (subgoal_tac "rev P = revCycle L")
+  apply (simp add: polygon_def)
+sorry
+
 (*alle Dreiecke sind conv. Polygone*)
 lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P"
  (* apply (simp add:polygon_def cyclePath_def, safe)
@@ -73,29 +87,68 @@ theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P
 by (metis conflictingRigthTurns1 rightTurnRotate2)
 
 
-(*Punkt inside convex Polygon. Testweise*)
-definition insidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+(*Punkt inside convex Polygon.*)
+(*Testweise. überprüfe ob Punkt für alle segmente des Polygons rechts oder links gerichtet ist*)
+(*wenn Punkt auf Kante liegt, zählt es nicht.*)
+definition pointInsidePolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
 "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
-  insidePolygonACl P a \<equiv> \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a > 0"
-definition insidePolygonCCl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+  pointInsidePolygonACl P a \<equiv> \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a > 0"
+definition pointInsidePolygonCCl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
 "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
-  insidePolygonCCl P a \<equiv> insidePolygonACl (rev P) a"
-theorem insidePolygonCClEq : "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygonCCl P a \<Longrightarrow>
-  \<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a < 0"
-sorry
-definition insidePolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
-  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
-  insidePolygon P a \<equiv> insidePolygonCCl P a \<or> insidePolygonACl P a"
-theorem insidePolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygon P a = insidePolygon (rev P) a"
+  pointInsidePolygonCCl P a \<equiv> pointInsidePolygonACl (rev P) a"
+(*irgndwo hier ist ein Denkfehler*)
+theorem pointInsidePolygonCClEq : "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> \<not>collinearList L \<Longrightarrow>
+  pointInsidePolygonCCl P a = (\<forall> i j. 0 \<le> i \<and> j = i + 1 \<and> j < size P \<longrightarrow> signedArea (P!i) (P!j) a < 0)"
+  apply (simp only: pointInsidePolygonCCl_def)
+  apply (cut_tac P="rev P" and a=a and L="hd L # rev (tl L)" in pointInsidePolygonACl_def, simp)
+    apply (metis revCycleEq revCycle_def)
+    apply (simp add: polygonRev) 
+  apply (simp, rule iffI, safe)
+  apply (thin_tac "pointInsidePolygonACl (rev (cyclePath L)) a \<equiv>
+         \<forall>i<length L. 0 < signedArea a (rev (cyclePath L) ! i) (rev (cyclePath L) ! Suc i)")
+  apply (erule_tac x="(length (cyclePath L) - 1) - i" in allE)
+  apply (erule impE)
+  apply (simp add: cyclePath_def)
 sorry
 
+definition pointInsidePolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  pointInsidePolygon P a \<equiv> pointInsidePolygonCCl P a \<or> pointInsidePolygonACl P a"
+lemma pointInsidePolygonRev1: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow>
+  pointInsidePolygon (rev P) a \<equiv> pointInsidePolygonCCl (rev P) a \<or> pointInsidePolygonACl (rev P) a"
+  apply (cut_tac P=P and L=L in polygonRev1, assumption+)
+  apply (cut_tac P="rev P" and L="hd L # rev (tl L)" and a=a in pointInsidePolygon_def)
+  apply (simp, simp add: cyclePath_def)
+  apply (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def rev.simps(2) zero_less_Suc)
+  apply (simp)
+by auto
+theorem pointInsidePolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow>
+  pointInsidePolygon P a = pointInsidePolygon (rev P) a"
+  apply (cut_tac P=P and L=L in polygonRev1, assumption+)
+  apply (simp add: pointInsidePolygonRev1 pointInsidePolygon_def, safe)
+  apply (auto simp add: pointInsidePolygonCCl_def)
+sorry
+
+(*Segment inside convex Polygon. Testweise*)
+definition segmentInsidePolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "segment A B \<Longrightarrow> pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  segmentInsidePolygon P A B \<equiv> pointInsidePolygon P A \<and> pointInsidePolygon P B" 
+
 (*wenn ein punkt einer Strecke inside Polygon und ein Punkt einer Strecke outside, dann gibt es eine intersection*)
-lemma twoPointPolygonInter : "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> insidePolygon P a \<Longrightarrow>
-  \<not>insidePolygon P b \<Longrightarrow> lineCyclePathInters P a b"
+lemma twoPointPolygonInter : "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>  \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow> pointInsidePolygon P a \<Longrightarrow>
+  \<not>pointInsidePolygon P b \<Longrightarrow> lineCyclePathInters P a b"
   apply (subgoal_tac "segment a b")
     apply (subst lineCyclePathIntersEq, simp)
-    apply (simp add: insidePolygon_def insidePolygonACl_def, safe)
+    apply (simp add: pointInsidePolygon_def pointInsidePolygonACl_def)
+    apply (simp add: pointInsidePolygonCClEq, safe)
+    apply (erule_tac x="ia" in allE, simp)
+    apply (rule_tac x="ia" in exI, simp)
+    apply (subgoal_tac "segment (cyclePath L ! ia) (cyclePath L ! Suc ia)")   
 sorry
+(*wenn segment inside convex Polygon, dann schneidet das segment das Polygon nicht*)
+lemma "segment A B \<Longrightarrow> pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow>
+  segmentInsidePolygon P A B \<Longrightarrow> \<not>lineCyclePathInters P A B"
+oops
 
 
 

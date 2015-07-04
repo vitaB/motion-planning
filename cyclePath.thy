@@ -9,6 +9,26 @@ lemma [simp]: "pointList L \<Longrightarrow> hd L \<noteq> last L" by (cases L, 
 lemma [simp]: "pointList L \<Longrightarrow> length (cyclePath L) = length L + 1" by (simp add: cyclePath_def)
 lemma [simp]: "pointList L \<Longrightarrow> hd(cyclePath L) = last(cyclePath L)" by (simp add: cyclePath_def hd_append)
 
+(*Kreis rückwärts ausgeben*)
+definition revCycle :: "point2d list \<Rightarrow> point2d list" where
+  "pointList L \<Longrightarrow> revCycle L \<equiv> cyclePath (hd L # rev (tl L))"
+lemma [simp]: "pointList L \<Longrightarrow> pointList (hd L # rev (tl L))"
+  apply (simp add: pointList_def, safe, simp)
+  apply (metis distinct.simps(2) empty_iff eq_numeral_simps(4) list.collapse list.set(1) nth_Cons_numeral nth_equal_first_eq)
+  apply (simp add: distinct_tl)
+done
+lemma revCycleEq [simp]: "pointList L \<Longrightarrow> revCycle L = rev (cyclePath L)"
+  apply (simp add: revCycle_def cyclePath_def)
+  apply (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def rev.simps(2) zero_less_Suc)
+done
+lemma revCycleCollinear [simp]: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> \<not>collinearList (hd L # rev (tl L))"
+  apply (simp add: collinearList_def, safe)
+  apply (erule_tac x=a in allE, safe, simp)
+  apply (erule_tac x=b in allE, safe, simp)
+  apply (erule_tac x=c in allE, safe)
+  apply (simp)
+sorry
+
 (*alle benachbarten Kanten von cyclePath sind segmente*)
 lemma cyclePathLastSegment : "pointList L \<Longrightarrow> segment (last L) (last (cyclePath L))"
   apply (simp add: cyclePath_def segment_def, subst neq_commute, simp)

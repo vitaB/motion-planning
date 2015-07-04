@@ -81,7 +81,15 @@ fun trapezoidalFreeSpace ::  "point2d list \<Rightarrow> point2d list \<Rightarr
  | "trapezoidalFreeSpace (p#r#xs) P = (if (collinearListPoint P p \<and> collinearListPoint P r) then (
   trapezoidalFreeSpace xs P) else (p#r # trapezoidalFreeSpace xs P))"
 
-(*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox nicht schneidet*)
+(*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox schneidet*)
+lemma "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> uniqueXCoord L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  T = trapezoidalMap (slabs L (simpRBox L)) P \<Longrightarrow> \<forall> i < length T - 1. lineCyclePathInters P (T!i) (T!Suc i)"
+oops
+
+(*zeige das keine der Strecken von trapezoidalMap im Polygon sind*)
+lemma "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> uniqueXCoord L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
+  T = trapezoidalMap (slabs L (simpRBox L)) P \<Longrightarrow> \<forall> i < length T - 1. segmentInsidePolygon P (T!i) (T!Suc i)"
+oops
 
 (*zeige das die trapezoidalMap jetzt eine Einteilung der Freien-Räume innerhalb der rBox ist*)
 

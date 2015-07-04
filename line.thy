@@ -112,7 +112,6 @@ lemma intersectRightTurn1 : "segment A B \<Longrightarrow> segment P R \<Longrig
 by (metis notRightTurn)
 
 
-
 (*Zusätliche Lemmas*)
 lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>
   \<not>collinear a b c \<Longrightarrow> a \<noteq> c \<and> b \<noteq> c "
@@ -129,14 +128,14 @@ by (smt2 intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTur
 definition leftFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> leftFromSegment A B P \<equiv> leftFromPoint P A \<or> leftFromPoint P B"
 
-(*http://afp.sourceforge.net/browser_info/current/AFP/Impossible_Geometry/Impossible_Geometry.html*)
+
+(*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
+(*(*http://afp.sourceforge.net/browser_info/current/AFP/Impossible_Geometry/Impossible_Geometry.html*)
 definition is_intersection_def:
   "is_intersection M A B C D = (collinear A M B \<and> collinear C M D)"
 lemma "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow> \<exists> M. is_intersection M A B P R"
   apply (simp add: is_intersection_def intersect_def, safe)
   apply (simp add: crossing_def lineSeparate_def, safe)
-sorry
-
-(*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
+sorry*)
 
 end
