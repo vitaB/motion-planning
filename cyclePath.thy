@@ -48,17 +48,29 @@ lemma cyclePathAdjacentSame1 :"pointList L \<Longrightarrow> i < length (cyclePa
   cyclePath L ! i \<noteq> cyclePath L ! k \<Longrightarrow> cyclePath L ! Suc i \<noteq> cyclePath L ! Suc k"
 sorry
 
-(*keine 3 aufeinander folgenden Punkte im cyclePath sind collinear, wenn L collinear-frei ist*)
+(*keine 3 aufeinander folgenden Punkte im cyclePath L sind collinear, wenn L collinear-frei ist*)
 lemma cyclePathNotCollinear1:"pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
   a < length P - 2 \<Longrightarrow> signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0"
-  apply (subgoal_tac "\<not> collinear (P! (length P - 3))(P!(length P - 2))(last P)")
-    apply (simp)
-    apply (simp add: cyclePath_def)
-    apply (subgoal_tac "(L @ [hd L]) ! (length L - Suc 0) = L ! (length L - Suc 0)")
-    apply (subgoal_tac "(L @ [hd L]) ! (length L - 2) = L ! (length L - 2)")
-    apply (simp)
-    apply (simp add: collinearList_def)
-sorry
+  (*apply (subgoal_tac "(a = length P - 3 \<longrightarrow> \<not> collinear (P! a)(P!Suc a)(last P)) \<and>
+    (a < length P - 3 \<longrightarrow> signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0) ")
+    apply (simp only: colliniearRight )
+    apply (metis Suc_1 Suc_lessI diff_Suc_1 diff_Suc_eq_diff_pred diff_less_Suc diff_self_eq_0 last_conv_nth length_greater_0_conv numeral_3_eq_3 zero_less_diff)
+  apply (safe)
+  apply (simp add: cyclePath_def collinearList_def)
+  apply (erule_tac x=0 in allE, safe, simp)
+  apply (erule_tac x="(length L - 2)" in allE, safe, simp)
+  apply (erule_tac x="Suc (length L - 2)" in allE, safe, simp)
+  apply (smt2 One_nat_def Suc_1 Suc_diff_1 Suc_diff_Suc le_refl length_greater_0_conv list.size(3) not_less_eq_eq not_less_iff_gr_or_eq numeral_eq_Suc pointList_def pred_numeral_simps(3) zero_less_diff)
+  apply (simp)
+(*hä?*)
+  apply (metis One_nat_def Suc_eq_plus1 Suc_lessD hd_conv_nth length_0_conv less_diff_conv less_nat_zero_code nth_append)
+  apply (simp add: cyclePath_def collinearList_def)
+  apply (erule_tac x=a in allE, safe, simp)
+  apply (erule_tac x="Suc a" in allE, safe, simp)
+  apply (erule_tac x="Suc (Suc a)" in allE, safe, simp)
+  apply (simp, simp, simp)
+  apply(smt2 One_nat_def Suc_eq_plus1 Suc_lessD add_Suc_right colliniearRight less_diff_conv nth_append numeral_2_eq_2)
+done*)sorry
 (*alle 3 aufeinander folgenden Ecken im cyclePath sind links oder rechts gerichtet; wenn L collinear-frei ist*)
 theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
   (\<forall> a < length P - 2. signedArea (P!a) (P ! Suc a) (P ! Suc(Suc a)) < 0)
