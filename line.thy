@@ -15,6 +15,12 @@ definition lineFunktionY :: "point2d \<Rightarrow> point2d \<Rightarrow> real \<
   "segment A B \<Longrightarrow> xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
   ((yCoord B - yCoord A)/(xCoord B - xCoord A)) * (px -xCoord A) + yCoord B"
 
+definition vertLineMidpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
+  "xCoord A = xCoord B \<Longrightarrow> vertLineMidpoint A B \<equiv> Abs_point2d(xCoord A,(yCoord A + yCoord B)/2)"
+lemma verLineMidpointRigth : "segment A B \<Longrightarrow> xCoord A = xCoord B \<Longrightarrow> midpoint (vertLineMidpoint A B) A B"
+  by (auto simp add: vertLineMidpoint_def midpoint_def)
+  
+
 (*Punkt befindet sich auf segment*)
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> collinear p A B \<Longrightarrow> point_on_segment p A B \<equiv> min (xCoord A)(xCoord B) \<le> xCoord p \<and>

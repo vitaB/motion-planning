@@ -104,6 +104,14 @@ lemma collinearTransitiv1 : "\<exists> a. collinear a b c \<and> collinear a b d
   apply (auto)
 done
 
+(*punkt A zwischen B und C*)
+definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"
+lemma midPointCollinear : "midpoint a b c \<longrightarrow> collinear a b c"
+  apply (rule impI, simp add: midpoint_def collinear_def)
+  by (erule conjE, algebra)
+(*evtl. die Definition noch ändern das echter Mittelpunkt berechnet wird*)
+lemma "a=b \<Longrightarrow> a=c \<Longrightarrow> midpoint a b c" by (simp add: midpoint_def)
 
 
 
@@ -146,9 +154,6 @@ lemma notBetween2 [dest]: "\<lbrakk>isBetween A B C ;isBetween C A B\<rbrakk>  \
 lemma notBetween3 [dest]: "\<lbrakk>isBetween B A C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"(*[1]*) sorry*)
 
 (*
-(*punkt A zwischen B und C*)
-definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"
 definition betwpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "betwpoint a b c = (\<forall> n. n > 1 \<longrightarrow> (n * yCoord a = yCoord b + yCoord c \<and> n * xCoord a = xCoord b + xCoord c))"
 lemma swapBetween [simp]: "betwpoint a c b = betwpoint a b c" by(auto simp add: betwpoint_def)
@@ -157,9 +162,6 @@ lemma swapBetween [simp]: "betwpoint a c b = betwpoint a b c" by(auto simp add: 
   apply (erule_tac x = 2 in allE)
   apply (auto)
 oops*)
-lemma "midpoint a b c \<longrightarrow> collinear a b c"
-  apply (rule impI, simp add: midpoint_def collinear_def)
-  by (erule conjE, algebra)
 lemma betwpointCollinear [intro] : "betwpoint a b c \<longrightarrow> collinear a b c"
   apply (rule impI, simp add: betwpoint_def collinear_def)
   apply (erule_tac x = 2 in allE, simp, algebra)

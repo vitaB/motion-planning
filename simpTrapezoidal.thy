@@ -106,7 +106,14 @@ fun pointQuery :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d list
           else (pointQuery xs q)
      ))"
 
+(*roadMap. Eingabe TrapezodiodamMap T*)
+(*Mittelpunkte in den Trapezen fehlen noch, evtl. eine Datenstruktur für Trapeze notwendig*)
+fun roadMap :: "point2d list \<Rightarrow>point2d list" where
+  "roadMap [] = []"
+  |"roadMap [t] = []"
+  |"roadMap (ts#te#t) = (vertLineMidpoint ts te) # roadMap t"
 
+(*beweise das Strecken zwischen RaodMap immer Kollisionsfrei*)
 
 
 
