@@ -15,13 +15,14 @@ definition lineFunktionY :: "point2d \<Rightarrow> point2d \<Rightarrow> real \<
   "segment A B \<Longrightarrow> xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
   ((yCoord B - yCoord A)/(xCoord B - xCoord A)) * (px -xCoord A) + yCoord B"
 
+(*berechne den mittelpunkt der vertikalen Strecke AB*)
 definition vertLineMidpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A = xCoord B \<Longrightarrow> vertLineMidpoint A B \<equiv> Abs_point2d(xCoord A,(yCoord A + yCoord B)/2)"
 lemma verLineMidpointRigth : "segment A B \<Longrightarrow> xCoord A = xCoord B \<Longrightarrow> midpoint (vertLineMidpoint A B) A B"
   by (auto simp add: vertLineMidpoint_def midpoint_def)
   
 
-(*Punkt befindet sich auf segment*)
+(*Punkt p befindet sich auf segment AB*)
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> collinear p A B \<Longrightarrow> point_on_segment p A B \<equiv> min (xCoord A)(xCoord B) \<le> xCoord p \<and>
   xCoord p \<le> max (xCoord A)(xCoord B) \<and> min (yCoord A)(yCoord B) \<le> yCoord p \<and> yCoord p \<le> max (yCoord A)(yCoord B)"
@@ -32,6 +33,17 @@ lemma point_on_segmentSym [simp] : "segment A B \<Longrightarrow> collinear p A 
 done
 lemma point_on_segmentSame [simp]: "segment p B \<Longrightarrow> point_on_segment p p B"
   by (simp add: point_on_segment_def segment_Sym)
+
+(*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken), dann trennt AB die Ecken P und R*)
+(****evtl. nicht Beweisbar... für point_on_segment sollte dann eine andere Definition gesucht werden*)
+lemma point_on_segment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear A P R \<Longrightarrow>
+  point_on_segment A P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
+  apply (auto simp add: point_on_segment_def)
+sorry
+lemma point_on_segment_noRightTurn1 : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear B P R \<Longrightarrow>
+  point_on_segment B P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
+  apply (auto simp add: point_on_segment_def)
+sorry
 
 (*Strecke A B "trennt" die Punkte P und R, wenn die Endpunkte von P R auf verschiedenen Seiten von AB liegen.*)
 definition lineSeparate :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -58,18 +70,6 @@ lemma lineSeparateSym1[simp]: "lineSeparate A B P R = lineSeparate A B R P"
   apply (simp , rule iffI, simp add: lineSeparate_def signedArea_def leftTurnDiffPoints)
   apply (safe)
 oops*)
-
-(*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken), dann trennt AB die Ecken P und R*)
-(*TODO: hier fehlt noch ein Beweis*)
-(****evtl. nicht Beweisbar... für point_on_segment sollte dann eine andere Definition gesucht werden*)
-lemma point_on_segment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear A P R \<Longrightarrow>
-  point_on_segment A P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
-  apply (auto simp add: point_on_segment_def)
-sorry
-lemma point_on_segment_noRightTurn1 : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear B P R \<Longrightarrow>
-  point_on_segment B P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
-  apply (auto simp add: point_on_segment_def)
-sorry
 
 (*(echter)Schnitt zwischen Segment A B und Segment P R*)
 definition crossing ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -117,6 +117,9 @@ lemma intersectRightTurn1 : "segment A B \<Longrightarrow> segment P R \<Longrig
   apply (metis notRightTurn rightTurnRotate2)
 by (metis notRightTurn)
 
+(*punkt P ist links vom "rechten" Eckpunkt der Strecke AB. D.h. A oder B ist rechts von P*)
+definition leftFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "segment A B \<Longrightarrow> leftFromSegment A B P \<equiv> leftFromPoint P A \<or> leftFromPoint P B"
 
 (*Zusätliche Lemmas*)
 lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>
@@ -129,10 +132,6 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   apply (metis crossingLeftTurn notLeftTurn notRightTurn1)
   apply (metis notRightTurn)
 by (smt2 intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
-
-(*punkt P ist links von der Strecke AB. D.h. A oder B ist rechts von P*)
-definition leftFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "segment A B \<Longrightarrow> leftFromSegment A B P \<equiv> leftFromPoint P A \<or> leftFromPoint P B"
 
 
 (*Lemmas und Definitionen, die momentan nicht gebraucht werden*)

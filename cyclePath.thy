@@ -21,6 +21,7 @@ lemma revCycleEq [simp]: "pointList L \<Longrightarrow> revCycle L = rev (cycleP
   apply (simp add: revCycle_def cyclePath_def)
   apply (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def rev.simps(2) zero_less_Suc)
 done
+(*der Allgemeinfall mit ~~/src/HOL/Library/Permutation ist evtl. einfacher*)
 lemma revCycleCollinear [simp]: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> \<not>collinearList (hd L # rev (tl L))"
   apply (simp add: collinearList_def, safe)
   apply (erule_tac x=a in allE, safe, simp)
@@ -51,7 +52,7 @@ sorry
 (*keine 3 aufeinander folgenden Punkte im cyclePath L sind collinear, wenn L collinear-frei ist*)
 lemma cyclePathNotCollinear1:"pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
   a < length P - 2 \<Longrightarrow> signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0"
-  (*apply (subgoal_tac "(a = length P - 3 \<longrightarrow> \<not> collinear (P! a)(P!Suc a)(last P)) \<and>
+  (*Beweis braucht zu lange: apply (subgoal_tac "(a = length P - 3 \<longrightarrow> \<not> collinear (P! a)(P!Suc a)(last P)) \<and>
     (a < length P - 3 \<longrightarrow> signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0) ")
     apply (simp only: colliniearRight )
     apply (metis Suc_1 Suc_lessI diff_Suc_1 diff_Suc_eq_diff_pred diff_less_Suc diff_self_eq_0 last_conv_nth length_greater_0_conv numeral_3_eq_3 zero_less_diff)

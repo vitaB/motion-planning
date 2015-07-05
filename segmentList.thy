@@ -93,7 +93,7 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
   by (metis empty_iff inYCoord in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl yCoordSorted yCoordSorted1)
 
 
-(*3 Ecken in der pointList sind kolliniear*)
+(*3 beliebige Ecken in der pointList sind kolliniear*)
 (*mit der negation, brauche ich evtl. die Definition von pointList nicht mehr*)
 definition collinearList :: "point2d list \<Rightarrow> bool" where
   "collinearList L \<equiv> (\<exists> a b c. a < length L \<and> b < length L \<and> c < length L \<and>
@@ -110,12 +110,15 @@ lemma collinearList2: "\<not>collinearList (a#xs) \<Longrightarrow> \<not>collin
   apply (erule_tac x="c+1" in allE, simp)
 done
 lemma collinearListRev: "collinearList xs = collinearList (rev xs)"
-  apply (simp add: collinearList_def, rule iffI)
-  apply (safe)
-  apply ((rule_tac x="(length xs - 1) - a" in exI, safe, simp)
-  ,(rule_tac x="(length xs - 1) - b" in exI, safe, simp)
-  ,(rule_tac x="(length xs - 1) - c" in exI, safe, simp)
-  , (simp, simp, simp, simp add: rev_nth))+
+  apply (simp add: collinearList_def, rule iffI, safe)
+  apply (rule_tac x="(length xs - 1) - a" in exI, safe, simp)
+  apply(rule_tac x="(length xs - 1) - b" in exI, safe, simp)
+  apply(rule_tac x="(length xs - 1) - c" in exI, safe, simp)
+  apply(simp add: rev_nth)+
+  apply(rule_tac x="(length xs - 1) - a" in exI, safe, simp)
+  apply(rule_tac x="(length xs - 1) - b" in exI, safe, simp)
+  apply(rule_tac x="(length xs - 1) - c" in exI, safe, simp)
+  apply(simp add: rev_nth)+
 done
 
 (*collineare Liste erweitert*)

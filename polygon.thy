@@ -5,7 +5,7 @@ begin
 (*Convexes Polygon.
 - keiner der Kanten des Polygons trennt irgendeine der übrigen Ecken einer der Kanten des Polygons
 - 3 aufeainder folgenden Kanten sind nicht kollinear*)
-(*Bemerkung: im Polygon gibt es hier collinearität. Und zwar an der letzten+ersten Kante*)
+(*Bemerkung: im cyclePath gibt es hier collinearität. Und zwar an der letzten+ersten Kante*)
 definition polygon :: "point2d list \<Rightarrow> bool" where
 "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<equiv> (\<forall> k < length P - 1.
   \<not>(\<exists> i. i < length P - 1 \<and> lineSeparate (P ! k) (P ! Suc k) (P ! i) (P ! Suc i)))"
@@ -26,7 +26,7 @@ sorry
 
 (*alle Dreiecke sind conv. Polygone*)
 lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P"
- (* apply (simp add:polygon_def cyclePath_def, safe)
+ (*Beweis braucht zu lange: apply (simp add:polygon_def cyclePath_def, safe)
   apply (simp add: lineSeparate_def, safe)
   apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", safe)
     apply (auto simp add: rightTurn_def)
@@ -116,7 +116,7 @@ definition pointInsidePolygon :: "point2d list \<Rightarrow> point2d \<Rightarro
   pointInsidePolygon P a \<equiv> pointInsidePolygonCCl P a \<or> pointInsidePolygonACl P a"
 lemma pointInsidePolygonRev1: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow>
   pointInsidePolygon (rev P) a \<equiv> pointInsidePolygonCCl (rev P) a \<or> pointInsidePolygonACl (rev P) a"
-  apply (cut_tac P=P and L=L in polygonRev1, assumption+)
+  apply (cut_tac P=P and L=L in polygonRev, assumption+)
   apply (cut_tac P="rev P" and L="hd L # rev (tl L)" and a=a in pointInsidePolygon_def)
   apply (simp, simp add: cyclePath_def)
   apply (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def rev.simps(2) zero_less_Suc)
@@ -124,7 +124,7 @@ lemma pointInsidePolygonRev1: "pointList L \<Longrightarrow> P = cyclePath L \<L
 by auto
 theorem pointInsidePolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow>
   pointInsidePolygon P a = pointInsidePolygon (rev P) a"
-  apply (cut_tac P=P and L=L in polygonRev1, assumption+)
+  apply (cut_tac P=P and L=L in polygonRev, assumption+)
   apply (simp add: pointInsidePolygonRev1 pointInsidePolygon_def, safe)
   apply (auto simp add: pointInsidePolygonCCl_def)
 sorry

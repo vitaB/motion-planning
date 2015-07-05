@@ -16,7 +16,7 @@ lemma pointSameCoord : "Abs_point2d(a, b) = Abs_point2d(a', c)\<Longrightarrow> 
 
 (*points equal*)
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"pointsEqual r p \<longleftrightarrow> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
+  "pointsEqual r p \<longleftrightarrow> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
 lemma pointsNotEqual : "\<not>pointsEqual r p \<longleftrightarrow> (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
   by (simp add: pointsEqual_def)
 lemma pointsNotEqual1: "(xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p) \<longleftrightarrow> r \<noteq> p"
@@ -112,6 +112,8 @@ lemma midPointCollinear : "midpoint a b c \<longrightarrow> collinear a b c"
   by (erule conjE, algebra)
 (*evtl. die Definition noch ändern das echter Mittelpunkt berechnet wird*)
 lemma "a=b \<Longrightarrow> a=c \<Longrightarrow> midpoint a b c" by (simp add: midpoint_def)
+
+
 
 
 
