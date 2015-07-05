@@ -2,19 +2,22 @@ theory dag
 imports polygon
 begin
 
+(*Defintion für trapez. durch Strecke über dem Trapez, Strecke unter dem Trapez.
+linker Endpunkt, rechter Endpunkt*)
 record trapez = topT :: "point2d\<times>point2d"
   bottomT :: "point2d\<times>point2d"
   leftp :: point2d
   rightp :: point2d
-
 definition t1 :: trapez where
   "t1 \<equiv> (|topT =(Abs_point2d(1,1),Abs_point2d(1,1)), bottomT =(Abs_point2d(1,1),Abs_point2d(1,1)), leftp =Abs_point2d(1,1), rightp=Abs_point2d(1,1)|)"
 
+(*ein Trapez und seine Nachbarn*)
 record trapezoid = trapez :: trapez
   neighbor :: "trapez list"
 definition tr1 :: trapezoid where
   "tr1 \<equiv> \<lparr>trapez = t1, neighbor= []\<rparr>"
 
+(*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)
 datatype kNode = xNode point2d | yNode "(point2d\<times>point2d)"
 definition node1 :: kNode where
   "node1 \<equiv> xNode (Abs_point2d(1,1))"
