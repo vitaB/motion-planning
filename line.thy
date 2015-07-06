@@ -120,6 +120,12 @@ by (metis notRightTurn)
 (*punkt P ist links vom "rechten" Eckpunkt der Strecke AB. D.h. A oder B ist rechts von P*)
 definition leftFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> leftFromSegment A B P \<equiv> leftFromPoint P A \<or> leftFromPoint P B"
+definition leftPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
+  "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<equiv> (if (leftFromPoint A B) then A else B)"
+definition rightPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
+  "xCoord A \<noteq> xCoord B \<Longrightarrow> rightPSegment A B \<equiv> (if (leftFromPoint A B) then B else A)"
+definition pointAboveSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "segment A B \<Longrightarrow> pointAboveSegment p A B \<equiv> yCoord p > yCoord A \<or> yCoord p > yCoord B"
 
 (*Zusätliche Lemmas*)
 lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>
