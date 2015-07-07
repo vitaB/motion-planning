@@ -79,16 +79,39 @@ lemma "pointList (concat PL) \<Longrightarrow> \<forall> a \<in> set L. pointIns
   apply (cut_tac PL=PL in rBoxConvex, assumption)
 oops
 
+(*gehe von links nach rechts durch die Trapeze, die die Strecke S schneidet.
+Input: Trapez in dem sich die linke Ecke von S befindet und die rechte Ecke von S*)
+fun followSegment :: "trapezoid \<Rightarrow> point2d \<Rightarrow> trapezoid list" where
+  "followSegment t a = (if (pointInTrapez t a)
+  then (t) else (t # followSegment(trapezRightAdjacent t) a))"
 
+(*gib eine List mit trapezen zurück die das Segment PQ schneiden
+Input: suchBaum Da, Segment PQ
+Output: liste mit trapezen*)
+fun intersectTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapezoid list" where
+  "intersectTrapez D p q = (
+    if (queryTrapezoidMap D p = queryTrapezoidMap D q) then ([queryTrapezoidMap D p])
+    else ( followSegment (queryTrapezoidMap D (leftPSegment p q)) (rightPSegment p q) )
+    )"
+
+definition replaceTrapez :: "dag => trapezoid list \<Rightarrow> dag" where
+  "replaceTrapez D Tl \<equiv> (if(length Tl = 1) then () else () )"
+
+
+(*Input: S is the set of line segments forming a planar subdivision.
+Output:  A trapezoid map M and an associated search structure M.*)
+fun buildTrapezoidalMap :: "dag \<Rightarrow> " where
+  "buildTrapezoidalMap = "
+  | "buildTrapezoidalMap T (p#q#xs) = buildTrapezoidalMap (replaceTrapez (intersectTrapez T p q)) xs"
 
 
 (*trapezoidal map T, searchStructure D, segment s*)
-fun followSegment :: "trapezoid list \<Rightarrow> dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where
+(*fun followSegment :: "trapezoid list \<Rightarrow> dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where
   "followSegment (ti#T) A B =
     (if (leftFromSegment A B (rightp ti)) then (
       if (crossing A B p r) then ()
       else ())
-    else (rest der trapezoidal anhängen))"
+    else (rest der trapezoidal anhängen))"*)
 
 (*vertikale Strecken einzeichnen, die durch Eckpunkte gehen
 Eingabe Menge der Segmente(polygone ohne cyclePath) und rBox*)
