@@ -1,7 +1,10 @@
 theory polygon
 imports cyclePath
 begin
+(*definition für Polygon: intersectionfree und collinearfree
+* evtl. collinearfree und crossing free*)
 
+(*ich brauche keine convexe polygone*)
 (*Convexes Polygon.
 - keiner der Kanten des Polygons trennt irgendeine der übrigen Ecken einer der Kanten des Polygons
 - 3 aufeainder folgenden Kanten sind nicht kollinear*)
