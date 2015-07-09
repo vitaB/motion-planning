@@ -99,56 +99,35 @@ definition dag1 :: dag where
 
 (*allgemeinFall. weder P noch Q sind in T drin*)
 fun replaceTrapezA :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-  "replaceTrapezA (Tip T) P Q = (if (rightP T = Q) then(
-   Node (Tip \<lparr>topT=topT T, bottomT=(P,Q), leftP=leftP T, rightP=rightP T\<rparr>)
+  "replaceTrapezA (Tip T) P Q =
+   Node (Tip \<lparr>topT=topT T, bottomT=(P,Q), leftP=P, rightP=Q\<rparr>)
     (yNode (P,Q))
-   (Tip \<lparr>topT=(P,Q), bottomT=bottomT T, leftP=P, rightP=Q\<rparr>))
-   else (
-   Node (Tip \<lparr>topT=topT T, bottomT=(P,Q), leftP=leftP T, rightP=Q\<rparr>)
-    (yNode (P,Q))
-   (Tip \<lparr>topT=(P,Q), bottomT=bottomT T, leftP=P, rightP=Q\<rparr>)))"
+   (Tip \<lparr>topT=(P,Q), bottomT=bottomT T, leftP=P, rightP=Q\<rparr>)"
 
-fun replaceTrapezQ :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-"replaceTrapezQ (Tip T) P Q = (if (rightP T = Q) (*wenn q bereits in dag drin*)
-  then (replaceTrapezA (Tip T) P Q)
-  else (Node (replaceTrapezA (Tip T) P Q)(xNode Q)(Tip \<lparr>topT=topT T, bottomT=bottomT T, leftP=Q, rightP=rightP T\<rparr>)))
-  "
-(*sonderFall: wenn p in T*)
-fun replaceTrapezP :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-  "replaceTrapezP (Tip T) P Q = (if (leftP T = P) (*wenn p bereits in dag drin*)
-  then(replaceTrapezQ (Tip T) P Q)
-  else(Node (Tip \<lparr>topT=(topT T), bottomT=(P,Q), leftP=(leftP T), rightP=P\<rparr>) (xNode P) (replaceTrapezQ (Tip T) P Q)))
- "
-
+(*einfacher Fall, wenn P und Q in Tip T liegen*)
 fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "replaceTrapez (Tip T) P Q = (
-    (*Fehler für, wenn p oder q schon eckpunkte(lfetP oder rightP) von Trapezen*)
-    if(queryTrapezoidMap (Tip T) P = queryTrapezoidMap (Tip T) Q)
+    if(leftP T \<noteq> P \<and> rightP T \<noteq> Q) (*P und Q sind keine Endpunkte von Trapezen*)
     then (
       Node (Tip\<lparr>topT=(topT T), bottomT=(bottomT T), leftP=(leftP T), rightP=P\<rparr>)
         (xNode P)
-        (Node(Node(Tip \<lparr>topT=(topT T), bottomT=(P,Q), leftP=P, rightP=P\<rparr>)(yNode (P,Q))(Tip \<lparr>topT=(P,Q), bottomT=(bottomT T), leftP=P, rightP=P\<rparr>))
+        (Node(replaceTrapezA (Tip T) P Q)
           (xNode Q)
-        (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=P, rightP=(rightP T)\<rparr>))
-    ) else(Tip T)
+        (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=Q, rightP=(rightP T)\<rparr>))
+    ) else( if (leftP T = P \<and> rightP T \<noteq> Q) (*P ist ein Endpunkt, Q nicht*)
+      then (Node(replaceTrapezA (Tip T) P Q)
+            (xNode Q)
+           (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=Q, rightP=(rightP T)\<rparr>))
+      else (if(leftP T \<noteq> P \<and> rightP T = Q) (*Q ist ein Endpunkt, P nicht*)
+        then (Node (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=leftP T, rightP=P\<rparr>)
+          (xNode P)
+          (replaceTrapezA (Tip T) P Q)
+        (*P und Q sind Endpunkte*)
+       ) else (replaceTrapezA (Tip T) P Q)
+      )
+    )
     )"
 
-
-definition replaceTrapez :: "dag \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-  "replaceTrapez D Tl p q \<equiv> (if(length Tl = 1)
-  then (Node 
-  (Tip \<lparr>topT=(topT(hd Tl)), bottomT=(bottomT (hd Tl)), leftP=(leftP (hd Tl)), rightP=(rightP (hd Tl)) \<rparr>)
-  (xNode p) (Node 
-    (Node (Tip \<lparr>topT=(topT(hd Tl)), bottomT=(p,q), leftP=p, rightP=q \<rparr>) (yNode (p,q)) (Tip \<lparr>topT=(p,q), bottomT=(bottomT (hd Tl)), leftP=p, rightP=q\<rparr> )) 
-    (xNode q) 
-    (Tip \<lparr>topT=(topT(hd Tl)), bottomT=(bottomT (hd Tl)), leftP=q, rightP=(rightP (hd Tl)) \<rparr>))
-  )
-  else (D))"
-
-(*(if(length Tl = 1)
-    then (replaceTrapez D (hd Tl)
-      (\<lparr>topT= topT(hd Tl), bottomT=bottomT(hd Tl) ,leftp=(leftPSegment p q), rightp=(rightPSegment p q)\<rparr>))
-  else () )"*)
 
 (*gehe von links nach rechts durch die Trapeze, die die Strecke S schneidet.
 Input: A Trapezoidal map T, a search structure D, segment PQ
