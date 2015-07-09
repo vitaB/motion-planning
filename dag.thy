@@ -104,6 +104,12 @@ fun replaceTrapezA :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightar
     (yNode (P,Q))
    (Tip \<lparr>topT=(P,Q), bottomT=bottomT T, leftP=P, rightP=Q\<rparr>)"
 
+fun replaveTrapezQ :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaveTrapezQ (Tip T) P Q =
+    Node (replaceTrapezA (Tip T) P Q)
+      (xNode Q)
+    (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=Q, rightP=(rightP T)\<rparr>)"
+
 (*einfacher Fall, wenn P und Q in Tip T liegen*)
 fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "replaceTrapez (Tip T) P Q = (
@@ -111,23 +117,28 @@ fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarr
     then (
       Node (Tip\<lparr>topT=(topT T), bottomT=(bottomT T), leftP=(leftP T), rightP=P\<rparr>)
         (xNode P)
-        (Node(replaceTrapezA (Tip T) P Q)
-          (xNode Q)
-        (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=Q, rightP=(rightP T)\<rparr>))
+        (replaveTrapezQ (Tip T) P Q)
     ) else( if (leftP T = P \<and> rightP T \<noteq> Q) (*P ist ein Endpunkt, Q nicht*)
-      then (Node(replaceTrapezA (Tip T) P Q)
-            (xNode Q)
-           (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=Q, rightP=(rightP T)\<rparr>))
-      else (if(leftP T \<noteq> P \<and> rightP T = Q) (*Q ist ein Endpunkt, P nicht*)
-        then (Node (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=leftP T, rightP=P\<rparr>)
-          (xNode P)
-          (replaceTrapezA (Tip T) P Q)
-        (*P und Q sind Endpunkte*)
-       ) else (replaceTrapezA (Tip T) P Q)
+        then (replaveTrapezQ (Tip T) P Q)
+        else (if(leftP T \<noteq> P \<and> rightP T = Q) (*Q ist ein Endpunkt, P nicht*)
+          then (Node (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=leftP T, rightP=P\<rparr>)
+            (xNode P)
+           (replaceTrapezA (Tip T) P Q)
+           (*P und Q sind Endpunkte*)
+           )else (replaceTrapezA (Tip T) P Q)
       )
     )
     )"
 
+(*inkrementell. aber wie?*)
+(*ersetze mittlere Trapeze, d.h. P liegt in T0, Q liegt in Tn und Trapez Ti soll ersetzt werden*)
+fun replaceTrapezM :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+   "replaceTrapezM (Tip T) P Q =(
+   if (pointAboveSegment P Q (leftP T))
+   then (Node (Tip \<lparr>topT=topT T, bottomT=(P,Q), leftP=P, rightP=rightP T\<rparr>)
+      (yNode (P,Q))
+    (Tip \<lparr>topT=(P,Q), bottomT=bottomT T, leftP=leftP T, rightP=\<rparr>))
+   else (Tip T))"
 
 (*gehe von links nach rechts durch die Trapeze, die die Strecke S schneidet.
 Input: A Trapezoidal map T, a search structure D, segment PQ
