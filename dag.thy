@@ -131,6 +131,9 @@ fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarr
     )"
 
 (*inkrementell. aber wie?*)
+(*über den rechten Nachbar:
+  - wenn leftP T über (P,Q), dann solange rechten Nachbar aufsuche bis rightP T über (P,Q)
+  - wenn leftP T unter (P,Q), dann solange rechten Nachbar aufsuche bis rightP T unter (P,Q)*)
 (*ersetze mittlere Trapeze, d.h. P liegt in T0, Q liegt in Tn und Trapez Ti soll ersetzt werden*)
 fun replaceTrapezM :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
    "replaceTrapezM (Tip T) P Q =(
