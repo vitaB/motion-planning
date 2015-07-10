@@ -11,8 +11,9 @@ definition xCoord :: "point2d \<Rightarrow> real" where "xCoord P \<equiv> fst(R
 definition yCoord :: "point2d \<Rightarrow> real" where "yCoord P \<equiv> snd(Rep_point2d P)"(*[1]*)
 lemma [simp]: "xCoord (Abs_point2d (a, b)) = a" by (simp add: xCoord_def Abs_point2d_inverse)
 lemma [simp]: "yCoord (Abs_point2d (a, b)) = b" by (simp add: yCoord_def Abs_point2d_inverse)
-lemma pointSameCoord : "Abs_point2d(a, b) = Abs_point2d(a', c)\<Longrightarrow> a = a' \<and> b = c"
+lemma pointSameCoord [simp] : "Abs_point2d(a, b) = Abs_point2d(a', c) \<longleftrightarrow> a = a' \<and> b = c"
   by (metis (full_types) Abs_point2d_inject fst_conv mem_Collect_eq snd_conv)
+
 
 (*points equal*)
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
