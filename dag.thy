@@ -1,49 +1,6 @@
 theory dag
-imports polygon
+imports norm
 begin
-
-definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
-  "uniqueXCoord L \<equiv> \<forall> a b. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
-
-(*4eckige Box um pointListe herum ist selbst eine pointList*)
-lemma rBoxPointList: "pointList (concat PL) \<Longrightarrow> pointList(
-  [Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
-  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1)])"
-sorry
-
-(*4eckige Box um pointListen herum*)
-definition rBox :: "(point2d list) list \<Rightarrow> point2d list" where
-  "pointList (concat PL) \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> rBox PL \<equiv>
-  cyclePath([Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
-  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1)])"
-
-(*ersetzte den Term Polygon im Satz*)
-lemma rBoxPoly [simp] : "pointList (concat PL) \<Longrightarrow>
-  cyclePath([Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
-  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1)])
-  \<equiv> [Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
-  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
-  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1),
-  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1)]"
-  apply (cut_tac PL=PL in rBoxPointList, assumption)
-  apply (auto simp add: rBox_def cyclePath_def)
-done
-
-(*rBox ist ein Convexes Polygon*)
-lemma rBoxConvex : "pointList (concat PL) \<Longrightarrow> polygon (rBox PL)"  
-oops
-
-(*alle Punkte von PL sind innerhalb von rBox PL*)
-lemma "pointList (concat PL) \<Longrightarrow> \<forall> a \<in> set L. pointInsidePolygon (rBox PL) a"
-  apply (cut_tac PL=PL in rBoxConvex, assumption)
-oops
 
 (*Defintion für trapez. durch Strecke über dem Trapez, Strecke unter dem Trapez.
 linker Endpunkt, rechter Endpunkt*)
@@ -60,25 +17,15 @@ lemma trapezSameCoord : "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b'),(c'
   \<longleftrightarrow> a=a'\<and> b=b' \<and> c=c' \<and> d=d' \<and> e=e' \<and> f=f'"
   by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv)
 
-definition t1 :: trapez where
-  "t1 \<equiv> Abs_trapez ((Abs_point2d(1,1),Abs_point2d(1,1)),(Abs_point2d(1,1),Abs_point2d(1,1)), Abs_point2d(1,1),Abs_point2d(1,1))"
-
 (*ein Trapez und seine Nachbarn*)
-record trapezoid = trapez :: trapez
+(*record trapezoid = trapez :: trapez
   upRightNeighbor :: "trapez"
   lowerRightNeighbor :: "trapez"
   upLeftNeighbor :: "trapez"
-  lowerLeftNeighbor :: "trapez"
-definition tr1 :: trapezoid where
-  "tr1 \<equiv> \<lparr>trapez = t1,
-  upRightNeighbor= t1,lowerRightNeighbor=t1, upLeftNeighbor=t1,lowerLeftNeighbor=t1 \<rparr>"
+  lowerLeftNeighbor :: "trapez"*)
 
 (*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)
 datatype_new kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
-definition node1 :: kNode where
-  "node1 \<equiv> xNode (Abs_point2d(1,1))"
-definition node2 :: kNode where
-  "node2 \<equiv> yNode (Abs_point2d(1,1), Abs_point2d(1,1))"
 
 (*directed acyclic graph*)
 (*x-nodes stores a segment endpoint that defines a vertical extension in the trapezoid map,
@@ -89,68 +36,100 @@ datatype_new dag = Tip "trapez" | Node "dag" kNode "dag"
 
 
 (*Algorithm QueryTrapezoidMap( n, p)
-Input: T is the trapezoid map search structure, n is a 
-   node in the search structure and p is a query point.
-Output:  A pointer to the node in D for the trapezoid 
-   containing the point p.*)
+Input: T is the trapezoid map search structure, n is a node in the search structure and p is a query point.
+Output:  A pointer to the node in D for the trapezoid containing the point p.*)
 fun queryTrapezoidMap :: "dag \<Rightarrow> point2d \<Rightarrow> dag" where
-  "queryTrapezoidMap (Tip n) _ = Tip n"
+  "queryTrapezoidMap (Tip T) _ = Tip T"
   |"queryTrapezoidMap (Node lf (xNode n) rt) p = 
    (if (xCoord p < xCoord n) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
   |"queryTrapezoidMap (Node lf (yNode x) rt) p =
   (*lf ist über dem segment, rt ist unter dem segment*)
    (if (pointAboveSegment (fst x) (snd x) p) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
 
-definition dag1 :: dag where
-  "dag1 \<equiv> Node (Tip t1) node1 (Node (Tip t1) node2 (Tip t1))"
 
-(*allgemeinFall. weder P noch Q sind in T drin*)
-fun replaceTrapezA :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-  "replaceTrapezA (Tip T) P Q =
+(*Einfacher Fall: allgemeinFall. weder P noch Q sind in T drin, auch nicht an den Ecken*)
+definition replaceTrapezSimpA :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaceTrapezSimpA  T P Q =
    Node (Tip (Abs_trapez (topT T,(P,Q),P,Q)))
     (yNode (P,Q))
    (Tip (Abs_trapez ((P,Q),bottomT T,P,Q)))"
 
-fun replaveTrapezQ :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-  "replaveTrapezQ (Tip T) P Q =
-    Node (replaceTrapezA (Tip T) P Q)
+(*Einfacher Fall: füge Q hinzu, P bereits betrachtet*)
+definition replaceTrapezSimpQ :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaceTrapezSimpQ T P Q =
+    Node (replaceTrapezSimpA T P Q)
       (xNode Q)
     (Tip (Abs_trapez(topT T,bottomT T,Q,rightP T)))"
 
-(*einfacher Fall, wenn P und Q in Tip T liegen*)
-fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-  "replaceTrapez (Tip T) P Q = (
+(*Einfacher Fall: wenn P und Q in T liegen*)
+definition replaceTrapezSimp :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaceTrapezSimp  T P Q = (
     if(leftP T \<noteq> P \<and> rightP T \<noteq> Q) (*P und Q sind keine Endpunkte von Trapezen*)
     then (
       Node (Tip(Abs_trapez(topT T,bottomT T,leftP T,P)))
         (xNode P)
-        (replaveTrapezQ (Tip T) P Q)
+        (replaceTrapezSimpQ T P Q)
     ) else( if (leftP T = P \<and> rightP T \<noteq> Q) (*P ist ein Endpunkt, Q nicht*)
-        then (replaveTrapezQ (Tip T) P Q)
+        then (replaceTrapezSimpQ T P Q)
         else (if(leftP T \<noteq> P \<and> rightP T = Q) (*Q ist ein Endpunkt, P nicht*)
           then (Node (Tip (Abs_trapez(topT T, bottomT T, leftP T, P)))
             (xNode P)
-           (replaceTrapezA (Tip T) P Q)
+           (replaceTrapezSimpA T P Q)
            (*P und Q sind Endpunkte*)
-           )else (replaceTrapezA (Tip T) P Q)
-      )
-    )
-    )"
+           )else (replaceTrapezSimpA T P Q)
+      )))"
 
+(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez über PQ liegt*)
+definition "topLeftCorner TM T P Q = P"
+(*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez über PQ liegt*)
+definition "topRightCorner TM T P Q = P"
+(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez unter PQ liegt*)
+definition "bottomLeftCorner TM T P Q = P"
+(*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez unter PQ liegt*)
+definition "bottomRightCorner TM T P Q = P"
 
-
-(*inkrementell. aber wie?*)
-(*über den rechten Nachbar:
-  - wenn leftP T über (P,Q), dann solange rechten Nachbar aufsuche bis rightP T über (P,Q)
-  - wenn leftP T unter (P,Q), dann solange rechten Nachbar aufsuche bis rightP T unter (P,Q)*)
 (*ersetze mittlere Trapeze, d.h. P liegt in T0, Q liegt in Tn und Trapez Ti soll ersetzt werden*)
-fun replaceTrapezM :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-   "replaceTrapezM (Tip T) P Q =(
-   if (pointAboveSegment P Q (leftP T))
-   then (Node (Tip (Abs_trapez(topT T,(P,Q),P,rightP T)))
+definition replaceTrapezM :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+   "replaceTrapezM  T TM P Q =
+   Node (Tip (Abs_trapez(topT T,(P,Q),(topLeftCorner TM T P Q), (topRightCorner TM T P Q))))
       (yNode (P,Q))
-    (Tip (Abs_trapez((P,Q), bottomT T, leftP T, x))))
-   else (Tip T))"
+    (Tip (Abs_trapez((P,Q), bottomT T, (bottomLeftCorner TM T P Q), (bottomRightCorner TM T P Q))))"
+
+definition replaceTrapezFirstY :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaceTrapezFirstY T TM P Q =
+  Node (Tip (Abs_trapez(topT T, (P,Q), P, (topRightCorner TM T P Q))))
+    (yNode (P,Q))
+   (Tip (Abs_trapez((P,Q), bottomT T, P, (bottomRightCorner TM T P Q))))"
+
+definition replaceTrapezFirst :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaceTrapezFirst T TM P Q = (
+  if (leftP T = P) then(replaceTrapezFirstY T TM P Q)
+  else (Node (Tip (Abs_trapez(topT T, bottomT T, leftP T, P)))
+    (xNode P)
+  (replaceTrapezFirstY T TM P Q) ))"
+
+definition replaceTrapezLastY :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+   "replaceTrapezLastY T TM P Q = Node (Tip (Abs_trapez(topT T, (P,Q), topLeftCorner TM T P Q, Q)))
+    (yNode (P,Q))
+   (Tip (Abs_trapez((P,Q),bottomT T, bottomLeftCorner TM T P Q, Q)))"
+
+definition replaceTrapezLast :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaceTrapezLast T TM P Q = (
+  if (rightP T = Q) then(replaceTrapezLastY T TM P Q)
+  else (Node (replaceTrapezLastY T TM P Q)
+   (xNode Q)
+  (Tip (Abs_trapez(topT T,bottomT T, Q, rightP T)))
+  ))"
+
+(*Input: SuchBaum D, Trapez T das ersetz werden soll, Trapezliste TM mit Trapezen die Strecke PQ kreuzt, Strecke PQ
+Output: dag welches Trapez T ersetzen soll*)
+definition replaceTrapez :: "dag \<Rightarrow> trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+"replaceTrapez D T TM P Q = (if (queryTrapezoidMap D P = queryTrapezoidMap D Q) then (replaceTrapezSimp T P Q)
+    else (if (queryTrapezoidMap D P = (Tip T)) then (replaceTrapezFirst T TM P Q)
+      else (if (queryTrapezoidMap D Q = (Tip T)) then (replaceTrapezLast T TM P Q)
+        else (replaceTrapezM T TM P Q)
+      )
+    ))"
 
 (*gehe von links nach rechts durch die Trapeze, die die Strecke S schneidet.
 Input: A Trapezoidal map T, a search structure D, segment PQ
