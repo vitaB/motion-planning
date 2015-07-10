@@ -45,17 +45,26 @@ lemma "pointList (concat PL) \<Longrightarrow> \<forall> a \<in> set L. pointIns
   apply (cut_tac PL=PL in rBoxConvex, assumption)
 oops
 
+lemma pointSameCoord : "Abs_point2d(a, b) = Abs_point2d(a', c)\<Longrightarrow> a = a' \<and> b = c"
+  by (metis (full_types) Abs_point2d_inject fst_conv mem_Collect_eq snd_conv)
+
 (*Defintion für trapez. durch Strecke über dem Trapez, Strecke unter dem Trapez.
 linker Endpunkt, rechter Endpunkt*)
-record trapez = topT :: "point2d\<times>point2d"
-  bottomT :: "point2d\<times>point2d"
-  leftP :: point2d
-  rightP :: point2d
-definition newTrapez :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
-  "newTrapez a b c d e f \<equiv> \<lparr>topT=(a,b), bottomT=(c,d), leftP= e, rightP=f\<rparr>"
+typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). True}" by(auto)
+definition topT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where  "topT T \<equiv> fst(Rep_trapez T)"
+definition bottomT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where "bottomT T \<equiv> fst(snd(Rep_trapez T))"
+definition leftP :: "trapez \<Rightarrow> point2d" where "leftP T \<equiv> fst(snd(snd(Rep_trapez T)))"
+definition rightP :: "trapez \<Rightarrow> point2d" where "rightP T \<equiv> snd(snd(snd(Rep_trapez T)))"
+lemma [simp] : "topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" by (simp add: topT_def Abs_trapez_inverse)
+lemma [simp] : "bottomT (Abs_trapez ((a,b),(c,d),e,f)) = (c,d) "by (simp add: bottomT_def Abs_trapez_inverse)
+lemma [simp] : "leftP (Abs_trapez ((a,b),(c,d),e,f)) = e" by (simp add: leftP_def Abs_trapez_inverse)
+lemma [simp] : "rightP (Abs_trapez ((a,b),(c,d),e,f)) = f" by (simp add: rightP_def Abs_trapez_inverse)
+lemma trapezSameCoord : "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b'),(c',d'),e',f'))
+  \<longleftrightarrow> a=a'\<and> b=b' \<and> c=c' \<and> d=d' \<and> e=e' \<and> f=f'"
+  by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv)
 
 definition t1 :: trapez where
-  "t1 \<equiv> (|topT =(Abs_point2d(1,1),Abs_point2d(1,1)), bottomT =(Abs_point2d(1,1),Abs_point2d(1,1)), leftP =Abs_point2d(1,1), rightP=Abs_point2d(1,1)|)"
+  "t1 \<equiv> Abs_trapez ((Abs_point2d(1,1),Abs_point2d(1,1)),(Abs_point2d(1,1),Abs_point2d(1,1)), Abs_point2d(1,1),Abs_point2d(1,1))"
 
 (*ein Trapez und seine Nachbarn*)
 record trapezoid = trapez :: trapez
@@ -80,6 +89,8 @@ and has leftChild() and rightChild() pointers to nodes.*)
 (*y-node stores a line segment and its children are also recorded by the pointers are aboveChild()
 and belowChild() depending on whether the child item is above or below the segment stored at the y-node.*)
 datatype_new dag = Tip "trapez" | Node "dag" kNode "dag"
+definition "dag1 = Node (Tip t1) (node1) (Tip t1)"
+lemma " dag1 = Node (Tip t1\<lparr>leftP := Abs_point2d(0,0)\<rparr>) (node1) (Tip t1\<lparr>leftP := Abs_point2d(0,0)\<rparr>)"
 
 (*Algorithm QueryTrapezoidMap( n, p)
 Input: T is the trapezoid map search structure, n is a 
@@ -115,13 +126,13 @@ fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarr
   "replaceTrapez (Tip T) P Q = (
     if(leftP T \<noteq> P \<and> rightP T \<noteq> Q) (*P und Q sind keine Endpunkte von Trapezen*)
     then (
-      Node (Tip\<lparr>topT=(topT T), bottomT=(bottomT T), leftP=(leftP T), rightP=P\<rparr>)
+      Node (Tip\<lparr>topT=topT T, bottomT=bottomT T, leftP=leftP T, rightP=P\<rparr>)
         (xNode P)
         (replaveTrapezQ (Tip T) P Q)
     ) else( if (leftP T = P \<and> rightP T \<noteq> Q) (*P ist ein Endpunkt, Q nicht*)
         then (replaveTrapezQ (Tip T) P Q)
         else (if(leftP T \<noteq> P \<and> rightP T = Q) (*Q ist ein Endpunkt, P nicht*)
-          then (Node (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=leftP T, rightP=P\<rparr>)
+          then (Node (Tip \<lparr>topT=topT T, bottomT=bottomT T, leftP=leftP T, rightP=P\<rparr>)
             (xNode P)
            (replaceTrapezA (Tip T) P Q)
            (*P und Q sind Endpunkte*)
