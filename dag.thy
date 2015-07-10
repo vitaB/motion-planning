@@ -45,9 +45,6 @@ lemma "pointList (concat PL) \<Longrightarrow> \<forall> a \<in> set L. pointIns
   apply (cut_tac PL=PL in rBoxConvex, assumption)
 oops
 
-lemma pointSameCoord : "Abs_point2d(a, b) = Abs_point2d(a', c)\<Longrightarrow> a = a' \<and> b = c"
-  by (metis (full_types) Abs_point2d_inject fst_conv mem_Collect_eq snd_conv)
-
 (*Defintion für trapez. durch Strecke über dem Trapez, Strecke unter dem Trapez.
 linker Endpunkt, rechter Endpunkt*)
 typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). True}" by(auto)
@@ -89,8 +86,7 @@ and has leftChild() and rightChild() pointers to nodes.*)
 (*y-node stores a line segment and its children are also recorded by the pointers are aboveChild()
 and belowChild() depending on whether the child item is above or below the segment stored at the y-node.*)
 datatype_new dag = Tip "trapez" | Node "dag" kNode "dag"
-definition "dag1 = Node (Tip t1) (node1) (Tip t1)"
-lemma " dag1 = Node (Tip t1\<lparr>leftP := Abs_point2d(0,0)\<rparr>) (node1) (Tip t1\<lparr>leftP := Abs_point2d(0,0)\<rparr>)"
+
 
 (*Algorithm QueryTrapezoidMap( n, p)
 Input: T is the trapezoid map search structure, n is a 
@@ -111,28 +107,28 @@ definition dag1 :: dag where
 (*allgemeinFall. weder P noch Q sind in T drin*)
 fun replaceTrapezA :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "replaceTrapezA (Tip T) P Q =
-   Node (Tip \<lparr>topT=topT T, bottomT=(P,Q), leftP=P, rightP=Q\<rparr>)
+   Node (Tip (Abs_trapez (topT T,(P,Q),P,Q)))
     (yNode (P,Q))
-   (Tip \<lparr>topT=(P,Q), bottomT=bottomT T, leftP=P, rightP=Q\<rparr>)"
+   (Tip (Abs_trapez ((P,Q),bottomT T,P,Q)))"
 
 fun replaveTrapezQ :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "replaveTrapezQ (Tip T) P Q =
     Node (replaceTrapezA (Tip T) P Q)
       (xNode Q)
-    (Tip \<lparr>topT=(topT T), bottomT=(bottomT T), leftP=Q, rightP=(rightP T)\<rparr>)"
+    (Tip (Abs_trapez(topT T,bottomT T,Q,rightP T)))"
 
 (*einfacher Fall, wenn P und Q in Tip T liegen*)
 fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "replaceTrapez (Tip T) P Q = (
     if(leftP T \<noteq> P \<and> rightP T \<noteq> Q) (*P und Q sind keine Endpunkte von Trapezen*)
     then (
-      Node (Tip\<lparr>topT=topT T, bottomT=bottomT T, leftP=leftP T, rightP=P\<rparr>)
+      Node (Tip(Abs_trapez(topT T,bottomT T,leftP T,P)))
         (xNode P)
         (replaveTrapezQ (Tip T) P Q)
     ) else( if (leftP T = P \<and> rightP T \<noteq> Q) (*P ist ein Endpunkt, Q nicht*)
         then (replaveTrapezQ (Tip T) P Q)
         else (if(leftP T \<noteq> P \<and> rightP T = Q) (*Q ist ein Endpunkt, P nicht*)
-          then (Node (Tip \<lparr>topT=topT T, bottomT=bottomT T, leftP=leftP T, rightP=P\<rparr>)
+          then (Node (Tip (Abs_trapez(topT T, bottomT T, leftP T, P)))
             (xNode P)
            (replaceTrapezA (Tip T) P Q)
            (*P und Q sind Endpunkte*)
@@ -140,6 +136,8 @@ fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarr
       )
     )
     )"
+
+
 
 (*inkrementell. aber wie?*)
 (*über den rechten Nachbar:
@@ -149,9 +147,9 @@ fun replaceTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarr
 fun replaceTrapezM :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
    "replaceTrapezM (Tip T) P Q =(
    if (pointAboveSegment P Q (leftP T))
-   then (Node (Tip \<lparr>topT=topT T, bottomT=(P,Q), leftP=P, rightP=rightP T\<rparr>)
+   then (Node (Tip (Abs_trapez(topT T,(P,Q),P,rightP T)))
       (yNode (P,Q))
-    (Tip \<lparr>topT=(P,Q), bottomT=bottomT T, leftP=leftP T, rightP=\<rparr>))
+    (Tip (Abs_trapez((P,Q), bottomT T, leftP T, x))))
    else (Tip T))"
 
 (*gehe von links nach rechts durch die Trapeze, die die Strecke S schneidet.
