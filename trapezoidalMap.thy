@@ -1,48 +1,10 @@
-theory dag
-imports norm
+theory trapezoidalMap
+imports tDag
 begin
 
-(*Defintion für trapez. durch Strecke über dem Trapez, Strecke unter dem Trapez.
-linker Endpunkt, rechter Endpunkt*)
-typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). True}" by(auto)
-definition topT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where  "topT T \<equiv> fst(Rep_trapez T)"
-definition bottomT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where "bottomT T \<equiv> fst(snd(Rep_trapez T))"
-definition leftP :: "trapez \<Rightarrow> point2d" where "leftP T \<equiv> fst(snd(snd(Rep_trapez T)))"
-definition rightP :: "trapez \<Rightarrow> point2d" where "rightP T \<equiv> snd(snd(snd(Rep_trapez T)))"
-lemma topTSimp [simp] : "topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" by (simp add: topT_def Abs_trapez_inverse)
-lemma bottomTSimp [simp] : "bottomT (Abs_trapez ((a,b),(c,d),e,f)) = (c,d) "by (simp add: bottomT_def Abs_trapez_inverse)
-lemma leftPSimp [simp] : "leftP (Abs_trapez ((a,b),(c,d),e,f)) = e" by (simp add: leftP_def Abs_trapez_inverse)
-lemma rightPSimp [simp] : "rightP (Abs_trapez ((a,b),(c,d),e,f)) = f" by (simp add: rightP_def Abs_trapez_inverse)
-lemma trapezSameCoord [simp]: "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b'),(c',d'),e',f'))
-  \<longleftrightarrow> a=a'\<and> b=b' \<and> c=c' \<and> d=d' \<and> e=e' \<and> f=f'"
-  by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv)
-
-
-(*ein Trapez und seine Nachbarn*)
-(*record trapezoid = trapez :: trapez
-  upRightNeighbor :: "trapez"
-  lowerRightNeighbor :: "trapez"
-  upLeftNeighbor :: "trapez"
-  lowerLeftNeighbor :: "trapez"*)
-
-(*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)
-datatype_new kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
-
-(*directed acyclic graph*)
-(*x-nodes stores a segment endpoint that defines a vertical extension in the trapezoid map,
-and has leftChild() and rightChild() pointers to nodes.*)
-(*y-node stores a line segment and its children are also recorded by the pointers are aboveChild()
-and belowChild() depending on whether the child item is above or below the segment stored at the y-node.*)
-datatype_new dag = Tip "trapez" | Node "dag" kNode "dag"
-
-(*Input Tip welches entfernt wird, dag welches hinzugefügt wird, dag-tree in dem ersetzt werden soll
-Output: neues dag-tree*)
-fun replaceTip :: "trapez \<Rightarrow> dag \<Rightarrow> dag \<Rightarrow> dag" where
-  "replaceTip T N (Tip D) = (if (D = T) then (N) else (Tip D))"
- |"replaceTip T N (Node Tl x Tr) = Node (replaceTip T N Tl) x (replaceTip T N Tr)"
-theorem "replaceTip x y (replaceTip u v zs) = replaceTip u v (replaceTip x y zs)" oops
-
-(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez über PQ liegt*)
+(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez über PQ liegt
+Input: Liste TM mit trapezen die PQ schneiden, momentanes Trapez T, Strecke PQ
+Output: die nächste linke Ecke über der Strecke PQ *)
 definition "topLeftCorner TM T P Q = P"
 (*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez über PQ liegt*)
 definition "topRightCorner TM T P Q = P"
@@ -51,12 +13,11 @@ definition "bottomLeftCorner TM T P Q = P"
 (*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez unter PQ liegt*)
 definition "bottomRightCorner TM T P Q = P"
 
-
 (*Algorithm QueryTrapezoidMap(dag,point2d)
 Input: T is the trapezoid map search structure, n is a node in the search structure and p is a query point.
 Output:  A pointer to the node in D for the trapezoid containing the point p.*)
-fun queryTrapezoidMap :: "dag \<Rightarrow> point2d \<Rightarrow> dag" where
-  "queryTrapezoidMap (Tip T) _ = Tip T"
+fun queryTrapezoidMap :: "dag \<Rightarrow> point2d \<Rightarrow> trapez" where
+  "queryTrapezoidMap (Tip T) _ =  T"
   |"queryTrapezoidMap (Node lf (xNode n) rt) p = 
    (if (xCoord p < xCoord n) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
   |"queryTrapezoidMap (Node lf (yNode x) rt) p =
@@ -138,8 +99,8 @@ definition newDagLast :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d
 Output: dag welches Trapez T ersetzen soll*)
 definition newDag :: "dag \<Rightarrow> trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
 "newDag D T TM P Q = (if (length TM = 1) then (newDagSimp T P Q)
-    else (if (queryTrapezoidMap D P = (Tip T)) then (newDagFirst T TM P Q)
-      else (if (queryTrapezoidMap D Q = (Tip T) \<or> rightP T = Q) then (newDagLast T TM P Q)
+    else (if (queryTrapezoidMap D P = T) then (newDagFirst T TM P Q)
+      else (if (queryTrapezoidMap D Q = T \<or> rightP T = Q) then (newDagLast T TM P Q)
         else (newDagM T TM P Q)
       )
     ))"
@@ -208,4 +169,5 @@ lemma "replaceTip t0 (newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,
   = Node ((newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0)))) (xNode (Abs_point2d(1,3))) ((newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0))))"
   apply (simp add: dag1_def)
 done
+
 end

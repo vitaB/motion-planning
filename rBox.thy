@@ -1,4 +1,4 @@
-theory norm
+theory rBox
 imports polygon
 begin
 
