@@ -42,6 +42,16 @@ fun replaceTip :: "trapez \<Rightarrow> dag \<Rightarrow> dag \<Rightarrow> dag"
  |"replaceTip T N (Node Tl x Tr) = Node (replaceTip T N Tl) x (replaceTip T N Tr)"
 theorem "replaceTip x y (replaceTip u v zs) = replaceTip u v (replaceTip x y zs)" oops
 
+(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez über PQ liegt*)
+definition "topLeftCorner TM T P Q = P"
+(*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez über PQ liegt*)
+definition "topRightCorner TM T P Q = P"
+(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez unter PQ liegt*)
+definition "bottomLeftCorner TM T P Q = P"
+(*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez unter PQ liegt*)
+definition "bottomRightCorner TM T P Q = P"
+
+
 (*Algorithm QueryTrapezoidMap(dag,point2d)
 Input: T is the trapezoid map search structure, n is a node in the search structure and p is a query point.
 Output:  A pointer to the node in D for the trapezoid containing the point p.*)
@@ -86,28 +96,21 @@ definition newDagSimp :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<R
            )else (newDagSimpA T P Q)
       )))"
 
-(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez über PQ liegt*)
-definition "topLeftCorner TM T P Q = P"
-(*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez über PQ liegt*)
-definition "topRightCorner TM T P Q = P"
-(*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez unter PQ liegt*)
-definition "bottomLeftCorner TM T P Q = P"
-(*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez unter PQ liegt*)
-definition "bottomRightCorner TM T P Q = P"
-
-(*ersetze mittlere Trapeze, d.h. P liegt in T0, Q liegt in Tn und Trapez Ti soll ersetzt werden*)
+(*ersetze mittlere Trapeze, d.h. P liegt in T0, Q liegt in Tn und Trapez Ti(0<i<n) soll ersetzt werden*)
 definition newDagM :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
    "newDagM  T TM P Q =
    Node (Tip (Abs_trapez(topT T,(P,Q),(topLeftCorner TM T P Q), (topRightCorner TM T P Q))))
       (yNode (P,Q))
     (Tip (Abs_trapez((P,Q), bottomT T, (bottomLeftCorner TM T P Q), (bottomRightCorner TM T P Q))))"
 
+(*gegebenes Trapez wird durch 2 neue Trapeze ersetzt; geteilt durch die Strecke PQ*)
 definition newDagFirstY :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "newDagFirstY T TM P Q =
   Node (Tip (Abs_trapez(topT T, (P,Q), P, (topRightCorner TM T P Q))))
     (yNode (P,Q))
    (Tip (Abs_trapez((P,Q), bottomT T, P, (bottomRightCorner TM T P Q))))"
 
+(*Das erste Trapez soll ersetzt werden, zu überprüfen ist ob Ecke im Trapez ist oder auf der Kante*)
 definition newDagFirst :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "newDagFirst T TM P Q = (
   if (leftP T = P) then(newDagFirstY T TM P Q)
@@ -115,11 +118,13 @@ definition newDagFirst :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2
     (xNode P)
   (newDagFirstY T TM P Q) ))"
 
+(*gegebenes Trapez wird durch 2 neue Trapeze ersetzt; geteilt durch die Strecke PQ*)
 definition newDagLastY :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
    "newDagLastY T TM P Q = Node (Tip (Abs_trapez(topT T, (P,Q), topLeftCorner TM T P Q, Q)))
     (yNode (P,Q))
    (Tip (Abs_trapez((P,Q),bottomT T, bottomLeftCorner TM T P Q, Q)))"
 
+(*Das letzte Trapez soll ersetzt werden, zu überprüfen ist ob Ecke im Trapez ist oder auf der Kante*)
 definition newDagLast :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "newDagLast T TM P Q = (
   if (rightP T = Q) then(newDagLastY T TM P Q)
@@ -129,12 +134,12 @@ definition newDagLast :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d
   ))"
 
 (*Algorithm newDag(dag,trapez, trapez list, segment)*)
-(*Input: SuchBaum D, Trapez T das ersetz werden soll, Trapezliste TM mit Trapezen die Strecke PQ kreuzt, Strecke PQ
+(*Input: SuchBaum D, Trapez T das ersetz werden soll, Trapezliste TM mit Trapezen die Strecke PQ kreuzt, Strecke PQ(linksgeordnet)
 Output: dag welches Trapez T ersetzen soll*)
 definition newDag :: "dag \<Rightarrow> trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
 "newDag D T TM P Q = (if (length TM = 1) then (newDagSimp T P Q)
     else (if (queryTrapezoidMap D P = (Tip T)) then (newDagFirst T TM P Q)
-      else (if (queryTrapezoidMap D Q = (Tip T)) then (newDagLast T TM P Q)
+      else (if (queryTrapezoidMap D Q = (Tip T) \<or> rightP T = Q) then (newDagLast T TM P Q)
         else (newDagM T TM P Q)
       )
     ))"
