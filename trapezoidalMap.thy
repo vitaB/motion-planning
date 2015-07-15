@@ -133,7 +133,6 @@ fun replaceDag :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rig
   "replaceDag D [] _ _ _ = D"
   | "replaceDag D (T#Ts) TM P Q = replaceDag (replaceTip T (newDag D T TM P Q ) D) Ts TM P Q"
 
-
 definition segmentExtendTrapezoidalMap :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "segmentExtendTrapezoidalMap D P Q \<equiv> replaceDag D (intersectTrapez D P Q) (intersectTrapez D P Q) P Q"
 
@@ -154,6 +153,7 @@ fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> 
 definition trapezoidalMap :: "(point2d list) list \<Rightarrow> dag" where
   "pointList (concat PL) \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
   trapezoidalMap PL \<equiv> buildTrapezoidalMap (Tip (rBoxTrapez PL)) PL"
+
 
 (*trapezoidal map T, searchStructure D, segment s*)
 (*fun followSegment :: "trapezoid list \<Rightarrow> dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where
