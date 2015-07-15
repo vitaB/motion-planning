@@ -121,7 +121,7 @@ Output: list of trapezoids intersected by PQ *)
 function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> trapez list" where
   "followSegment D t a = (if (xCoord a > xCoord (leftP t))
   then (t # followSegment D (queryTrapezoidMap D (rightP t)) a) else ([]))"
-sorry
+by (auto)
 
 (*gib eine Liste mit trapezen zurück die das Segment PQ schneiden
 Input: suchBaum D, Segment PQ
@@ -129,10 +129,14 @@ Output: liste mit trapezen*)
 definition intersectTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
   "intersectTrapez D p q = followSegment D (queryTrapezoidMap D p) q"
 
+(*ersetzt alle übergebenen Trapeze im dag durch neue Trapeze, die mit PQ erstellt wurden
+Input : suchBaum D, 2 mal Liste mit Trapezen die ersetzt werden sollen,Segment PQ
+Output: neues Dag, nachdem alle Trapeze ersetzt wurden*)
 fun replaceDag :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "replaceDag D [] _ _ _ = D"
   | "replaceDag D (T#Ts) TM P Q = replaceDag (replaceTip T (newDag D T TM P Q ) D) Ts TM P Q"
 
+(*erneure dag nach dem hinzufügen eines segments*)
 definition segmentExtendTrapezoidalMap :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "segmentExtendTrapezoidalMap D P Q \<equiv> replaceDag D (intersectTrapez D P Q) (intersectTrapez D P Q) P Q"
 
@@ -149,9 +153,8 @@ fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> 
   "buildTrapezoidalMap D [] = D"
   |"buildTrapezoidalMap D (P#Pl) = buildTrapezoidalMap (polygonExtendTrapezoidalMap D P) Pl"
 
-
 definition trapezoidalMap :: "(point2d list) list \<Rightarrow> dag" where
-  "pointList (concat PL) \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
+  " pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
   trapezoidalMap PL \<equiv> buildTrapezoidalMap (Tip (rBoxTrapez PL)) PL"
 
 
