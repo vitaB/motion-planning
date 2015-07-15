@@ -27,6 +27,8 @@ definition rightNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" wh
 lemma neighbourTrans : "leftNeighbour A B = rightNeighbour B A "by (simp add: leftNeighbour_def rightNeighbour_def)
 definition neighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "neighbour  A B \<equiv> leftNeighbour A B \<or> rightNeighbour A B"
 
+definition rBoxTrapez :: "point2d list list \<Rightarrow> trapez" where "pointList (concat PL) \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
+  rBoxTrapez PL \<equiv> Abs_trapez ((hd (rBox PL),(rBox PL)!1),((rBox PL)!3,(rBox PL)!2),hd (rBox PL),(rBox PL)!2)  " 
 
 (*ein Trapez und seine Nachbarn*)
 (*record trapezoid = trapez :: trapez

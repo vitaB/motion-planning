@@ -115,29 +115,45 @@ definition newDag :: "dag \<Rightarrow> trapez \<Rightarrow> trapez list \<Right
       )
     ))"
 
-(*gehe von links nach rechts durch die Trapeze, die die Strecke S schneidet.
+(*gehe von links nach rechts durch die Trapeze, die die Strecke S schneiden.
 Input: A Trapezoidal map T, a search structure D, segment PQ
 Output: list of trapezoids intersected by PQ *)
-fun followSegment :: "trapez \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "followSegment t a = (if (pointInTrapez t a)
-  then (t) else (t # followSegment(trapezRightAdjacent t) a))"
+function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "followSegment D t a = (if (xCoord a > xCoord (leftP t))
+  then (t # followSegment D (queryTrapezoidMap D (rightP t)) a) else ([]))"
+sorry
 
-(*gib eine List mit trapezen zurück die das Segment PQ schneiden
+(*gib eine Liste mit trapezen zurück die das Segment PQ schneiden
 Input: suchBaum D, Segment PQ
 Output: liste mit trapezen*)
-fun intersectTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "intersectTrapez D p q = (
-    if (queryTrapezoidMap D p = queryTrapezoidMap D q) then ([queryTrapezoidMap D p])
-    else ( followSegment (queryTrapezoidMap D (leftPSegment p q)) (rightPSegment p q) )
-    )"
+definition intersectTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "intersectTrapez D p q = followSegment D (queryTrapezoidMap D p) q"
+
+fun replaceDag :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "replaceDag D [] _ _ _ = D"
+  | "replaceDag D (T#Ts) TM P Q = replaceDag (replaceTip T (newDag D T TM P Q ) D) Ts TM P Q"
 
 
-(*Input: S is the set of line segments forming a planar subdivision.
-Output:  A trapezoid map M and an associated search structure M.*)
-fun buildTrapezoidalMap :: "dag \<Rightarrow> " where
-  "buildTrapezoidalMap = "
-  | "buildTrapezoidalMap T (p#q#xs) = buildTrapezoidalMap (newDag (intersectTrapez T p q)) xs"
+definition segmentExtendTrapezoidalMap :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "segmentExtendTrapezoidalMap D P Q \<equiv> replaceDag D (intersectTrapez D P Q) (intersectTrapez D P Q) P Q"
 
+(*Input: S is the List of line segments(a Polygon) forming a planar subdivision.
+Output:  A trapezoid map M in associated search structure dag.*)
+fun polygonExtendTrapezoidalMap :: "dag \<Rightarrow> point2d list \<Rightarrow> dag" where
+  "polygonExtendTrapezoidalMap D [] = D"
+  | "polygonExtendTrapezoidalMap D [q] = D"
+  | "polygonExtendTrapezoidalMap D (p#q#xs) = polygonExtendTrapezoidalMap (segmentExtendTrapezoidalMap D p q) (q#xs)"
+
+(*Input: S is the List of polygons forming a planar subdivision.
+Output:  A trapezoid map M in associated search structure dag.*)
+fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> dag" where
+  "buildTrapezoidalMap D [] = D"
+  |"buildTrapezoidalMap D (P#Pl) = buildTrapezoidalMap (polygonExtendTrapezoidalMap D P) Pl"
+
+
+definition trapezoidalMap :: "(point2d list) list \<Rightarrow> dag" where
+  "pointList (concat PL) \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
+  trapezoidalMap PL \<equiv> buildTrapezoidalMap (Tip (rBoxTrapez PL)) PL"
 
 (*trapezoidal map T, searchStructure D, segment s*)
 (*fun followSegment :: "trapezoid list \<Rightarrow> dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where

@@ -6,7 +6,7 @@ begin
 definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
   "uniqueXCoord L \<equiv> \<forall> a b. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
 
-(*4eckige Box um pointListe herum ist selbst eine pointList*)
+(*4eckige Box um pointListen herum ist selbst eine pointList*)
 lemma rBoxPointList: "pointList (concat PL) \<Longrightarrow> pointList(
   [Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
   Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
