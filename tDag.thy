@@ -1,8 +1,9 @@
+(*Datentyp trapez und directed acyclic graph(dag)-struktur für Trapeze*)
+
 theory tDag
 imports rBox
 begin
 
-(*Datentyp trapez und directed acyclic graph(dag)-struktur für Trapeze*)
 
 (*Defintion für trapez. durch Strecke über dem Trapez, Strecke unter dem Trapez.
 linker Endpunkt, rechter Endpunkt*)
@@ -18,6 +19,13 @@ lemma rightPSimp [simp] : "rightP (Abs_trapez ((a,b),(c,d),e,f)) = f" by (simp a
 lemma trapezSameCoord [simp]: "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b'),(c',d'),e',f'))
   \<longleftrightarrow> a=a'\<and> b=b' \<and> c=c' \<and> d=d' \<and> e=e' \<and> f=f'"
   by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv)
+definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
+  "trapezNotEq A B \<equiv> A \<noteq> B"
+
+definition leftNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "leftNeighbour A B \<equiv> leftP A = rightP B"
+definition rightNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "rightNeighbour A B \<equiv> leftP B = rightP A"
+lemma neighbourTrans : "leftNeighbour A B = rightNeighbour B A "by (simp add: leftNeighbour_def rightNeighbour_def)
+definition neighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "neighbour  A B \<equiv> leftNeighbour A B \<or> rightNeighbour A B"
 
 
 (*ein Trapez und seine Nachbarn*)
@@ -32,9 +40,9 @@ datatype_new kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
 
 (*directed acyclic graph*)
 (*x-nodes stores a segment endpoint that defines a vertical extension in the trapezoid map,
-and has leftChild() and rightChild() pointers to nodes.*)
-(*y-node stores a line segment and its children are also recorded by the pointers are aboveChild()
-and belowChild() depending on whether the child item is above or below the segment stored at the y-node.*)
+and has leftChild and rightChild pointers to nodes.*)
+(*y-node stores a line segment and its children are also recorded by the pointers are aboveChild
+and belowChild depending on whether the child item is above or below the segment stored at the y-node.*)
 datatype_new dag = Tip "trapez" | Node "dag" kNode "dag"
 
 (*wann ist ein Trapez im Baum*)
