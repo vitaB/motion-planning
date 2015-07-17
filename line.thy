@@ -15,6 +15,10 @@ definition lineFunktionY :: "point2d \<Rightarrow> point2d \<Rightarrow> real \<
   "segment A B \<Longrightarrow> xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
   ((yCoord B - yCoord A)/(xCoord B - xCoord A)) * (px -xCoord A) + yCoord B"
 
+definition vertSegment :: "(point2d*point2d) \<Rightarrow> (point2d*point2d) \<Rightarrow> point2d \<Rightarrow> (point2d*point2d)" where
+  "segment (fst A) (snd A) \<Longrightarrow> xCoord (fst A) \<noteq> xCoord (snd A) \<Longrightarrow> segment (fst B) (snd B) \<Longrightarrow> xCoord (fst B) \<noteq> xCoord (snd B) \<Longrightarrow>
+  vertSegment A B P \<equiv> (Abs_point2d (yCoord P, lineFunktionY (fst B) (snd B) (xCoord P) ),Abs_point2d (yCoord P, lineFunktionY (fst A) (snd A) (xCoord P) ))"
+
 (*berechne den mittelpunkt der vertikalen Strecke AB*)
 definition vertLineMidpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A = xCoord B \<Longrightarrow> vertLineMidpoint A B \<equiv> Abs_point2d(xCoord A,(yCoord A + yCoord B)/2)"

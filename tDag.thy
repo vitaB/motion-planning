@@ -12,6 +12,10 @@ definition topT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where  "topT 
 definition bottomT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where "bottomT T \<equiv> fst(snd(Rep_trapez T))"
 definition leftP :: "trapez \<Rightarrow> point2d" where "leftP T \<equiv> fst(snd(snd(Rep_trapez T)))"
 definition rightP :: "trapez \<Rightarrow> point2d" where "rightP T \<equiv> snd(snd(snd(Rep_trapez T)))"
+definition leftT :: "trapez \<Rightarrow> (point2d*point2d)" where 
+  "leftT T \<equiv> vertSegment (topT T) (bottomT T) (leftP T)"
+definition rightT :: "trapez \<Rightarrow> (point2d*point2d)" where 
+  "rightT T \<equiv> vertSegment (topT T) (bottomT T) (rightP T)"
 lemma topTSimp [simp] : "topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" by (simp add: topT_def Abs_trapez_inverse)
 lemma bottomTSimp [simp] : "bottomT (Abs_trapez ((a,b),(c,d),e,f)) = (c,d) "by (simp add: bottomT_def Abs_trapez_inverse)
 lemma leftPSimp [simp] : "leftP (Abs_trapez ((a,b),(c,d),e,f)) = e" by (simp add: leftP_def Abs_trapez_inverse)
@@ -46,6 +50,11 @@ and has leftChild and rightChild pointers to nodes.*)
 (*y-node stores a line segment and its children are also recorded by the pointers are aboveChild
 and belowChild depending on whether the child item is above or below the segment stored at the y-node.*)
 datatype_new dag = Tip "trapez" | Node "dag" kNode "dag"
+
+primrec dagList :: "dag \<Rightarrow> trapez list" where
+  "dagList (Tip a) = [a]"
+  | "dagList (Node Tl x Tr) = ((dagList Tl)@(dagList Tr))"
+
 
 (*wann ist ein Trapez im Baum*)
 fun tipInDag :: "trapez \<Rightarrow> dag \<Rightarrow> bool" where

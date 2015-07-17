@@ -158,21 +158,28 @@ definition trapezoidalMap :: "(point2d list) list \<Rightarrow> dag" where
   trapezoidalMap PL \<equiv> buildTrapezoidalMap (Tip (rBoxTrapez PL)) PL"
 
 
-(*trapezoidal map T, searchStructure D, segment s*)
-(*fun followSegment :: "trapezoid list \<Rightarrow> dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where
-  "followSegment (ti#T) A B =
-    (if (leftFromSegment A B (rightp ti)) then (
-      if (crossing A B p r) then ()
-      else ())
-    else (rest der trapezoidal anhängen))"*)
+(*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox schneidet*)
+(*untere und obere Strecken von trapezen, sind segmente von den polygonen*)
+lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> L = dagList (trapezoidalMap PL)
+  \<Longrightarrow> \<forall> i < length L. pointlistsSeg PL (bottomT(L!i)) \<and> pointlistsSeg PL (topT(L!i))"
+oops
+(*linke und rechte Strecke von trapezen schneiden die Polygone nicht(echt). *)
+lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> L = dagList (trapezoidalMap PL)
+  \<Longrightarrow> \<forall> i < length L. (\<forall> j < length PL. \<not>polygonCrossing (PL!j) (L!i))"
+oops
 
-(*überprüfe ob durch alle Ecken in TrapezoidalMap ein "Teil-slab geht"*)
-(*vertikale Strecken einzeichnen, die durch Eckpunkte gehen
-Eingabe Menge der Segmente(polygone ohne cyclePath) und rBox*)
-(*fun slabs :: "point2d list \<Rightarrow> point2d list \<Rightarrow> point2d list" where
-  "slabs [] R  = []"
-  | "slabs (x#xs) R = [Abs_point2d(xCoord x, yCoord (hd (yCoordSort R))),
-    Abs_point2d(xCoord x, yCoord (last (yCoordSort R)))] @ slabs xs R"*)
+(*entferne die übrigen strecken die noch innerhalb der Polygone sind*)
+
+(*zeige das keine der Strecken von trapezoidalMap im Polygon sind*)
+
+(*zeige das die trapezoidalMap jetzt eine Einteilung der Freien-Räume innerhalb der rBox ist*)
+
+(*roadMap. Eingabe TrapezodiodamMap T*)
+
+(*beweise das Strecken zwischen RaodMap immer Kollisionsfrei*)
+
+
+
 
 
 (*kleiner Test*)
@@ -198,5 +205,4 @@ lemma "replaceTip t0 (newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,
   = Node ((newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0)))) (xNode (Abs_point2d(1,3))) ((newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0))))"
   apply (simp add: dag1_def)
 done
-
 end

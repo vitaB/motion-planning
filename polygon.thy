@@ -5,6 +5,13 @@ begin
 (*definition für Polygon: intersectionfree und collinearfree
 * evtl. collinearfree und crossing free*)
 
+definition polygon :: "point2d list \<Rightarrow> bool" where
+  "polygon P = True"
+
+definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
+  "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (PL!i)"
+
+
 (*Convexes Polygon.
 - keiner der Kanten des Polygons trennt irgendeine der übrigen Ecken einer der Kanten des Polygons
 - 3 aufeainder folgenden Kanten sind nicht kollinear*)
