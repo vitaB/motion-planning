@@ -36,17 +36,17 @@ lemma neighbourTrans : "leftNeighbour A B = rightNeighbour B A "by (simp add: le
 definition neighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "neighbour  A B \<equiv> leftNeighbour A B \<or> rightNeighbour A B"
 
 (*wandle rBox in ein Trapez um*)
-definition rBoxTrapez :: "(point2d list) list \<Rightarrow> trapez" where 
-  "pointLists PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
-  rBoxTrapez PL \<equiv> Abs_trapez ((hd (rBox PL),(rBox PL)!1),((rBox PL)!3,(rBox PL)!2),hd (rBox PL),(rBox PL)!2)"
+definition rBoxTrapez :: "point2d list \<Rightarrow> trapez" where 
+  "pointList R \<Longrightarrow> length R = 4 \<Longrightarrow> cPolygon (cyclePath R) \<Longrightarrow>
+  rBoxTrapez R \<equiv> Abs_trapez ((hd R,R!1),(R!3,R!2),hd R,R!2)"
 
-lemma rBoxTrapezCollinearFree[simp]: "pointLists PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> trapezCollinearFree (rBoxTrapez PL)"
+(*lemma rBoxTrapezCollinearFree[simp]: "pointLists PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> trapezCollinearFree (rBoxTrapez PL)"
   apply (simp add: trapezCollinearFree_def rBoxTrapez_def)
   apply (simp add: leftT_def rightT_def topT_def bottomT_def)
   apply (subgoal_tac "segment (fst ((fst (Rep_trapez (rBoxTrapez PL))))) (fst (fst (Rep_trapez (rBoxTrapez PL))))")
   apply (subgoal_tac "segment (fst (fst (snd (Rep_trapez (rBoxTrapez PL))))) (fst (fst (snd (Rep_trapez (rBoxTrapez PL)))))")
   apply (simp add: vertSegment_def)
-sorry
+sorry*)
 
 
 (*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)

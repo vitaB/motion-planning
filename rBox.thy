@@ -17,6 +17,11 @@ lemma rBoxPointList: "pointLists PL \<Longrightarrow> pointList(
   Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1)])"
 sorry
 
+(*Definition wann R eine rechteckige Box um P ist*)
+definition rBoxS :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
+  "pointList R \<Longrightarrow> rBoxS R P \<equiv> length R = 4 \<and> cPolygon (cyclePath R) \<and>
+  (\<forall> i < length P. pointInsideCPolygonACl (cyclePath R) (P!i))"
+
 (*4eckige Box um pointListen herum*)
 definition rBox :: "(point2d list) list \<Rightarrow> point2d list" where
   "pointLists PL \<Longrightarrow> rBox PL \<equiv>

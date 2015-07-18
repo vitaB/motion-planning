@@ -137,26 +137,37 @@ fun replaceDag :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rig
   | "replaceDag D (T#Ts) TM P Q = replaceDag (replaceTip T (newDag D T TM P Q ) D) Ts TM P Q"
 
 (*erneure dag nach dem hinzufügen eines segments*)
-definition segmentExtendTrapezoidalMap :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
-  "segmentExtendTrapezoidalMap D P Q \<equiv> replaceDag D (intersectTrapez D P Q) (intersectTrapez D P Q) P Q"
+definition addSegmentToTrapezoidalMap :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
+  "addSegmentToTrapezoidalMap D P Q \<equiv> replaceDag D (intersectTrapez D P Q) (intersectTrapez D P Q) P Q"
+
+(*hier müssen die eigentlichen Beweise stehen!*)
+
+(*zeige das jedes neue Trapez ein convexes Polygon ist*)
+
+
+(*zeige das keine der Seiten von den neuen trapezodialMaps das polygon innerhalb von rBox schneidet*)
+(*untere und obere Strecken von trapezen, sind segmente von den polygonen*)
+
+(*linke und rechte Strecke von trapezen schneiden die Polygone nicht(echt). *)
+
+
+
+
+
 
 (*Input: List of line segments(one Polygon) forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure dag.*)
-fun polygonExtendTrapezoidalMap :: "dag \<Rightarrow> point2d list \<Rightarrow> dag" where
-  "polygonExtendTrapezoidalMap D [] = D"
-  | "polygonExtendTrapezoidalMap D [q] = D"
-  | "polygonExtendTrapezoidalMap D (p#q#xs) =
-  polygonExtendTrapezoidalMap (segmentExtendTrapezoidalMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
+fun addPolygonToTrapezoidalMap :: "dag \<Rightarrow> point2d list \<Rightarrow> dag" where
+  "addPolygonToTrapezoidalMap D [] = D"
+  | "addPolygonToTrapezoidalMap D [q] = D"
+  | "addPolygonToTrapezoidalMap D (p#q#xs) =
+  addPolygonToTrapezoidalMap (addSegmentToTrapezoidalMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
 
-(*Input: dag(start with rBox) and List of polygons forming a planar subdivision.
+(*Input: rBox, dag(start with rBox) and a polygon forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure dag.*)
-fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> dag" where
-  "buildTrapezoidalMap D [] = D"
-  |"buildTrapezoidalMap D (P#Pl) = buildTrapezoidalMap (polygonExtendTrapezoidalMap D P) Pl"
-
-definition trapezoidalMap :: "(point2d list) list \<Rightarrow> dag" where
-  "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
-  trapezoidalMap PL \<equiv> buildTrapezoidalMap (Tip (rBoxTrapez PL)) PL"
+definition simpTrapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> dag" where
+  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> uniqueXCoord L \<Longrightarrow> rBoxS R P \<Longrightarrow>
+  simpTrapezoidalMap R P \<equiv> addPolygonToTrapezoidalMap (Tip (rBoxTrapez R)) P"
 
 
 (*Beweise erstmal mit nur einem Polygon*)
@@ -212,4 +223,12 @@ oops
 (*beweise das Strecken zwischen RaodMap immer Kollisionsfrei*)
 
 
+
+(*alte Definition*)
+(*
+(*Input: dag(start with rBox) and List of polygons forming a planar subdivision.
+Output:  A trapezoid map M in associated search structure dag.*)
+fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> dag" where
+  "buildTrapezoidalMap D [] = D"
+  |"buildTrapezoidalMap D (P#Pl) = buildTrapezoidalMap (polygonExtendTrapezoidalMap D P) Pl"*)
 end
