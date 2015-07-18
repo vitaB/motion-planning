@@ -14,8 +14,10 @@ done
 hat damit also nur 2 Nachbarn*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
+lemma pointListEmpty[dest]: "pointList [] \<Longrightarrow> False" by (simp add: pointList_def)
 lemma pointListRev[simp] : "pointList L \<Longrightarrow> pointList (rev L)" by (simp add: pointList_def)
-definition pointLists :: "(point2d list) list \<Rightarrow> bool" where "pointLists PL \<equiv> \<forall> i < length PL. pointList (PL!i)"
+definition pointLists :: "(point2d list) list \<Rightarrow> bool" where "pointLists PL \<equiv> length PL > 0 \<and> (\<forall>  i < length PL. pointList (PL!i))"
+lemma pointListsEmpty[dest]: "pointLists ([] # PL) \<Longrightarrow> False" by (auto simp add: pointLists_def pointList_def)
 
 (*ist ein Segment in der PointListe?*)
 definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where

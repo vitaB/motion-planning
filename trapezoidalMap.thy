@@ -155,12 +155,39 @@ fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> 
   |"buildTrapezoidalMap D (P#Pl) = buildTrapezoidalMap (polygonExtendTrapezoidalMap D P) Pl"
 
 definition trapezoidalMap :: "(point2d list) list \<Rightarrow> dag" where
-  " pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
+  "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
   trapezoidalMap PL \<equiv> buildTrapezoidalMap (Tip (rBoxTrapez PL)) PL"
 
+
+(*Beweise erstmal mit nur einem Polygon*)
+lemma "pointLists [P] \<Longrightarrow> polygonList [P] \<Longrightarrow> uniqueXCoord P \<Longrightarrow> TL = dagList (trapezoidalMap [P])
+  \<Longrightarrow> i < length TL \<longrightarrow> trapezCollinearFree (TL!i)"
+  apply (simp add: trapezoidalMap_def, safe)
+  apply (rule_tac x="((Tip (rBoxTrapez [P])), P)" in polygonExtendTrapezoidalMap.cases, blast)
+  apply (simp)
+  apply (simp)
+  apply (case_tac "(leftPSegment p q) = p")
+  apply (subgoal_tac " (rightPSegment p q) = q")
+  apply (simp)
+  apply (simp add: segmentExtendTrapezoidalMap_def)
+oops
+(*trapeze sind keine collinearListen*)
+lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = dagList (trapezoidalMap PL)
+  \<Longrightarrow> i < length TL \<longrightarrow> trapezCollinearFree(TL!i)"
+  apply (simp add: collinearList_def)
+  apply (safe)
+  apply (induction i, simp)
+  apply (cases PL)
+  apply (simp add: pointLists_def)
+  apply (simp add: trapezoidalMap_def rBoxTrapez_def)
+  apply (case_tac "aa", blast)
+  apply (simp add: rBox_def)
+
+oops
 (*zeige das jedes Trapez ein convexes Polygon ist*)
 lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = dagList (trapezoidalMap PL)
   \<Longrightarrow> i < length TL \<longrightarrow> cPolygon (cyclePath (trapezToPointList (TL!i)))"
+  apply (simp add: cPolygon_def)
 oops
 
 (*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox schneidet*)
@@ -185,30 +212,4 @@ oops
 (*beweise das Strecken zwischen RaodMap immer Kollisionsfrei*)
 
 
-
-
-
-(*kleiner Test*)
-definition "t0 \<equiv> Abs_trapez ((Abs_point2d(1,3),Abs_point2d(4,4)),(Abs_point2d(0,0),Abs_point2d(3,0)),Abs_point2d(0,0),Abs_point2d(4,4))"
-definition "t1 \<equiv> Abs_trapez ((Abs_point2d(1,3),Abs_point2d(4,4)),(Abs_point2d(0,0),Abs_point2d(3,0)),Abs_point2d(0,0),Abs_point2d(2,1))"
-definition "t2 \<equiv> Abs_trapez ((Abs_point2d(1,3),Abs_point2d(4,4)),(Abs_point2d(2,1),Abs_point2d(3,0)),Abs_point2d(2,1),Abs_point2d(3,0))"
-definition "t3 \<equiv> Abs_trapez ((Abs_point2d(2,1),Abs_point2d(3,0)),(Abs_point2d(0,0),Abs_point2d(3,0)),Abs_point2d(2,1),Abs_point2d(3,0))"
-definition "t4 \<equiv> Abs_trapez ((Abs_point2d(1,3),Abs_point2d(4,4)),(Abs_point2d(0,0),Abs_point2d(3,0)),Abs_point2d(3,0),Abs_point2d(4,4))"
-lemma  "newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0)) =
-  Node (Tip t1) (xNode (Abs_point2d(2,1))) (Node (Node (Tip t2) (yNode ((Abs_point2d(2,1)),(Abs_point2d(3,0)))) (Tip t3)) (xNode (Abs_point2d(3,0))) (Tip t4))"
-  apply (simp add: newDag_def)
-  apply (simp only: newDagSimp_def)
-  apply (simp only: t0_def t1_def t2_def t3_def t4_def leftPSimp rightPSimp topTSimp bottomTSimp)
-  apply (simp)
-  apply (simp add: newDagSimpQ_def newDagSimpA_def)
-done
-fun lDag :: "dag \<Rightarrow> dag" where
-  "lDag (Node Tl x Tr) = Tl"
-fun rDag :: "dag \<Rightarrow> dag" where
-  "rDag (Node Tl x Tr) = Tr"
-definition "dag1 = Node (Tip t0) (xNode (Abs_point2d(1,3))) (Tip t0)"
-lemma "replaceTip t0 (newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0))) dag1 
-  = Node ((newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0)))) (xNode (Abs_point2d(1,3))) ((newDag (Tip t0) t0 [t0] (Abs_point2d(2,1)) (Abs_point2d(3,0))))"
-  apply (simp add: dag1_def)
-done
 end

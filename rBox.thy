@@ -19,7 +19,7 @@ sorry
 
 (*4eckige Box um pointListen herum*)
 definition rBox :: "(point2d list) list \<Rightarrow> point2d list" where
-  "pointLists PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> rBox PL \<equiv>
+  "pointLists PL \<Longrightarrow> rBox PL \<equiv>
   cyclePath([Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
   Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
   Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
@@ -39,6 +39,9 @@ lemma rBoxPoly [simp] : "pointLists PL \<Longrightarrow>
   apply (cut_tac PL=PL in rBoxPointList, assumption)
   apply (auto simp add: rBox_def cyclePath_def)
 done
+
+lemma rBoxCollinearFree[simp] : "pointLists PL \<Longrightarrow> \<not>collinearList (rBox PL)"
+sorry
 
 (*rBox ist ein Convexes Polygon*)
 lemma rBoxConvex : "pointLists PL \<Longrightarrow> polygon (rBox PL)"  
