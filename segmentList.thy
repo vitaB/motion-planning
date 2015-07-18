@@ -14,13 +14,16 @@ done
 hat damit also nur 2 Nachbarn*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
-definition pointListSeg :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
-  "pointList L \<Longrightarrow> pointListSeg L S \<equiv> \<exists> i < length L - 1. L!i = fst S \<and> L!i = snd S"
-definition pointLists :: "(point2d list) list \<Rightarrow> bool" where "pointLists PL \<equiv> \<forall> i < length PL. pointList (PL!i)"
-definition pointlistsSeg :: "(point2d list) list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
-  "pointLists PL \<Longrightarrow> pointlistsSeg PL S \<equiv> \<exists> i < length PL. pointListSeg (PL!i) S"
-lemma [simp]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
 lemma pointListRev[simp] : "pointList L \<Longrightarrow> pointList (rev L)" by (simp add: pointList_def)
+definition pointLists :: "(point2d list) list \<Rightarrow> bool" where "pointLists PL \<equiv> \<forall> i < length PL. pointList (PL!i)"
+
+(*ist ein Segment in der PointListe?*)
+definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
+  "pointList L \<Longrightarrow> segInPointList L S \<equiv> \<exists> i < length L - 1. L!i = fst S \<and> L!i = snd S"
+definition segInPointLists :: "(point2d list) list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
+(*ist ein Segment in der PointListen-Liste?*)
+  "pointLists PL \<Longrightarrow> segInPointLists PL S \<equiv> \<exists> i < length PL. segInPointList (PL!i) S"
+lemma [simp]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
 
 (*keine der Ecken kann sich wiederholen*)
 lemma distEdge : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"

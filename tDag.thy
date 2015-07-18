@@ -26,13 +26,17 @@ lemma trapezSameCoord [simp]: "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b
 definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "trapezNotEq A B \<equiv> A \<noteq> B"
 
+(*evtl. überprüfung zu aufwendig*)
+definition trapezToPointList :: "trapez \<Rightarrow> point2d list" where
+  "trapezToPointList T \<equiv> [fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
+
 definition leftNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "leftNeighbour A B \<equiv> leftP A = rightP B"
 definition rightNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "rightNeighbour A B \<equiv> leftP B = rightP A"
 lemma neighbourTrans : "leftNeighbour A B = rightNeighbour B A "by (simp add: leftNeighbour_def rightNeighbour_def)
 definition neighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "neighbour  A B \<equiv> leftNeighbour A B \<or> rightNeighbour A B"
 
 definition rBoxTrapez :: "point2d list list \<Rightarrow> trapez" where "pointList (concat PL) \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
-  rBoxTrapez PL \<equiv> Abs_trapez ((hd (rBox PL),(rBox PL)!1),((rBox PL)!3,(rBox PL)!2),hd (rBox PL),(rBox PL)!2)  " 
+  rBoxTrapez PL \<equiv> Abs_trapez ((hd (rBox PL),(rBox PL)!1),((rBox PL)!3,(rBox PL)!2),hd (rBox PL),(rBox PL)!2)" 
 
 (*ein Trapez und seine Nachbarn*)
 (*record trapezoid = trapez :: trapez
@@ -55,11 +59,12 @@ primrec dagList :: "dag \<Rightarrow> trapez list" where
   "dagList (Tip a) = [a]"
   | "dagList (Node Tl x Tr) = ((dagList Tl)@(dagList Tr))"
 
-
 (*wann ist ein Trapez im Baum*)
 fun tipInDag :: "trapez \<Rightarrow> dag \<Rightarrow> bool" where
   "tipInDag T (Tip D) = (if (T = D) then True else False)"
   | "tipInDag T (Node Tl x Tr) = (tipInDag T Tl \<or> tipInDag T Tr)"
+lemma dagListComplete : "tipInDag T D \<Longrightarrow> T \<in> set (dagList D)"
+  by (induction D, simp, auto, metis)
 
 (*Input Tip welches entfernt wird, dag welches hinzugefügt wird, dag-tree in dem ersetzt werden soll
 Output: neues dag-tree*)
@@ -84,7 +89,7 @@ lemma "nT\<noteq>D\<Longrightarrow> replaceTip oT nT D = replaceTip oT D nT \<Lo
   apply (induction D, simp)
   apply (case_tac "x = oT")
 oops
-theorem "\<not>tipInDag nT' D \<Longrightarrow> replaceTip nT' nT (replaceTip oT (Tip nT') D) = replaceTip oT nT D"
+theorem replaceTipSimp [simp] :"\<not>tipInDag nT' D \<Longrightarrow> replaceTip nT' nT (replaceTip oT (Tip nT') D) = replaceTip oT nT D"
   apply (induction D, case_tac "nT' = x", simp+)
 done
 theorem "replaceTip oT nT (replaceTip oT' nT' D) = replaceTip oT' nT' (replaceTip oT nT D) \<Longrightarrow> False"

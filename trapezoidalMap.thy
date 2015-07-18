@@ -140,14 +140,15 @@ fun replaceDag :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rig
 definition segmentExtendTrapezoidalMap :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "segmentExtendTrapezoidalMap D P Q \<equiv> replaceDag D (intersectTrapez D P Q) (intersectTrapez D P Q) P Q"
 
-(*Input: S is the List of line segments(a Polygon) forming a planar subdivision.
+(*Input: List of line segments(one Polygon) forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure dag.*)
 fun polygonExtendTrapezoidalMap :: "dag \<Rightarrow> point2d list \<Rightarrow> dag" where
   "polygonExtendTrapezoidalMap D [] = D"
   | "polygonExtendTrapezoidalMap D [q] = D"
-  | "polygonExtendTrapezoidalMap D (p#q#xs) = polygonExtendTrapezoidalMap (segmentExtendTrapezoidalMap D p q) (q#xs)"
+  | "polygonExtendTrapezoidalMap D (p#q#xs) =
+  polygonExtendTrapezoidalMap (segmentExtendTrapezoidalMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
 
-(*Input: S is the List of polygons forming a planar subdivision.
+(*Input: dag(start with rBox) and List of polygons forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure dag.*)
 fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> dag" where
   "buildTrapezoidalMap D [] = D"
@@ -157,15 +158,20 @@ definition trapezoidalMap :: "(point2d list) list \<Rightarrow> dag" where
   " pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow>
   trapezoidalMap PL \<equiv> buildTrapezoidalMap (Tip (rBoxTrapez PL)) PL"
 
+(*zeige das jedes Trapez ein convexes Polygon ist*)
+lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = dagList (trapezoidalMap PL)
+  \<Longrightarrow> i < length TL \<longrightarrow> cPolygon (cyclePath (trapezToPointList (TL!i)))"
+oops
 
 (*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox schneidet*)
 (*untere und obere Strecken von trapezen, sind segmente von den polygonen*)
-lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> L = dagList (trapezoidalMap PL)
-  \<Longrightarrow> \<forall> i < length L. pointlistsSeg PL (bottomT(L!i)) \<and> pointlistsSeg PL (topT(L!i))"
+lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = dagList (trapezoidalMap PL)
+  \<Longrightarrow> i < length TL \<longrightarrow> segInPointLists PL (bottomT(TL!i)) \<and> segInPointLists PL (topT(TL!i))"
+  apply (auto simp add: segInPointLists_def)
 oops
 (*linke und rechte Strecke von trapezen schneiden die Polygone nicht(echt). *)
-lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> L = dagList (trapezoidalMap PL)
-  \<Longrightarrow> \<forall> i < length L. (\<forall> j < length PL. \<not>polygonCrossing (PL!j) (L!i))"
+lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = dagList (trapezoidalMap PL)
+  \<Longrightarrow> i < length TL \<longrightarrow> (j < length PL \<longrightarrow> \<not>polygonCrossing (PL!j) (TL!i))"     
 oops
 
 (*entferne die übrigen strecken die noch innerhalb der Polygone sind*)

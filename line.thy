@@ -124,10 +124,14 @@ by (metis notRightTurn)
 (*punkt P ist links vom "rechten" Eckpunkt der Strecke AB. D.h. A oder B ist rechts von P*)
 definition leftFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> leftFromSegment A B P \<equiv> leftFromPoint P A \<or> leftFromPoint P B"
+(*linke Ecke des Segments*)
 definition leftPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<equiv> (if (leftFromPoint A B) then A else B)"
+(*rechte Ecke des Segments*)
 definition rightPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A \<noteq> xCoord B \<Longrightarrow> rightPSegment A B \<equiv> (if (leftFromPoint A B) then B else A)"
+lemma legtPNotEqualRightP : "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<noteq> rightPSegment A B"
+  by (auto simp add: rightPSegment_def leftPSegment_def)
 
 definition pointAboveSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> pointAboveSegment p A B \<equiv> yCoord p > yCoord A \<or> yCoord p > yCoord B"

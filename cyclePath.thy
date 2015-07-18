@@ -107,11 +107,6 @@ lemma lineCyclePathInters1: "segment A B \<Longrightarrow> lineCyclePathInters L
   apply (auto, rule_tac x="i + 1" in exI, simp)
 done thm lineCyclePathInters.cases
 (*TODO: hier fehlt noch ein Beweis*)
-lemma lineCyclePathInters2: "segment A B \<Longrightarrow> (\<exists> i. i < length L  \<and> i > 0 \<and> intersect (L ! (i - 1)) (L ! i) A B) \<Longrightarrow>
-  lineCyclePathInters L A B"
-   apply (induction rule: lineCyclePathInters.induct)
-   apply (simp+)
-   apply (rule disjI2)
 lemma lineCyclePathInters2: "segment A B \<Longrightarrow> (\<exists> i. i < length L - 1 \<and> intersect (L ! i) (L ! Suc i) A B) \<Longrightarrow>
   lineCyclePathInters L A B"
   apply (induction rule: lineCyclePathInters.induct)
