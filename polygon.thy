@@ -2,14 +2,11 @@ theory polygon
 imports cyclePath
 begin
 
-(*definition für Polygon: intersectionfree und collinearfree
-* evtl. collinearfree und crossing free*)
-
+(*definition für Polygon: intersectionfree*)
 definition polygon :: "point2d list \<Rightarrow> bool" where
-  "polygon P = True"
-
+  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P = intersectionFreePList P"
 definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
-  "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (PL!i)"
+  "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (cyclePath (PL!i))"
 
 
 (*Convexes Polygon.
@@ -124,7 +121,7 @@ sorry
 definition pointInsideCPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow>
   pointInsideCPolygon P a \<equiv> pointInsideCPolygonCCl P a \<or> pointInsideCPolygonACl P a"
-lemma pointInsideCPolygonRev1: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> polygon P \<Longrightarrow>
+lemma pointInsideCPolygonRev1: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<Longrightarrow>
   pointInsideCPolygon (rev P) a \<equiv> pointInsideCPolygonCCl (rev P) a \<or> pointInsideCPolygonACl (rev P) a"
   apply (cut_tac P=P and L=L in cPolygonRev, assumption+)
   apply (cut_tac P="rev P" and L="hd L # rev (tl L)" and a=a in pointInsideCPolygon_def)
