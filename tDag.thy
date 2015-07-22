@@ -73,12 +73,6 @@ definition trapezIsCPolygon :: "trapez \<Rightarrow> bool" where
   "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
 
 
-(*Wann sind Trapeze Nachbarn*)
-definition leftNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "leftNeighbour A B \<equiv> leftP A = rightP B"
-definition rightNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "rightNeighbour A B \<equiv> leftP B = rightP A"
-lemma neighbourTrans : "leftNeighbour A B = rightNeighbour B A "by (simp add: leftNeighbour_def rightNeighbour_def)
-definition neighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "neighbour  A B \<equiv> leftNeighbour A B \<or> rightNeighbour A B"
-
 (*wandle rBox in ein Trapez um*)
 definition rBoxTrapez :: "point2d list \<Rightarrow> trapez" where 
   "pointList R \<Longrightarrow> length R = 4 \<Longrightarrow> cPolygon (cyclePath R) \<Longrightarrow>
@@ -148,5 +142,17 @@ theorem "replaceTip oT nT (replaceTip oT' nT' D) = replaceTip oT' nT' (replaceTi
   apply (simp)
 oops
 
+
+fun rightUpperN :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
+  "rightUpperN (Ts#Tl) T P Q =
+  (if (rightP T = leftP Ts \<and> pointBelowSegment (leftP Ts) (fst (topT Ts)) (snd (topT Ts)))
+    then (Ts)
+  else (rightUpperN Tl T P Q))"
+
+fun rightLowerN :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
+  "rightLowerN (Ts#Tl) T P Q =
+  (if (rightP T = leftP Ts \<and> pointAboveSegment (leftP Ts) (fst (topT Ts)) (snd (topT Ts)))
+    then (Ts)
+  else (rightLowerN Tl T P Q))"
 
 end

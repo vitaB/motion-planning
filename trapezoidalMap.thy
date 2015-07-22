@@ -31,7 +31,7 @@ fun queryTrapezoidMap :: "dag \<Rightarrow> point2d \<Rightarrow> trapez" where
   |"queryTrapezoidMap (Node lf (xNode n) rt) p = 
    (if (xCoord p < xCoord n) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
   |"queryTrapezoidMap (Node lf (yNode x) rt) p =
-  (*lf ist über dem segment, rt ist unter dem segment*)
+  (*lf ist über dem segment x, rt ist unter dem segment*)
    (if (pointAboveSegment p (fst x) (snd x)) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
 
 
@@ -118,17 +118,37 @@ definition newDag :: "dag \<Rightarrow> trapez \<Rightarrow> trapez list \<Right
 (*gehe von links nach rechts durch die Trapeze, die die Strecke S schneiden.
 Input: A Trapezoidal map T, a search structure D, segment PQ
 Output: list of trapezoids intersected by PQ *)
-function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "followSegment D t a = (if (xCoord a > xCoord (leftP t))
-  then (t # followSegment D (queryTrapezoidMap D (rightP t)) a) else ([]))"
-by (auto)
+function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "leftFromPoint (rightP T) (rightP (rightUpperN (dagList D) T p q)) \<or> leftFromPoint (rightP T) (rightP (rightLowerN (dagList D) T p q))
+  \<Longrightarrow> followSegment D T p q =
+  (if (leftFromPoint (rightP T) q)
+    then (T # followSegment D
+      (if (pointAboveSegment (rightP T) p q) then (rightUpperN (dagList D) T p q)
+      else (rightLowerN (dagList D) T p q)) p q)
+  else ([]))"
+by (auto, metis leftP leftPRigthFromRightP rightP)
+(*termination followSegment (*beweise das das nächste Trapez rechts von dem linkem Trapez*)
+apply (subgoal_tac "xCoord (leftP t) < xCoord (leftP (queryTrapezoidMap D (rightP t)))")
+sorry*)
+(*function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "bla D T p q = (if (leftFromPoint (rightP T) q)
+  then (T # followSegment D (queryTrapezoidMap D (Abs_point2d(xCoord (rightP T), lineFunktionY p q (xCoord (rightP T))))) p q)
+  else ([]))"
+by(auto)*)
+lemma "T = queryTrapezoidMap D q \<Longrightarrow> followSegment D T p q = [T]"
+  apply (simp)
+  apply (safe)
+oops
 
 (*gib eine Liste mit trapezen zurück die das Segment PQ schneiden
 Input: suchBaum D, Segment PQ
 Output: liste mit trapezen*)
 definition intersectTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "intersectTrapez D p q = followSegment D (queryTrapezoidMap D p) q"
-
+  "intersectTrapez D p q = followSegment D (queryTrapezoidMap D p) p q"
+lemma "queryTrapezoidMap D p = queryTrapezoidMap D q \<Longrightarrow> intersectTrapez D p q = dagList(D)"
+  apply (simp only: intersectTrapez_def)
+  apply (cases D)
+oops
 (*ersetzt alle übergebenen Trapeze im dag durch neue Trapeze, die mit PQ erstellt wurden
 Input : suchBaum D, 2 mal Liste mit Trapezen die ersetzt werden sollen,Segment PQ
 Output: neues Dag, nachdem alle Trapeze ersetzt wurden*)
@@ -139,11 +159,17 @@ fun replaceDag :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rig
 (*erneure dag nach dem hinzufügen eines segments*)
 definition addSegmentToTrapezoidalMap :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> dag" where
   "addSegmentToTrapezoidalMap D P Q \<equiv> replaceDag D (intersectTrapez D P Q) (intersectTrapez D P Q) P Q"
-
-(*hier müssen die eigentlichen Beweise stehen!*)
+(*wenn a in einem Trapez, dann ist a in einem der neuem Trapeze*)
+lemma "pointInTrapez T P \<Longrightarrow> pointInTrapez T Q \<Longrightarrow> pointInTrapez T a \<Longrightarrow> 
+  D=dagList (addSegmentToTrapezoidalMap (Tip T) P Q) \<Longrightarrow> \<exists> i < length D. pointInTrapez (D!i) a"
+  apply (simp add: addSegmentToTrapezoidalMap_def intersectTrapez_def) (*del:followSegment.simps*)
+oops
 
 (*zeige das jedes neue Trapez ein convexes Polygon ist*)
-
+lemma "segment P Q \<Longrightarrow> uniqueXCoord (P#Q#S) \<Longrightarrow> pointList R \<Longrightarrow> rBoxS R (P#Q#S) \<Longrightarrow>
+ DS = addSegmentToTrapezoidalMap (Tip (rBoxTrapez R)) P Q \<Longrightarrow> \<forall> a \<in> set (dagList(DS)). trapezIsCPolygon a"
+ apply (simp add: addSegmentToTrapezoidalMap_def)
+oops
 
 (*zeige das keine der Seiten von den neuen trapezodialMaps das polygon innerhalb von rBox schneidet*)
 (*untere und obere Strecken von trapezen, sind segmente von den polygonen*)
