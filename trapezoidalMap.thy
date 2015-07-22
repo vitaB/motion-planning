@@ -115,36 +115,12 @@ definition newDag :: "dag \<Rightarrow> trapez \<Rightarrow> trapez list \<Right
       )
     ))"
 
-(*gehe von links nach rechts durch die Trapeze, die die Strecke S schneiden.
-Input: A Trapezoidal map T, a search structure D, segment PQ
-Output: list of trapezoids intersected by PQ *)
-function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "leftFromPoint (rightP T) (rightP (rightUpperN (dagList D) T p q)) \<or> leftFromPoint (rightP T) (rightP (rightLowerN (dagList D) T p q))
-  \<Longrightarrow> followSegment D T p q =
-  (if (leftFromPoint (rightP T) q)
-    then (T # followSegment D
-      (if (pointAboveSegment (rightP T) p q) then (rightUpperN (dagList D) T p q)
-      else (rightLowerN (dagList D) T p q)) p q)
-  else ([]))"
-by (auto, metis leftP leftPRigthFromRightP rightP)
-(*termination followSegment (*beweise das das nächste Trapez rechts von dem linkem Trapez*)
-apply (subgoal_tac "xCoord (leftP t) < xCoord (leftP (queryTrapezoidMap D (rightP t)))")
-sorry*)
-(*function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "bla D T p q = (if (leftFromPoint (rightP T) q)
-  then (T # followSegment D (queryTrapezoidMap D (Abs_point2d(xCoord (rightP T), lineFunktionY p q (xCoord (rightP T))))) p q)
-  else ([]))"
-by(auto)*)
-lemma "T = queryTrapezoidMap D q \<Longrightarrow> followSegment D T p q = [T]"
-  apply (simp)
-  apply (safe)
-oops
 
-(*gib eine Liste mit trapezen zurück die das Segment PQ schneiden
+(*gib eine Liste mit trapezen zurück die das Segment PQ schneiden. Reihenfolge von links nach rechts
 Input: suchBaum D, Segment PQ
 Output: liste mit trapezen*)
 definition intersectTrapez :: "dag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "intersectTrapez D p q = followSegment D (queryTrapezoidMap D p) p q"
+  "intersectTrapez D P Q = (queryTrapezoidMap D P) # (sortedIntersectTrapez (dagList D) P Q)"
 lemma "queryTrapezoidMap D p = queryTrapezoidMap D q \<Longrightarrow> intersectTrapez D p q = dagList(D)"
   apply (simp only: intersectTrapez_def)
   apply (cases D)
@@ -257,4 +233,31 @@ Output:  A trapezoid map M in associated search structure dag.*)
 fun buildTrapezoidalMap :: "dag \<Rightarrow> (point2d list) list \<Rightarrow> dag" where
   "buildTrapezoidalMap D [] = D"
   |"buildTrapezoidalMap D (P#Pl) = buildTrapezoidalMap (polygonExtendTrapezoidalMap D P) Pl"*)
+
+(*(*gehe von links nach rechts durch die Trapeze, die die Strecke S schneiden.
+Input: A Trapezoidal map T, a search structure D, segment PQ
+Output: list of trapezoids intersected by PQ *)
+fun followSegment :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "followSegment D TM T Q = (T # followSegment D (TM) (rightN TM T) Q)"
+(*function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "leftFromPoint (rightP T) (rightP (rightUpperN (dagList D) T p q)) \<or> leftFromPoint (rightP T) (rightP (rightLowerN (dagList D) T p q))
+  \<Longrightarrow> followSegment D T p q =
+  (if (leftFromPoint (rightP T) q)
+    then (T # followSegment D
+      (if (pointAboveSegment (rightP T) p q) then (rightUpperN (dagList D) T p q)
+      else (rightLowerN (dagList D) T p q)) p q)
+  else ([]))"
+by (auto, metis leftP leftPRigthFromRightP rightP)*)
+(*termination followSegment (*beweise das das nächste Trapez rechts von dem linkem Trapez*)
+apply (subgoal_tac "xCoord (leftP t) < xCoord (leftP (queryTrapezoidMap D (rightP t)))")
+sorry*)
+(*function followSegment :: "dag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "bla D T p q = (if (leftFromPoint (rightP T) q)
+  then (T # followSegment D (queryTrapezoidMap D (Abs_point2d(xCoord (rightP T), lineFunktionY p q (xCoord (rightP T))))) p q)
+  else ([]))"
+by(auto)*)
+lemma "T = queryTrapezoidMap D q \<Longrightarrow> followSegment D T p q = [T]"
+  apply (simp)
+  apply (safe)
+oops*)
 end

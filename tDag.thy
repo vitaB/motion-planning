@@ -142,8 +142,17 @@ theorem "replaceTip oT nT (replaceTip oT' nT' D) = replaceTip oT' nT' (replaceTi
   apply (simp)
 oops
 
+definition trapezOrd :: "trapez \<Rightarrow> real" where
+  "trapezOrd T = xCoord (leftP T)"
 
-fun rightUpperN :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
+fun sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "sortedIntersectTrapez [] _ _ = []"
+  | "sortedIntersectTrapez (T#TS) P Q = (if (intersect P Q (fst(leftT T)) (snd(leftT T)))
+  then (List.insort_insert_key trapezOrd T (sortedIntersectTrapez TS P Q))
+  else(sortedIntersectTrapez TS P Q))"
+
+
+(*fun rightUpperN :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
   "rightUpperN (Ts#Tl) T P Q =
   (if (rightP T = leftP Ts \<and> pointBelowSegment (leftP Ts) (fst (topT Ts)) (snd (topT Ts)))
     then (Ts)
@@ -153,6 +162,6 @@ fun rightLowerN :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rig
   "rightLowerN (Ts#Tl) T P Q =
   (if (rightP T = leftP Ts \<and> pointAboveSegment (leftP Ts) (fst (topT Ts)) (snd (topT Ts)))
     then (Ts)
-  else (rightLowerN Tl T P Q))"
+  else (rightLowerN Tl T P Q))"*)
 
 end
