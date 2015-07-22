@@ -31,8 +31,10 @@ theorem pointsEqual1 [simp] : "pointsEqual p r = (p = r)"
 done
 
 (*Punkt a links vom Punkt b?*)
-definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow>bool" where
+definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "leftFromPoint a b = (xCoord a < xCoord b)"
+definition abovePoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "abovePoint a b = (yCoord a > yCoord b)"
 
 (*signed area of a triangle; with the convention being that
 - if the points are ordered anti-clockwise, the area is positive

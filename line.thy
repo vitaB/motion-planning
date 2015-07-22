@@ -128,6 +128,8 @@ by (metis notRightTurn)
 (*punkt P ist links vom "rechten" Eckpunkt der Strecke AB. D.h. A oder B ist rechts von P*)
 definition leftFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> leftFromSegment A B P \<equiv> leftFromPoint P A \<or> leftFromPoint P B"
+definition rightFromSegment ::  "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "segment A B \<Longrightarrow> rightFromSegment A B P \<equiv> \<not>leftFromPoint P A \<or> \<not>leftFromPoint P B"
 (*linke Ecke des Segments*)
 definition leftPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<equiv> (if (leftFromPoint A B) then A else B)"
@@ -137,10 +139,11 @@ definition rightPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d
 lemma legtPNotEqualRightP : "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<noteq> rightPSegment A B"
   by (auto simp add: rightPSegment_def leftPSegment_def)
 
+(*punkt p ist über den beiden Ecken der Strecke A B*)
 definition pointAboveSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "segment A B \<Longrightarrow> pointAboveSegment p A B \<equiv> yCoord p > yCoord A \<or> yCoord p > yCoord B"
+  "segment A B \<Longrightarrow> pointAboveSegment p A B \<equiv> abovePoint p A \<or> abovePoint p B"
 definition pointBelowSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "segment A B \<Longrightarrow> pointBelowSegment p A B \<equiv> yCoord p < yCoord A \<or> yCoord p < yCoord B"
+  "segment A B \<Longrightarrow> pointBelowSegment p A B \<equiv> \<not>abovePoint p A \<or> \<not>abovePoint p B"
 
 (*Zusätliche Lemmas*)
 lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>

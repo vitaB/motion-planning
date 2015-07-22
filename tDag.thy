@@ -58,13 +58,20 @@ lemma trapezSimp2 :"xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longr
   \<and> leftFromPoint (snd(leftT T)) (fst (rightT T)) \<and> leftFromPoint (snd(leftT T)) (snd (rightT T))"
   by (cases T, auto simp add: leftFromPoint_def, (metis leftFromPoint_def leftP leftPRigthFromRightP rightP)+)
 
-  
+(*Point in Trapezoidal*)
+definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
+  "pointInTrapez T P \<equiv> leftFromPoint P (rightP T) \<and> \<not>(leftFromPoint P (leftP T))
+  \<and> pointAboveSegment P (fst(bottomT T)) (snd(bottomT T)) \<and> pointBelowSegment P (fst(topT T)) (snd(topT T))"
+
+
+
 (*evtl. überprüfung zu aufwendig*)
 definition trapezCollinearFree :: "trapez \<Rightarrow> bool" where
   "trapezCollinearFree T \<equiv> \<not>collinearList[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
 
 definition trapezIsCPolygon :: "trapez \<Rightarrow> bool" where
   "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
+
 
 (*Wann sind Trapeze Nachbarn*)
 definition leftNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "leftNeighbour A B \<equiv> leftP A = rightP B"
