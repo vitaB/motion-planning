@@ -4,30 +4,67 @@ theory tDag
 imports rBox
 begin
 
-(*Defintion für trapez. durch Strecke über dem Trapez, Strecke unter dem Trapez.
-linker Endpunkt, rechter Endpunkt*)
-typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). True}" by(auto)
+(*Definition für Trapez ((a,b),(c,d),e,f)) top: (a,b), bottom:(c,d), leftP:e, rightP: f*)
+typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). 
+  leftFromPoint (fst(snd(snd( p)))) (snd(snd(snd(p))))
+  \<and> pointAboveSegment (fst(fst p)) (fst(fst(snd p))) (snd(fst(snd p)))
+  \<and> pointAboveSegment (snd(fst p)) (fst(fst(snd p))) (snd(fst(snd p)))
+  \<and> segment (fst(fst p)) (snd(fst p))
+  \<and> segment (fst(fst(snd p))) (snd(fst(snd p)))}"
+sorry
+
+(*identifiers for Trapez-parts*)
 definition topT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where  "topT T \<equiv> fst(Rep_trapez T)"
+lemma topTSegment [simp]: "segment (fst(topT T)) (snd(topT T))"
+  by (cases T, simp add: topT_def, (erule conjE)+, metis (no_types, lifting) Rep_trapez mem_Collect_eq)
 definition bottomT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where "bottomT T \<equiv> fst(snd(Rep_trapez T))"
+lemma bottomTSegment [simp]: "segment (fst(bottomT T)) (snd(bottomT T))"
+  by (cases T, simp add: bottomT_def, (erule conjE)+, metis (no_types, lifting) Rep_trapez mem_Collect_eq)
+lemma topAboveBottom [simp] :"pointAboveSegment (fst (topT T)) (fst (bottomT T)) (snd (bottomT T)) \<and> pointAboveSegment (snd (topT T)) (fst (bottomT T)) (snd (bottomT T))"
+  by (simp add: topT_def bottomT_def, metis (no_types, lifting) Rep_trapez mem_Collect_eq)
 definition leftP :: "trapez \<Rightarrow> point2d" where "leftP T \<equiv> fst(snd(snd(Rep_trapez T)))"
 definition rightP :: "trapez \<Rightarrow> point2d" where "rightP T \<equiv> snd(snd(snd(Rep_trapez T)))"
-lemma topTSimp [simp] : "topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" by (simp add: topT_def Abs_trapez_inverse)
-lemma bottomTSimp [simp] : "bottomT (Abs_trapez ((a,b),(c,d),e,f)) = (c,d) "by (simp add: bottomT_def Abs_trapez_inverse)
-lemma leftPSimp [simp] : "leftP (Abs_trapez ((a,b),(c,d),e,f)) = e" by (simp add: leftP_def Abs_trapez_inverse)
-lemma rightPSimp [simp] : "rightP (Abs_trapez ((a,b),(c,d),e,f)) = f" by (simp add: rightP_def Abs_trapez_inverse)
+lemma leftPRigthFromRightP [simp] : "leftFromPoint (leftP T) (rightP T)"
+  by (simp add: leftP_def rightP_def, metis (no_types, lifting) Rep_trapez mem_Collect_eq)
+
+(*Lemmas zum reduzieren von Termen*)
+lemma topT [simp] : " topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" sorry
+lemma bottomT [simp] : "bottomT (Abs_trapez ((a,b),(c,d),e,f)) = (c,d) " sorry
+lemma leftP [simp] : "leftP (Abs_trapez ((a,b),(c,d),e,f)) = e" sorry
+lemma rightP [simp] : "rightP (Abs_trapez ((a,b),(c,d),e,f)) = f" sorry
+
+(*Trapez Equiv.*)
 lemma trapezSameCoord [simp]: "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b'),(c',d'),e',f'))
-  \<longleftrightarrow> a=a'\<and> b=b' \<and> c=c' \<and> d=d' \<and> e=e' \<and> f=f'"
-  by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv)
+  \<longleftrightarrow> (a=a'\<and> b=b' \<and> c=c' \<and> d=d' \<and> e=e' \<and> f=f')"
+sorry
+  (*by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv)*)
 definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "trapezNotEq A B \<equiv> A \<noteq> B"
-definition leftT :: "trapez \<Rightarrow> (point2d*point2d)" where 
-  "leftT T \<equiv> vertSegment (topT T) (bottomT T) (leftP T)"
-definition rightT :: "trapez \<Rightarrow> (point2d*point2d)" where 
-  "rightT T \<equiv> vertSegment (topT T) (bottomT T) (rightP T)"
 
+(*Definition für linke und rechte "Strecke"(muss kein segment sein) des Trapez*)
+definition leftT :: "trapez \<Rightarrow> (point2d*point2d)" where 
+  "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
+    leftT T \<equiv> vertSegment (topT T) (bottomT T) (leftP T)"
+definition rightT :: "trapez \<Rightarrow> (point2d*point2d)" where 
+  "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow> 
+    rightT T \<equiv> vertSegment (topT T) (bottomT T) (rightP T)"
+
+(*Linke Ecken sind rechts von den rechten Ecken*)
+lemma trapezSimp1 :"xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
+  leftFromPoint (leftP T) (fst (rightT T)) \<and> leftFromPoint (leftP T) (snd (rightT T))"
+  by (simp add: leftFromPoint_def rightT_def vertSegment_def segment_def, metis leftFromPoint_def leftPRigthFromRightP)
+lemma trapezSimp2 :"xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
+  leftFromPoint (fst(leftT T)) (fst (rightT T)) \<and> leftFromPoint (fst(leftT T)) (snd (rightT T))
+  \<and> leftFromPoint (snd(leftT T)) (fst (rightT T)) \<and> leftFromPoint (snd(leftT T)) (snd (rightT T))"
+  by (cases T, auto simp add: leftFromPoint_def, (metis leftFromPoint_def leftP leftPRigthFromRightP rightP)+)
+
+  
 (*evtl. überprüfung zu aufwendig*)
 definition trapezCollinearFree :: "trapez \<Rightarrow> bool" where
   "trapezCollinearFree T \<equiv> \<not>collinearList[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
+
+definition trapezIsCPolygon :: "trapez \<Rightarrow> bool" where
+  "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
 
 (*Wann sind Trapeze Nachbarn*)
 definition leftNeighbour :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "leftNeighbour A B \<equiv> leftP A = rightP B"

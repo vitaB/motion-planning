@@ -5,19 +5,23 @@ begin
 (*Definition für Segment.*)
 definition segment :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment a b \<equiv> \<not> pointsEqual a b"
+lemma [simp]: "xCoord A \<noteq> xCoord B \<Longrightarrow> segment A B" by (auto simp add: segment_def)
+lemma [simp]: "yCoord A \<noteq> yCoord B \<Longrightarrow> segment A B" by (auto simp add: segment_def)
 lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
 definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
 
-(*berechnet die yCoordinate für ein bekanntes x für die Strecke AB. Zweipunkteform*)
+(*berechnet die yCoordinate für ein bekanntes x für die Gerade AB. Zweipunkteform*)
 (*AB darf keine Vertikale sein*)
 definition lineFunktionY :: "point2d \<Rightarrow> point2d \<Rightarrow> real \<Rightarrow> real" where
-  "segment A B \<Longrightarrow> xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
+  "xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
   ((yCoord B - yCoord A)/(xCoord B - xCoord A)) * (px -xCoord A) + yCoord B"
 
+(*Input: Gerade A, Gerade B, Punkt P
+Output: Vertikale Strecke mit der xCoordinate P, welche durch yCoord von A und B beschränkt wird*)
 definition vertSegment :: "(point2d*point2d) \<Rightarrow> (point2d*point2d) \<Rightarrow> point2d \<Rightarrow> (point2d*point2d)" where
-  "segment (fst A) (snd A) \<Longrightarrow> xCoord (fst A) \<noteq> xCoord (snd A) \<Longrightarrow> segment (fst B) (snd B) \<Longrightarrow> xCoord (fst B) \<noteq> xCoord (snd B) \<Longrightarrow>
-  vertSegment A B P \<equiv> (Abs_point2d (yCoord P, lineFunktionY (fst B) (snd B) (xCoord P) ),Abs_point2d (yCoord P, lineFunktionY (fst A) (snd A) (xCoord P) ))"
+  "xCoord (fst A) \<noteq> xCoord (snd A) \<Longrightarrow> xCoord (fst B) \<noteq> xCoord (snd B) \<Longrightarrow>
+  vertSegment A B P \<equiv> (Abs_point2d (xCoord P, lineFunktionY (fst B) (snd B) (xCoord P) ),Abs_point2d (xCoord P, lineFunktionY (fst A) (snd A) (xCoord P) ))"
 
 (*berechne den mittelpunkt der vertikalen Strecke AB*)
 definition vertLineMidpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
