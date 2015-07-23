@@ -3,25 +3,25 @@ imports tDag
 begin
 
 (*gehe solange bis zum nächsten Nachbarn bis gesuchte Ecke gefunden ist
-Input: funktion die linke/rechte Ecke vom Trapez gibt, Trapez-List,
+Input: funktion die linke/rechte Ecke vom Trapez gibt, Liste mit Trapezen durch die PQ geht,
   Entscheidung Trapez-Ecke über/unter segment PQ liegt, Strecke PQ
-Output: nächste linke/rechte Ecke die über dem Segment P/Q liegt*)
+Output: nächste linke/rechte Ecke die über/unter dem Segment P/Q liegt*)
 fun nextCorner :: "(trapez \<Rightarrow> point2d) \<Rightarrow> trapez list \<Rightarrow> (point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool) \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "nextCorner f [TM] _  _ _ = f TM"
   |" nextCorner f (TM#TS) g P Q = (if (g (f TM) P Q) then (f TM) else (nextCorner f TS g P Q))"
 
 (*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez über PQ liegt*)
 definition topLeftCorner:: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
-  "topLeftCorner TM T P Q = nextCorner leftP (dropWhile (trapezNotEq T) (rev TM)) pointAboveSegment P Q"
+  "topLeftCorner TM T P Q = nextCorner leftP (dropWhile (trapezNotEq T) (rev TM)) leftTurn P Q"
 (*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez über PQ liegt*)
 definition topRightCorner :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
-  "topRightCorner TM T P Q = nextCorner rightP (dropWhile (trapezNotEq T) TM) pointAboveSegment P Q"
+  "topRightCorner TM T P Q = nextCorner rightP (dropWhile (trapezNotEq T) TM) leftTurn P Q"
 (*gehe solange von T zum nächsten linken Nachbarn, bis leftP des Trapez unter PQ liegt*)
 definition bottomLeftCorner :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
-  "bottomLeftCorner TM T P Q = nextCorner leftP (dropWhile (trapezNotEq T) (rev TM)) pointBelowSegment P Q"
+  "bottomLeftCorner TM T P Q = nextCorner leftP (dropWhile (trapezNotEq T) (rev TM)) rightTurn P Q"
 (*gehe solange von T zum nächsten rechten Nachbarn, bis rightP des Trapez unter PQ liegt*)
 definition bottomRightCorner :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
-  "bottomRightCorner TM T P Q = nextCorner rightP (dropWhile (trapezNotEq T) TM) pointBelowSegment P Q"
+  "bottomRightCorner TM T P Q = nextCorner rightP (dropWhile (trapezNotEq T) TM) rightTurn P Q"
 
 (*Algorithm QueryTrapezoidMap(dag,point2d)
 Input: T is the trapezoid map search structure, n is a node in the search structure and p is a query point.
@@ -32,7 +32,7 @@ fun queryTrapezoidMap :: "dag \<Rightarrow> point2d \<Rightarrow> trapez" where
    (if (xCoord p < xCoord n) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
   |"queryTrapezoidMap (Node lf (yNode x) rt) p =
   (*lf ist über dem segment x, rt ist unter dem segment*)
-   (if (pointAboveSegment p (fst x) (snd x)) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
+   (if (leftTurn (fst x) (snd x) p) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
 
 
 (*Einfacher Fall: allgemeinFall. weder P noch Q sind in T drin, auch nicht an den Ecken*)
