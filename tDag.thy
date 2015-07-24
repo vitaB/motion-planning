@@ -4,36 +4,66 @@ theory tDag
 imports rBox
 begin
 
-(*Definition für Trapez ((a,b),(c,d),e,f)) top: (a,b), bottom:(c,d), leftP:e, rightP: f*)
+(*Definition für Trapez ((a,b),(c,d),e,f)) top: (a,b), bottom:(c,d), leftP:e, rightP: f
+  a=fst(fst p), b = snd(fst p), c=fst(fst(snd p)), d=snd(fst(snd p)), e=fst(snd(snd p)), f=snd(snd(snd p))*)
 typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). 
   leftFromPoint (fst(snd(snd( p)))) (snd(snd(snd(p)))) (*e links von f*)
-  \<and> leftTurn (fst(fst(snd p))) (snd(fst(snd p))) (fst(fst p)) (*a über c d*)
-  \<and> leftTurn (fst(fst(snd p))) (snd(fst(snd p))) (snd(fst p)) (*b über c d*)
-  \<and> segment (fst(fst p)) (snd(fst p)) (*ab ist ein segment, wobei a links von b ist*)
-  \<and> leftFromPoint (fst(fst p)) (snd(fst p))
-  \<and> segment (fst(fst(snd p))) (snd(fst(snd p))) (*cd ist ein segment, wobei c links von d ist*)
-  \<and> leftFromPoint (fst(fst(snd p))) (snd(fst(snd p)))}"
-  apply (auto simp add: leftFromPoint_def segment_def)
-  apply (rule_tac x="Abs_point2d(0,0)" in exI, rule_tac x="Abs_point2d(1,1)" in exI, simp)
-  apply (rule_tac x="Abs_point2d(1,3)" in exI, rule_tac x="Abs_point2d(2,3)" in exI,
+  \<and> (signedArea (fst(fst p)) (snd(fst p)) (fst(snd(snd p))) \<le> 0 \<and> signedArea (fst(fst(snd p))) (snd(fst(snd p))) (fst(snd(snd p))) \<ge> 0) (*e ist zwischen ab und cd*)
+  \<and> (signedArea (fst(fst p)) (snd(fst p)) (snd(snd(snd p))) \<le> 0 \<and> signedArea (fst(fst(snd p))) (snd(fst(snd p))) (snd(snd(snd p))) \<ge> 0) (*f ist zwischen ab und cd*)
+  \<and> ( (leftTurn (fst(fst(snd p))) (snd(fst(snd p))) (fst(fst p)) \<and> leftTurn (fst(fst(snd p))) (snd(fst(snd p))) (snd(fst p)) ) (*a und b über c d*)
+    \<or> ( leftTurn (fst(fst(snd p))) (snd(fst(snd p))) (fst(fst p)) \<and> ((snd(fst(snd p))) = (snd(fst p))) ) (*a ist über cd und d=b*)
+    \<or> ( ((fst(fst(snd p))) = (fst(fst p))) \<and> leftTurn (fst(fst(snd p))) (snd(fst(snd p))) (snd(fst p)) ) ) (*a = c und b über c d*)
+  \<and> leftFromPoint (fst(fst p)) (snd(fst p)) (*ab ist ein segment, wobei a links von b ist*)
+  \<and> leftFromPoint (fst(fst(snd p))) (snd(fst(snd p)))}"(*cd ist ein segment, wobei c links von d ist*)
+  apply (simp add: leftFromPoint_def segment_def)
+  apply (rule_tac x="Abs_point2d(1,3)" in exI, rule_tac x="Abs_point2d(2,3)" in exI, simp)
+  apply (rule_tac x="Abs_point2d(1,1)" in exI, rule_tac x="Abs_point2d(2,1)" in exI,
     rule_tac x="Abs_point2d(1,2)" in exI, rule_tac x="Abs_point2d(2,2)" in exI)
   apply (auto simp add: signedArea_def rightTurn_def)
 done  
 
 (*identifiers for Trapez-parts*)
 definition topT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where  "topT T \<equiv> fst(Rep_trapez T)"
-lemma topTSegment [simp]: "segment (fst(topT T)) (snd(topT T))"
-  by (cases T, simp add: topT_def, (erule conjE)+, metis (no_types, lifting) Rep_trapez mem_Collect_eq)
 definition bottomT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where "bottomT T \<equiv> fst(snd(Rep_trapez T))"
-lemma bottomTSegment [simp]: "segment (fst(bottomT T)) (snd(bottomT T))"
-  by (cases T, simp add: bottomT_def, (erule conjE)+, metis (no_types, lifting) Rep_trapez mem_Collect_eq)
-lemma topAboveBottom [simp] :"leftTurn (fst (bottomT T)) (snd (bottomT T)) (fst (topT T))
-  \<and> leftTurn (fst (bottomT T)) (snd (bottomT T)) (snd (topT T))"
-  by (simp add: topT_def bottomT_def, metis (no_types, lifting) Rep_trapez leftRightTurn mem_Collect_eq)
 definition leftP :: "trapez \<Rightarrow> point2d" where "leftP T \<equiv> fst(snd(snd(Rep_trapez T)))"
 definition rightP :: "trapez \<Rightarrow> point2d" where "rightP T \<equiv> snd(snd(snd(Rep_trapez T)))"
 lemma leftPRigthFromRightP [simp] : "leftFromPoint (leftP T) (rightP T)"
   by (simp add: leftP_def rightP_def, metis (no_types, lifting) Rep_trapez mem_Collect_eq)
+  
+(*topT und bottomT sind segmente*)
+lemma topTSegment [simp]: "segment (fst(topT T)) (snd(topT T))"
+  apply (cases T, subgoal_tac "xCoord (fst(topT T)) \<noteq> xCoord (snd(topT T))")
+  apply (simp add: topT_def segment_def, (erule conjE)+, metis (no_types, lifting), simp)
+by (metis (no_types, lifting) Rep_trapez dual_order.irrefl leftFromPoint_def mem_Collect_eq topT_def)
+lemma bottomTSegment [simp]: "segment (fst(bottomT T)) (snd(bottomT T))"
+  apply (cases T, subgoal_tac "xCoord (fst(bottomT T)) \<noteq> xCoord (snd(bottomT T))")
+  apply (simp add: bottomT_def segment_def, (erule conjE)+, metis (no_types, lifting), simp)
+by (metis (no_types, lifting) Rep_trapez bottomT_def leftFromPoint_def less_irrefl mem_Collect_eq)
+
+(*Beweise über die Positionen der Ecken vom Trapez*)
+(*mind. einer der Ecken von topT ist über bottomT*)
+lemma topAboveBottom [simp] :"leftTurn (fst (bottomT T)) (snd (bottomT T)) (fst (topT T))
+  \<or> leftTurn (fst (bottomT T)) (snd (bottomT T)) (snd (topT T))"
+  by (simp add: topT_def bottomT_def, metis (no_types, lifting) Rep_trapez leftRightTurn mem_Collect_eq)
+(*leftP ist über bottom T oder ist die linke Ecke von bottomT*)
+lemma leftPPos : "leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fst(bottomT T)) = (leftP T)"
+  apply (simp add: leftP_def bottomT_def del: leftRightTurn leftTurnRotate leftTurnRotate2,
+    cases T, simp del: leftRightTurn leftTurnRotate leftTurnRotate2, safe)
+  apply (subgoal_tac "fst ((a, b), (aa, ba), ab, bb) = (a,b) \<and>  snd ((a, b), (aa, ba), ab, bb) = ((aa, ba), ab, bb)
+    \<and> fst(snd ((a, b), (aa, ba), ab, bb)) = (aa, ba) \<and> fst(snd(snd ((a, b), (aa, ba), ab, bb))) = ab
+    \<and> snd(snd(snd ((a, b), (aa, ba), ab, bb))) = bb")
+  apply (simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
+  apply (subgoal_tac "leftTurn (fst (fst (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))))
+        (snd (fst (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))))
+        (fst (snd (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb)))))) = leftTurn aa ba ab")
+  apply (subgoal_tac "fst (fst (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))) = aa \<and> fst (snd (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))) = ab")
+  apply (simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
+
+  apply (subgoal_tac "0 \<noteq> signedArea aa ba ab")
+  apply (metis leftTurn_def less_eq_real_def)
+  
+  apply (thin_tac "leftFromPoint ab bb", thin_tac "signedArea a b ab \<le> 0", thin_tac "signedArea a b bb \<le> 0",
+    thin_tac " segment a b", thin_tac "leftFromPoint a b", thin_tac "leftTurn aa ba a",thin_tac "leftTurn aa ba b")
 
 (*Lemmas zum reduzieren von Termen*)
 lemma topT [simp] : " topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" sorry
@@ -49,10 +79,31 @@ sorry
 definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "trapezNotEq A B \<equiv> A \<noteq> B"
 
+
 (*Definition für linke und rechte "Strecke"(muss kein segment sein) des Trapez*)
 definition leftT :: "trapez \<Rightarrow> (point2d*point2d)" where 
   "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
     leftT T \<equiv> vertSegment (topT T) (bottomT T) (leftP T)"
+(*wenn leftP, der linke Eckpunkt von topT und bottomT, dann ist leftT kein segment*)
+lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
+   leftP T = fst(topT T) \<and> leftP T = fst(bottomT T) \<Longrightarrow> fst (leftT T) = snd (leftT T)"
+  apply (simp add: leftT_def vertSegment_def lineFunktionY_def)
+  apply (cases T, simp, safe)
+  apply ((simp add: leftFromPoint_def not_less_iff_gr_or_eq, 
+    metis leftFromPoint_def leftP leftPRigthFromRightP not_less_iff_gr_or_eq rightP)+)
+done
+(*Falsch*)
+lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
+   leftP T = fst(topT T) \<or> leftP T = fst(bottomT T) \<Longrightarrow> fst (leftT T) = snd (leftT T)"
+  apply (simp add: leftT_def vertSegment_def lineFunktionY_def)
+  apply (cases T, simp, safe)
+  apply ((simp add: leftFromPoint_def not_less_iff_gr_or_eq, 
+    metis leftFromPoint_def leftP leftPRigthFromRightP not_less_iff_gr_or_eq rightP)+)
+done
+lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
+  \<not>collinear (leftP T) (fst((topT T))) (snd((topT T))) \<or> \<not>collinear (leftP T) (fst((bottomT T))) (snd((bottomT T))) \<Longrightarrow>
+  segment (fst (leftT T)) (snd (leftT T))"
+oops
 definition rightT :: "trapez \<Rightarrow> (point2d*point2d)" where 
   "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow> 
     rightT T \<equiv> vertSegment (topT T) (bottomT T) (rightP T)"
@@ -72,13 +123,14 @@ definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" wh
   \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) P \<and> \<not>(leftTurn (fst(topT T)) (snd(topT T)) P)"
 
 
+(*definition trapezPointList :: *)
 
 (*evtl. überprüfung zu aufwendig*)
-definition trapezCollinearFree :: "trapez \<Rightarrow> bool" where
+(*definition trapezCollinearFree :: "trapez \<Rightarrow> bool" where
   "trapezCollinearFree T \<equiv> \<not>collinearList[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
 
 definition trapezIsCPolygon :: "trapez \<Rightarrow> bool" where
-  "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
+  "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"*)
 
 
 (*wandle rBox in ein Trapez um*)
@@ -150,16 +202,25 @@ theorem "replaceTip oT nT (replaceTip oT' nT' D) = replaceTip oT' nT' (replaceTi
   apply (simp)
 oops
 
+definition trapezCrossing :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "trapezCrossing T  P Q =
+  (if (crossing P Q (fst(leftT T)) (snd(leftT T)))(*hier lässt sich evtl. mit einer anderen herangesweise des intersect, die beweisführung verbessern*)
+  then (True) else (False))"
+
 definition trapezOrd :: "trapez \<Rightarrow> real" where
   "trapezOrd T = xCoord (leftP T)"
 
 (*Trapeze deren linke Kante von PQ geschnitten wird, sortiert nach der xCoord der linken Ecke*)
 fun sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
   "sortedIntersectTrapez [] _ _ = []"
-  | "sortedIntersectTrapez (T#TS) P Q = (if (intersect P Q (fst(leftT T)) (snd(leftT T))) (*hier lässt sich evtl. mit einer anderen herangesweise des intersect, die beweisführung verbessern*)
-  then (List.insort_insert_key trapezOrd T (sortedIntersectTrapez TS P Q))
+  | "sortedIntersectTrapez (T#TS) P Q = (if (trapezCrossing T P Q)
+  then (List.insort_insert_key trapezOrd T (sortedIntersectTrapez TS  P Q))
   else(sortedIntersectTrapez TS P Q))"
 
+
+
+
+(*alte Definition*)
 
 (*fun rightUpperN :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
   "rightUpperN (Ts#Tl) T P Q =
