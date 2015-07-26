@@ -11,24 +11,12 @@ lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segm
 definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
 
-(*berechnet die yCoordinate für ein bekanntes x für die Gerade AB. Zweipunkteform*)
-(*AB darf keine Vertikale sein*)
-definition lineFunktionY :: "point2d \<Rightarrow> point2d \<Rightarrow> real \<Rightarrow> real" where
-  "xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
-  ((yCoord B - yCoord A)/(xCoord B - xCoord A)) * (px -xCoord A) + yCoord B"
-
-(*Input: Gerade A, Gerade B, Punkt P
-Output: Vertikale Strecke mit der xCoordinate P, welche durch yCoord von A und B beschränkt wird*)
-definition vertSegment :: "(point2d*point2d) \<Rightarrow> (point2d*point2d) \<Rightarrow> point2d \<Rightarrow> (point2d*point2d)" where
-  "xCoord (fst A) \<noteq> xCoord (snd A) \<Longrightarrow> xCoord (fst B) \<noteq> xCoord (snd B) \<Longrightarrow>
-  vertSegment A B P \<equiv> (Abs_point2d (xCoord P, lineFunktionY (fst B) (snd B) (xCoord P) ),Abs_point2d (xCoord P, lineFunktionY (fst A) (snd A) (xCoord P) ))"
 
 (*berechne den mittelpunkt der vertikalen Strecke AB*)
 definition vertLineMidpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A = xCoord B \<Longrightarrow> vertLineMidpoint A B \<equiv> Abs_point2d(xCoord A,(yCoord A + yCoord B)/2)"
 lemma verLineMidpointRigth : "segment A B \<Longrightarrow> xCoord A = xCoord B \<Longrightarrow> midpoint (vertLineMidpoint A B) A B"
   by (auto simp add: vertLineMidpoint_def midpoint_def)
-  
 
 (*Punkt p befindet sich auf segment AB*)
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -147,6 +135,22 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   apply (metis notRightTurn)
 by (smt2 intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
 
+
+
+
+(*alte Definition*)
+(*(*berechnet die yCoordinate für ein bekanntes x für die Gerade AB. Zweipunkteform*)
+(*AB darf keine Vertikale sein*)
+definition lineFunktionY :: "point2d \<Rightarrow> point2d \<Rightarrow> real \<Rightarrow> real" where
+  "xCoord A \<noteq> xCoord B \<Longrightarrow> lineFunktionY A B px \<equiv>
+  ((yCoord B - yCoord A)/(xCoord B - xCoord A)) * (px -xCoord A) + yCoord B"
+
+(*Input: Gerade A, Gerade B, Punkt P
+Output: Vertikale Strecke mit der xCoordinate P, welche durch yCoord von A und B beschränkt wird*)
+definition vertSegment :: "(point2d*point2d) \<Rightarrow> (point2d*point2d) \<Rightarrow> point2d \<Rightarrow> (point2d*point2d)" where
+  "xCoord (fst A) \<noteq> xCoord (snd A) \<Longrightarrow> xCoord (fst B) \<noteq> xCoord (snd B) \<Longrightarrow>
+  vertSegment A B P \<equiv> (Abs_point2d (xCoord P, lineFunktionY (fst B) (snd B) (xCoord P) ),
+    Abs_point2d (xCoord P, lineFunktionY (fst A) (snd A) (xCoord P) ))"*)
 
 (*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
 (*(*http://afp.sourceforge.net/browser_info/current/AFP/Impossible_Geometry/Impossible_Geometry.html*)

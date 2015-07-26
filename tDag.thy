@@ -61,10 +61,8 @@ lemma leftPPos : "leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fs
 
   apply (subgoal_tac "0 \<noteq> signedArea aa ba ab")
   apply (metis leftTurn_def less_eq_real_def)
-  
-  apply (thin_tac "leftFromPoint ab bb", thin_tac "signedArea a b ab \<le> 0", thin_tac "signedArea a b bb \<le> 0",
-    thin_tac " segment a b", thin_tac "leftFromPoint a b", thin_tac "leftTurn aa ba a",thin_tac "leftTurn aa ba b")
 
+oops
 (*Lemmas zum reduzieren von Termen*)
 lemma topT [simp] : " topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" sorry
 lemma bottomT [simp] : "bottomT (Abs_trapez ((a,b),(c,d),e,f)) = (c,d) " sorry
@@ -80,42 +78,12 @@ definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "trapezNotEq A B \<equiv> A \<noteq> B"
 
 
-(*Definition für linke und rechte "Strecke"(muss kein segment sein) des Trapez*)
-definition leftT :: "trapez \<Rightarrow> (point2d*point2d)" where 
-  "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
-    leftT T \<equiv> vertSegment (topT T) (bottomT T) (leftP T)"
-(*wenn leftP, der linke Eckpunkt von topT und bottomT, dann ist leftT kein segment*)
-lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
-   leftP T = fst(topT T) \<and> leftP T = fst(bottomT T) \<Longrightarrow> fst (leftT T) = snd (leftT T)"
-  apply (simp add: leftT_def vertSegment_def lineFunktionY_def)
-  apply (cases T, simp, safe)
-  apply ((simp add: leftFromPoint_def not_less_iff_gr_or_eq, 
-    metis leftFromPoint_def leftP leftPRigthFromRightP not_less_iff_gr_or_eq rightP)+)
-done
-(*Falsch*)
-lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
-   leftP T = fst(topT T) \<or> leftP T = fst(bottomT T) \<Longrightarrow> fst (leftT T) = snd (leftT T)"
-  apply (simp add: leftT_def vertSegment_def lineFunktionY_def)
-  apply (cases T, simp, safe)
-  apply ((simp add: leftFromPoint_def not_less_iff_gr_or_eq, 
-    metis leftFromPoint_def leftP leftPRigthFromRightP not_less_iff_gr_or_eq rightP)+)
-done
-lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
-  \<not>collinear (leftP T) (fst((topT T))) (snd((topT T))) \<or> \<not>collinear (leftP T) (fst((bottomT T))) (snd((bottomT T))) \<Longrightarrow>
-  segment (fst (leftT T)) (snd (leftT T))"
-oops
-definition rightT :: "trapez \<Rightarrow> (point2d*point2d)" where 
-  "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow> 
-    rightT T \<equiv> vertSegment (topT T) (bottomT T) (rightP T)"
-
 (*Linke Ecken sind rechts von den rechten Ecken*)
-lemma trapezSimp1 :"xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
-  leftFromPoint (leftP T) (fst (rightT T)) \<and> leftFromPoint (leftP T) (snd (rightT T))"
-  by (simp add: leftFromPoint_def rightT_def vertSegment_def segment_def, metis leftFromPoint_def leftPRigthFromRightP)
-lemma trapezSimp2 :"xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
-  leftFromPoint (fst(leftT T)) (fst (rightT T)) \<and> leftFromPoint (fst(leftT T)) (snd (rightT T))
-  \<and> leftFromPoint (snd(leftT T)) (fst (rightT T)) \<and> leftFromPoint (snd(leftT T)) (snd (rightT T))"
-  by (cases T, auto simp add: leftFromPoint_def, (metis leftFromPoint_def leftP leftPRigthFromRightP rightP)+)
+lemma trapezNeighbour1 : "rightP T = leftP Ts \<Longrightarrow> leftFromPoint (rightP T) (rightP Ts)"
+  by (cases T, simp)
+lemma trapezNeighbour2 : "rightP T = leftP Ts \<Longrightarrow> leftFromPoint (leftP T) (leftP Ts)"
+  by (cases T, auto)
+
 
 (*Point in Trapezoidal, evtl. sollte punkt auf allen Kanten akzeptiert werden*)
 definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
@@ -202,25 +170,90 @@ theorem "replaceTip oT nT (replaceTip oT' nT' D) = replaceTip oT' nT' (replaceTi
   apply (simp)
 oops
 
-definition trapezCrossing :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "trapezCrossing T  P Q =
-  (if (crossing P Q (fst(leftT T)) (snd(leftT T)))(*hier lässt sich evtl. mit einer anderen herangesweise des intersect, die beweisführung verbessern*)
-  then (True) else (False))"
 
+(*zwei Trapeze sind benachbart entland der Strecke PQ, die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
+und wenn topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
+definition neighbTrapez:: "dag \<Rightarrow> trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "neighbTrapez D T Ts P Q \<equiv> rightP T = leftP Ts \<and>
+  ((rightTurn P Q (rightP T) \<and> topT T = topT Ts) \<or> (leftTurn P Q (rightP T) \<and> bottomT T = bottomT Ts))"
+(*gib den nächsten Nachbarn von einem Trapez folgend der Strecke PQ  aus der Trapez-Liste
+Input: dag, dagList geordnet nach der x-Coordinate von leftP, Strecke PQ
+Output: nächster trapez-Nachbar, wenn man PQ folgt*)
+(*es muss ein Nachbar geben!*)
+fun nextTrapez :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
+  "nextTrapez D (Ts#Tm) T P Q = (if(neighbTrapez D T Ts P Q) then(Ts) else(nextTrapez D Tm T P Q))"
+
+
+(*ordnungsrelation nach xCoord des linken Eckpunkts eines Trapezes*)
 definition trapezOrd :: "trapez \<Rightarrow> real" where
   "trapezOrd T = xCoord (leftP T)"
+(*ist P links vom rechten Eckpunkt des Trapez*)
+definition trapezOrdL :: " point2d \<Rightarrow> trapez \<Rightarrow> bool" where
+  "trapezOrdL P T \<equiv> leftFromPoint P (rightP T)"
+(*ist Q links vom linkem Eckpunkt des Trapez*)
+definition trapezOrdR :: " point2d \<Rightarrow> trapez \<Rightarrow> bool" where
+  "trapezOrdR Q T \<equiv> leftFromPoint (leftP T) Q"
 
-(*Trapeze deren linke Kante von PQ geschnitten wird, sortiert nach der xCoord der linken Ecke*)
-fun sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "sortedIntersectTrapez [] _ _ = []"
-  | "sortedIntersectTrapez (T#TS) P Q = (if (trapezCrossing T P Q)
-  then (List.insort_insert_key trapezOrd T (sortedIntersectTrapez TS  P Q))
-  else(sortedIntersectTrapez TS P Q))"
+(*sortierte ausgabe von Trapezen (nach xCoord von leftP geordnet)
+  und benschnitten so das nur die Trapeze zwischen P und Q ausgegeben werden*)
+definition sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "sortedIntersectTrapez TM P Q \<equiv> takeWhile (trapezOrdR Q) (dropWhile (trapezOrdL P) (sort_key (trapezOrd) TM))"
 
 
 
 
 (*alte Definition*)
+
+(*(*Definition für linke und rechte "Strecke"(muss kein segment sein) des Trapez*)
+definition leftT :: "trapez \<Rightarrow> (point2d*point2d)" where 
+  "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
+    leftT T \<equiv> vertSegment (topT T) (bottomT T) (leftP T)"
+(*wenn leftP, der linke Eckpunkt von topT und bottomT, dann ist leftT kein segment*)
+lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
+   leftP T = fst(topT T) \<and> leftP T = fst(bottomT T) \<Longrightarrow> fst (leftT T) = snd (leftT T)"
+  apply (simp add: leftT_def vertSegment_def lineFunktionY_def)
+  apply (cases T, simp, safe)
+  apply ((simp add: leftFromPoint_def not_less_iff_gr_or_eq, 
+    metis leftFromPoint_def leftP leftPRigthFromRightP not_less_iff_gr_or_eq rightP)+)
+done
+(*Falsch*)
+lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
+   leftP T = fst(topT T) \<or> leftP T = fst(bottomT T) \<Longrightarrow> fst (leftT T) = snd (leftT T)"
+  apply (simp add: leftT_def vertSegment_def lineFunktionY_def)
+  apply (cases T, simp, safe)
+  apply ((simp add: leftFromPoint_def not_less_iff_gr_or_eq, 
+    metis leftFromPoint_def leftP leftPRigthFromRightP not_less_iff_gr_or_eq rightP)+)
+done
+lemma "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T)) \<Longrightarrow>
+  \<not>collinear (leftP T) (fst((topT T))) (snd((topT T))) \<or> \<not>collinear (leftP T) (fst((bottomT T))) (snd((bottomT T))) \<Longrightarrow>
+  segment (fst (leftT T)) (snd (leftT T))"
+oops
+definition rightT :: "trapez \<Rightarrow> (point2d*point2d)" where 
+  "xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow> 
+    rightT T \<equiv> vertSegment (topT T) (bottomT T) (rightP T)"
+
+lemma trapezSimp1 :"xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
+  leftFromPoint (leftP T) (fst (rightT T)) \<and> leftFromPoint (leftP T) (snd (rightT T))"
+  by (simp add: leftFromPoint_def rightT_def vertSegment_def segment_def, metis leftFromPoint_def leftPRigthFromRightP)
+lemma trapezSimp2 :"xCoord (fst (topT T)) \<noteq> xCoord (snd (topT T)) \<Longrightarrow> xCoord (fst (bottomT T)) \<noteq> xCoord (snd (bottomT T))\<Longrightarrow>
+  leftFromPoint (fst(leftT T)) (fst (rightT T)) \<and> leftFromPoint (fst(leftT T)) (snd (rightT T))
+  \<and> leftFromPoint (snd(leftT T)) (fst (rightT T)) \<and> leftFromPoint (snd(leftT T)) (snd (rightT T))"
+  by (cases T, auto simp add: leftFromPoint_def, (metis leftFromPoint_def leftP leftPRigthFromRightP rightP)+)*)
+
+
+(*ein Trapez wird von PQ geschnitten, wenn es auf zwischen leftT und PQ ein crossing gibt.*)
+(*definition trapezCrossing :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "trapezCrossing T P Q =
+  (if (crossing P Q (fst(leftT T)) (snd(leftT T)))(*hier lässt sich evtl. mit einer anderen herangesweise des intersect, die beweisführung verbessern*)
+  then (True) else (False))"*)
+
+(*Trapeze das von PQ geschnitten wird, sortiert nach der xCoord der linken Ecke*)
+(*fun sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+  "sortedIntersectTrapez [] _ _ = []"
+  | "sortedIntersectTrapez (T#TS) P Q = (if (trapezCrossing T P Q)
+  then (List.insort_insert_key trapezOrd T (sortedIntersectTrapez TS  P Q))
+  else(sortedIntersectTrapez TS P Q))"*)
+
 
 (*fun rightUpperN :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
   "rightUpperN (Ts#Tl) T P Q =
