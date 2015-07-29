@@ -1,4 +1,4 @@
-(*Datentyp trapez und directed acyclic graph(dag)-struktur für Trapeze*)
+(*Datentyp trapez und directed acyclic graph(tDag)-struktur für Trapeze*)
 
 theory tDag
 imports rBox
@@ -123,22 +123,22 @@ datatype_new kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
 and has leftChild and rightChild pointers to nodes.*)
 (*y-node stores a line segment and its children are also recorded by the pointers are aboveChild
 and belowChild depending on whether the child item is above or below the segment stored at the y-node.*)
-datatype_new dag = Tip "trapez" | Node "dag" kNode "dag"
+datatype_new tDag = Tip "trapez" | Node "tDag" kNode "tDag"
 
 (*Wandle DAG in eine Trapez-Liste um*)
-primrec dagList :: "dag \<Rightarrow> trapez list" where
-  "dagList (Tip a) = [a]"
-  | "dagList (Node Tl x Tr) = ((dagList Tl)@(dagList Tr))"
+primrec tDagList :: "tDag \<Rightarrow> trapez list" where
+  "tDagList (Tip a) = [a]"
+  | "tDagList (Node Tl x Tr) = ((tDagList Tl)@(tDagList Tr))"
 
 (*wann ist ein Trapez im Baum*)
-fun tipInDag :: "trapez \<Rightarrow> dag \<Rightarrow> bool" where
+fun tipInDag :: "trapez \<Rightarrow> tDag \<Rightarrow> bool" where
   "tipInDag T (Tip D) = (if (T = D) then True else False)"
   | "tipInDag T (Node Tl x Tr) = (tipInDag T Tl \<or> tipInDag T Tr)"
-lemma dagListComplete : "tipInDag T D \<longleftrightarrow> T \<in> set (dagList D)" by (induction D, auto)
+lemma tDagListComplete : "tipInDag T D \<longleftrightarrow> T \<in> set (tDagList D)" by (induction D, auto)
 
-(*Input Tip welches entfernt wird, dag welches hinzugefügt wird, dag-tree in dem ersetzt werden soll
-Output: neues dag-tree*)
-fun replaceTip :: "trapez \<Rightarrow> dag \<Rightarrow> dag \<Rightarrow> dag" where
+(*Input Tip welches entfernt wird, tDag welches hinzugefügt wird, tDag-tree in dem ersetzt werden soll
+Output: neues tDag-tree*)
+fun replaceTip :: "trapez \<Rightarrow> tDag \<Rightarrow> tDag \<Rightarrow> tDag" where
   "replaceTip oT nT (Tip D) = (if (D = oT) then (nT) else (Tip D))"
  |"replaceTip oT nT (Node Tl x Tr) = Node (replaceTip oT nT Tl) x (replaceTip oT nT Tr)"
 
@@ -173,14 +173,14 @@ oops
 
 (*zwei Trapeze sind benachbart entland der Strecke PQ, die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
 und wenn topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
-definition neighbTrapez:: "dag \<Rightarrow> trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+definition neighbTrapez:: "tDag \<Rightarrow> trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "neighbTrapez D T Ts P Q \<equiv> rightP T = leftP Ts \<and>
   ((rightTurn P Q (rightP T) \<and> topT T = topT Ts) \<or> (leftTurn P Q (rightP T) \<and> bottomT T = bottomT Ts))"
 (*gib den nächsten Nachbarn von einem Trapez folgend der Strecke PQ  aus der Trapez-Liste
-Input: dag, dagList geordnet nach der x-Coordinate von leftP, Strecke PQ
+Input: tDag, tDagList geordnet nach der x-Coordinate von leftP, Strecke PQ
 Output: nächster trapez-Nachbar, wenn man PQ folgt*)
 (*es muss ein Nachbar geben!*)
-fun nextTrapez :: "dag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
+fun nextTrapez :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
   "nextTrapez D (Ts#Tm) T P Q = (if(neighbTrapez D T Ts P Q) then(Ts) else(nextTrapez D Tm T P Q))"
 
 
