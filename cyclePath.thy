@@ -9,6 +9,8 @@ lemma [simp]: "pointList L \<Longrightarrow> hd L \<noteq> last L" by (cases L, 
 lemma [simp]: "pointList L \<Longrightarrow> length (cyclePath L) = length L + 1" by (simp add: cyclePath_def)
 lemma [simp]: "pointList L \<Longrightarrow> hd(cyclePath L) = last(cyclePath L)" by (simp add: cyclePath_def hd_append)
 
+
+
 (*Kreis rückwärts ausgeben*)
 definition revCycle :: "point2d list \<Rightarrow> point2d list" where
   "pointList L \<Longrightarrow> revCycle L \<equiv> cyclePath (hd L # rev (tl L))"
@@ -89,23 +91,26 @@ sorry
 fun lineCyclePathInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "lineCyclePathInters [] P R = False"
 | "lineCyclePathInters [a] P R = False"
-| "lineCyclePathInters (a#b#xs) P R = (segment P R \<and> (intersect a b P R \<or> lineCyclePathInters (b#xs) P R))"
+| "lineCyclePathInters (a#b#xs) P R = (intersect a b P R \<or> lineCyclePathInters (b#xs) P R)"
 (*some simple Lemmas. Erleichtert die Beweisführung*)
-lemma lineCyclePathIntersSimp [simp]: "segment A B \<Longrightarrow> \<not>lineCyclePathInters (b#L) A B \<Longrightarrow> lineCyclePathInters (a#b#L) A B = lineCyclePathInters [a,b] A B"
+lemma lineCyclePathIntersSimp [simp]: "\<not>lineCyclePathInters (b#L) A B \<Longrightarrow> lineCyclePathInters (a#b#L) A B = lineCyclePathInters [a,b] A B"
   by (simp)
-lemma lineCyclePathIntersSimp1 [simp]: "segment A B \<Longrightarrow> length L \<ge> 1 \<Longrightarrow> \<not> lineCyclePathInters (b#L) A B \<Longrightarrow> \<not>intersect b (hd L) A B"
+lemma lineCyclePathIntersSimp1 [simp]: "length L \<ge> 1 \<Longrightarrow> \<not> lineCyclePathInters (b#L) A B \<Longrightarrow> \<not>intersect b (hd L) A B"
   by (cases L, auto)
-lemma lineCyclePathIntersSimp2 [simp]: "segment A B \<Longrightarrow> \<not>lineCyclePathInters [a,b] A B \<Longrightarrow> lineCyclePathInters (a#b#L) A B = lineCyclePathInters (b#L) A B"
+lemma lineCyclePathIntersSimp2 [simp]: "\<not>lineCyclePathInters [a,b] A B \<Longrightarrow> lineCyclePathInters (a#b#L) A B = lineCyclePathInters (b#L) A B"
   by (simp)
-lemma lineCyclePathIntersNeg : "segment A B \<Longrightarrow> \<not>lineCyclePathInters (a#b#L) A B \<Longrightarrow> \<not>lineCyclePathInters [a,b] A B \<and>  \<not>lineCyclePathInters (b#L) A B"
+lemma lineCyclePathIntersSimp3 : "intersect P R ((a # b # xs) ! i) ((b # xs) ! i)
+  \<Longrightarrow> \<not>lineCyclePathInters (b # xs) P R \<Longrightarrow> intersect a b P R"
+sorry
+lemma lineCyclePathIntersNeg : "\<not>lineCyclePathInters (a#b#L) A B \<Longrightarrow> \<not>lineCyclePathInters [a,b] A B \<and>  \<not>lineCyclePathInters (b#L) A B"
   by (simp)
 
 (*wann gibt es ein Schnittpunkt zwischen CyclePath und Strecke AB?*)
-lemma lineCyclePathInters1: "segment A B \<Longrightarrow> lineCyclePathInters L A B \<Longrightarrow>
+lemma lineCyclePathInters1: "lineCyclePathInters L A B \<Longrightarrow>
   (\<exists> i. i<length L - 1 \<and> intersect (L!i) (L ! Suc i) A B)"
   apply (induct L A B rule:lineCyclePathInters.induct) apply (simp, simp)
   apply (auto, rule_tac x="i + 1" in exI, simp)
-done thm lineCyclePathInters.cases
+done 
 (*TODO: hier fehlt noch ein Beweis*)
 lemma lineCyclePathInters2: "segment A B \<Longrightarrow> (\<exists> i. i < length L - 1 \<and> intersect (L ! i) (L ! Suc i) A B) \<Longrightarrow>
   lineCyclePathInters L A B"
@@ -123,6 +128,38 @@ theorem lineCyclePathIntersEq : "segment A B \<Longrightarrow> lineCyclePathInte
 
 
 (*intersection(CyclePath, CyclePath)*)
+definition cyclePathIntersect ::  "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
+  "cyclePathIntersect A B \<equiv> \<exists> i < length B - 1. lineCyclePathInters A (B!i) (B!Suc i)"
+lemma cyclePathIntersectSimp: "pointList P \<Longrightarrow> pointList Q \<Longrightarrow> A = cyclePath P \<Longrightarrow> B = cyclePath Q \<Longrightarrow>
+  cyclePathIntersect A B \<Longrightarrow> cyclePathIntersect B A"
+  apply (auto simp add: cyclePathIntersect_def)
+  apply (case_tac "(A, (B ! i), (B ! Suc i))" rule: lineCyclePathInters.cases,safe)
+  apply (simp+, safe)
+  apply (rule_tac x=0 in exI, safe, simp add: pointList_def, simp)
+  apply (case_tac "(B,a, b)" rule: lineCyclePathInters.cases, simp add: cyclePath_def)
+  apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
+  apply (metis lineCyclePathIntersSimp3)
+  apply (case_tac "((cyclePath Q), ((a # b # xs) ! i), ((b # xs) ! i))" rule: lineCyclePathInters.cases)
+  apply (simp add: cyclePath_def)
+  apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
+sorry
+lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longrightarrow> A = cyclePath P \<Longrightarrow> B = cyclePath Q \<Longrightarrow> 
+  cyclePathIntersect A B \<longleftrightarrow> cyclePathIntersect B A"
+by (fastforce simp add: cyclePathIntersectSimp)
+
+
+definition cyclePathsIntersect :: "(point2d list) list \<Rightarrow> bool" where
+  "pointLists PL \<Longrightarrow> cyclePathsIntersect PL \<equiv> \<exists> i j. i\<noteq>j \<and> i < length PL \<and> j < length PL
+    \<and> cyclePathIntersect (cyclePath (PL!i)) (cyclePath (PL!j))"
+lemma cyclePathsIntersectSimp [simp]: "pointList P \<Longrightarrow> pointList Q \<Longrightarrow>
+  cyclePathsIntersect [P , Q] = cyclePathIntersect (cyclePath P) (cyclePath Q)"
+  apply (subgoal_tac "pointLists [P, Q]")
+  apply (simp only: cyclePathsIntersect_def, safe, simp)
+  apply (case_tac i, simp)
+  apply (subgoal_tac "j=0", auto simp add: cyclePathIntersectSym)
+  apply (rule_tac x=0 in exI, rule_tac x=1 in exI, auto,metis pointListsSimp)
+done
+
 
 
 
