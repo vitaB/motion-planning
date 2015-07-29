@@ -42,11 +42,11 @@ by (metis (no_types, lifting) Rep_trapez bottomT_def leftFromPoint_def less_irre
 
 (*Beweise über die Positionen der Ecken vom Trapez*)
 (*mind. einer der Ecken von topT ist über bottomT*)
-lemma topAboveBottom [simp] :"leftTurn (fst (bottomT T)) (snd (bottomT T)) (fst (topT T))
+lemma topAboveBottom [intro] :"leftTurn (fst (bottomT T)) (snd (bottomT T)) (fst (topT T))
   \<or> leftTurn (fst (bottomT T)) (snd (bottomT T)) (snd (topT T))"
   by (simp add: topT_def bottomT_def, metis (no_types, lifting) Rep_trapez leftRightTurn mem_Collect_eq)
 (*leftP ist über bottom T oder ist die linke Ecke von bottomT*)
-lemma leftPPos : "leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fst(bottomT T)) = (leftP T)"
+lemma leftPPos [intro] : "leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fst(bottomT T)) = (leftP T)"
   apply (simp add: leftP_def bottomT_def del: leftRightTurn leftTurnRotate leftTurnRotate2,
     cases T, simp del: leftRightTurn leftTurnRotate leftTurnRotate2, safe)
   apply (subgoal_tac "fst ((a, b), (aa, ba), ab, bb) = (a,b) \<and>  snd ((a, b), (aa, ba), ab, bb) = ((aa, ba), ab, bb)
@@ -63,7 +63,8 @@ lemma leftPPos : "leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fs
   apply (metis leftTurn_def less_eq_real_def)
 
 oops
-(*Lemmas zum reduzieren von Termen*)
+
+(*Lemmas zum reduzieren von trapez Termen*)
 lemma topT [simp] : " topT (Abs_trapez ((a,b),(c,d),e,f)) = (a,b)" sorry
 lemma bottomT [simp] : "bottomT (Abs_trapez ((a,b),(c,d),e,f)) = (c,d) " sorry
 lemma leftP [simp] : "leftP (Abs_trapez ((a,b),(c,d),e,f)) = e" sorry
@@ -91,21 +92,10 @@ definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" wh
   \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) P \<and> \<not>(leftTurn (fst(topT T)) (snd(topT T)) P)"
 
 
-(*definition trapezPointList :: *)
-
-(*evtl. überprüfung zu aufwendig*)
-(*definition trapezCollinearFree :: "trapez \<Rightarrow> bool" where
-  "trapezCollinearFree T \<equiv> \<not>collinearList[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
-
-definition trapezIsCPolygon :: "trapez \<Rightarrow> bool" where
-  "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"*)
-
-
-
+(******directed acyclic graph*)
 (*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)
 datatype_new kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
 
-(*directed acyclic graph*)
 (*x-nodes stores a segment endpoint that defines a vertical extension in the trapezoid map,
 and has leftChild and rightChild pointers to nodes.*)
 (*y-node stores a line segment and its children are also recorded by the pointers are aboveChild
@@ -188,8 +178,7 @@ definition sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightar
 
 
 
-(*rBox. First Trapez*)
-
+(*********rBox. 4 Eckige Box um pointListe herum. First Trapez*)
 (*Definition wann ist R eine rechteckige Box um PL herum*)
 definition rBoxS :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
   "pointList PL \<Longrightarrow> rBoxS R PL \<equiv> length R = 4 \<and> cPolygon (cyclePath R) \<and> \<not>collinearList R \<and>
@@ -239,6 +228,13 @@ done
 
 
 (*alte Definition*)
+
+(*evtl. überprüfung zu aufwendig*)
+(*definition trapezCollinearFree :: "trapez \<Rightarrow> bool" where
+  "trapezCollinearFree T \<equiv> \<not>collinearList[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"
+
+definition trapezIsCPolygon :: "trapez \<Rightarrow> bool" where
+  "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"*)
 
 (*(*Definition für linke und rechte "Strecke"(muss kein segment sein) des Trapez*)
 definition leftT :: "trapez \<Rightarrow> (point2d*point2d)" where 

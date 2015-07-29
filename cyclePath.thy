@@ -10,7 +10,6 @@ lemma [simp]: "pointList L \<Longrightarrow> length (cyclePath L) = length L + 1
 lemma [simp]: "pointList L \<Longrightarrow> hd(cyclePath L) = last(cyclePath L)" by (simp add: cyclePath_def hd_append)
 
 
-
 (*Kreis rückwärts ausgeben*)
 definition revCycle :: "point2d list \<Rightarrow> point2d list" where
   "pointList L \<Longrightarrow> revCycle L \<equiv> cyclePath (hd L # rev (tl L))"
@@ -148,6 +147,7 @@ lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longri
 by (fastforce simp add: cyclePathIntersectSimp)
 
 
+(*mindestens eines der cyclePaths schneidet sich*)
 definition cyclePathsIntersect :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> cyclePathsIntersect PL \<equiv> \<exists> i j. i\<noteq>j \<and> i < length PL \<and> j < length PL
     \<and> cyclePathIntersect (cyclePath (PL!i)) (cyclePath (PL!j))"

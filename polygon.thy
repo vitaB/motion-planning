@@ -5,6 +5,7 @@ begin
 (*definition für Polygon: intersectionfree*)
 definition polygon :: "point2d list \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P = intersectionFreePList P"
+(*Liste mit polygonen*)
 definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (cyclePath (PL!i))"
 
@@ -92,6 +93,10 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
     apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
 by (metis conflictingRigthTurns1 rightTurnRotate2)
+
+(*jedes conv. Polygon ist auch ein einfaches Polygon*)
+lemma "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow> polygon P"
+  by (simp add: polygon_def cPolygonIsIntersectionFree)
 
 
 (*Punkt inside convex Polygon.*)

@@ -10,12 +10,12 @@ lemma intersectNext: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd 
   apply (cases "k = 0", simp) apply (metis Suc_n_not_le_n hd_conv_nth length_0_conv, auto)
 done
 
-(*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor.
-hat damit also nur 2 Nachbarn*)
+(*zusammenhängende strecken, mit mehr als 2 Ecken. jede Ecke kommt nur ein mal vor. hat damit also nur 2 Nachbarn*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
 lemma pointListEmpty[dest]: "pointList [] \<Longrightarrow> False" by (simp add: pointList_def)
 lemma pointListRev[simp] : "pointList L \<Longrightarrow> pointList (rev L)" by (simp add: pointList_def)
+(*List with pointList's*)
 definition pointLists :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<equiv> length PL > 0 \<and> (\<forall>  i < length PL. pointList (PL!i))"
 lemma pointListsEmpty[dest]: "pointLists ([] # PL) \<Longrightarrow> False" by (auto simp add: pointLists_def pointList_def)
@@ -26,8 +26,8 @@ lemma pointListsSimp1 : "pointList (A::point2d list) = pointLists [A]" by (simp 
 (*ist ein Segment in der PointListe?*)
 definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> segInPointList L S \<equiv> \<exists> i < length L - 1. L!i = fst S \<and> L!i = snd S"
-definition segInPointLists :: "(point2d list) list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
 (*ist ein Segment in der PointListen-Liste?*)
+definition segInPointLists :: "(point2d list) list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> segInPointLists PL S \<equiv> \<exists> i < length PL. segInPointList (PL!i) S"
 lemma [simp]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: pointList_def)
 
@@ -142,8 +142,8 @@ lemma collinearListRev: "collinearList xs = collinearList (rev xs)"
   apply(rule_tac x="(length xs - 1) - a" in exI, safe, simp)
   apply(rule_tac x="(length xs - 1) - b" in exI, safe, simp)
   apply(rule_tac x="(length xs - 1) - c" in exI, safe, simp)
-  apply(simp add: rev_nth)+
-done
+  (*apply(simp add: rev_nth)+ dauert zu lange
+done*) sorry
 
 (*collineare Liste erweitert*)
 lemma collinearListAppend1 [simp]: "collinearList xs \<Longrightarrow> collinearList (a#xs)"
@@ -163,10 +163,6 @@ lemma collinearListAdj: "\<not>collinearList L \<Longrightarrow> a < length L - 
   apply (erule_tac x="Suc (Suc a)" in allE, safe)
   apply (simp add: less_diff_conv n_not_Suc_n)+
 done
-
-(*der punkt P befindet sich collinear mit irgendwelchen der segmente von L*)
-definition collinearListPoint :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
-  "collinearListPoint L p \<equiv> \<exists> a. a < length L - 1 \<and> collinear (L!a) (L!Suc a) p"
 
 
 (*keiner der Strecken aus der pointList schneidet sich (echt) mit einer anderen Strecke der pointList*)

@@ -149,9 +149,13 @@ fun replaceDag :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Ri
 
 (*erneure tDag nach dem hinzufügen eines segments*)
 definition addSegmentToTrapezoidalMap :: "tDag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> tDag" where
-  "addSegmentToTrapezoidalMap D P Q \<equiv> replaceDag D (intersectedTrapez D P Q) (intersectedTrapez D P Q) P Q"
+  "leftFromPoint P Q \<Longrightarrow> addSegmentToTrapezoidalMap D P Q \<equiv>
+    replaceDag D (intersectedTrapez D P Q) (intersectedTrapez D P Q) P Q"
+
+
+
 (*wenn a in einem Trapez, dann ist a in einem der neuem Trapeze*)
-lemma "pointInTrapez T P \<Longrightarrow> pointInTrapez T Q \<Longrightarrow> pointInTrapez T a \<Longrightarrow> 
+lemma "pointInTrapez T P \<Longrightarrow> pointInTrapez T Q \<Longrightarrow> pointInTrapez T a \<Longrightarrow> leftFromPoint P Q \<Longrightarrow>
   D=tDagList (addSegmentToTrapezoidalMap (Tip T) P Q) \<Longrightarrow> \<exists> i < length D. pointInTrapez (D!i) a"
   apply (simp add: addSegmentToTrapezoidalMap_def followSegment_def) (*del:followSegment.simps*)
 oops
@@ -192,10 +196,13 @@ lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P
     segInPointList P (bottomT(TL!i)) \<and> segInPointList P (topT(TL!i))"
   apply (auto simp add: segInPointLists_def)
 oops
-(*linke und rechte Strecke von trapezen schneiden die Polygone nicht(echt). *)
+(*linke und rechte Strecke von trapezen schneiden die Polygone nicht(echt).
+dafür müsste man jedoch leftT und rightT ausrechnen. einfacher wäre es evtl., wenn man impliziet zeigt
+dass leftT und rightT vertikale(müssen die das sein?) sind und von topT und bottomT begrenzt werden,
+d.h. andere segmente nicht schneiden*)
 lemma "pointLists L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> uniqueXCoord L \<Longrightarrow> rBoxS R L \<Longrightarrow>
   TL = tDagList (simpTrapezoidalMap R P)
-  \<Longrightarrow> i < length TL \<Longrightarrow> j < length TL \<Longrightarrow> \<not>polygonCrossing (PL!j) (TL!i)"     
+  \<Longrightarrow> i < length TL \<Longrightarrow> j < length TL \<Longrightarrow> \<not>polygonCrossing (PL!j) (TL!i)" (*lineCyclePathInters*)  
 oops
 
 (*entferne die übrigen strecken die noch innerhalb der Polygone sind*)
