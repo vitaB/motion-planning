@@ -1,7 +1,7 @@
 (*Datentyp trapez und directed acyclic graph(tDag)-struktur für Trapeze*)
 
 theory tDag
-imports rBox
+imports polygon
 begin
 
 (*Definition für Trapez ((a,b),(c,d),e,f)) top: (a,b), bottom:(c,d), leftP:e, rightP: f
@@ -101,19 +101,6 @@ definition trapezIsCPolygon :: "trapez \<Rightarrow> bool" where
   "trapezIsCPolygon T \<equiv> cPolygon[fst (leftT T), fst (rightT T), snd(rightT T), snd(leftT T)]"*)
 
 
-(*wandle rBox in ein Trapez um*)
-definition rBoxTrapez :: "point2d list \<Rightarrow> trapez" where 
-  "pointList R \<Longrightarrow> length R = 4 \<Longrightarrow> cPolygon (cyclePath R) \<Longrightarrow>
-  rBoxTrapez R \<equiv> Abs_trapez ((hd R,R!1),(R!3,R!2),hd R,R!2)"
-
-(*lemma rBoxTrapezCollinearFree[simp]: "pointLists PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> trapezCollinearFree (rBoxTrapez PL)"
-  apply (simp add: trapezCollinearFree_def rBoxTrapez_def)
-  apply (simp add: leftT_def rightT_def topT_def bottomT_def)
-  apply (subgoal_tac "segment (fst ((fst (Rep_trapez (rBoxTrapez PL))))) (fst (fst (Rep_trapez (rBoxTrapez PL))))")
-  apply (subgoal_tac "segment (fst (fst (snd (Rep_trapez (rBoxTrapez PL))))) (fst (fst (snd (Rep_trapez (rBoxTrapez PL)))))")
-  apply (simp add: vertSegment_def)
-sorry*)
-
 
 (*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)
 datatype_new kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
@@ -198,6 +185,55 @@ definition trapezOrdR :: " point2d \<Rightarrow> trapez \<Rightarrow> bool" wher
   und benschnitten so das nur die Trapeze zwischen P und Q ausgegeben werden*)
 definition sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
   "sortedIntersectTrapez TM P Q \<equiv> takeWhile (trapezOrdR Q) (dropWhile (trapezOrdL P) (sort_key (trapezOrd) TM))"
+
+
+
+(*rBox. First Trapez*)
+
+(*Definition wann ist R eine rechteckige Box um PL herum*)
+definition rBoxS :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
+  "pointList PL \<Longrightarrow> rBoxS R PL \<equiv> length R = 4 \<and> cPolygon (cyclePath R) \<and> \<not>collinearList R \<and>
+  (\<forall> i < length PL. pointInsideCPolygonCCl (cyclePath R) (PL!i))"
+
+(*wandle rBox in ein Trapez um*)
+definition rBoxTrapez :: "point2d list \<Rightarrow> trapez" where
+  "pointList PL \<Longrightarrow> rBoxS R PL \<Longrightarrow> rBoxTrapez PL \<equiv> Abs_trapez ((hd PL,PL!1),(PL!3,PL!2),hd PL,PL!2)"
+
+
+(*4eckige Box um pointListen herum ist selbst eine pointList*)
+lemma rBoxPointList: "pointLists PL \<Longrightarrow> pointList(
+  [Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1)])"
+sorry
+
+(*wie berechnet man eine rBox. Eine 4eckige Box um pointListen herum*)
+definition rBox :: "(point2d list) list \<Rightarrow> point2d list" where
+  "pointLists PL \<Longrightarrow> rBox PL \<equiv>
+  cyclePath([Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1)])"
+
+lemma rBoxRight : "pointLists PL \<Longrightarrow> rBoxS (rBox PL) (concat PL)"
+  apply (simp add: rBox_def)
+sorry
+
+(*ersetzte den Term Polygon im Satz*)
+lemma rBoxPoly [simp] : "pointLists PL \<Longrightarrow>
+  cyclePath([Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1)])
+  \<equiv> [Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (hd (yCoordSort (concat PL))) - 1),
+  Abs_point2d(xCoord (last (xCoordSort (concat PL))) + 1,yCoord (last (yCoordSort (concat PL))) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1,yCoord (last (yCoordSort (concat PL))) + 1),
+  Abs_point2d(xCoord (hd (xCoordSort (concat PL))) - 1, yCoord (hd (yCoordSort (concat PL))) - 1)]"
+  apply (cut_tac PL=PL in rBoxPointList, assumption)
+  apply (auto simp add: rBox_def cyclePath_def)
+done
 
 
 

@@ -19,8 +19,9 @@ lemma pointListRev[simp] : "pointList L \<Longrightarrow> pointList (rev L)" by 
 definition pointLists :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<equiv> length PL > 0 \<and> (\<forall>  i < length PL. pointList (PL!i))"
 lemma pointListsEmpty[dest]: "pointLists ([] # PL) \<Longrightarrow> False" by (auto simp add: pointLists_def pointList_def)
-lemma pointListsSimp [simp] : "(pointList A \<and> pointList B) \<longleftrightarrow> pointLists [A,B]"
+lemma pointListsSimp : "(pointList A \<and> pointList B) \<longleftrightarrow> pointLists [A,B]"
   by (auto simp add: pointLists_def, case_tac i, auto)
+lemma pointListsSimp1 : "pointList (A::point2d list) = pointLists [A]" by (simp add: pointLists_def)
 
 (*ist ein Segment in der PointListe?*)
 definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
@@ -34,7 +35,8 @@ lemma [simp]: "pointList L \<Longrightarrow> size L > 0" by (auto simp add: poin
 lemma distEdge : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> a \<noteq> b \<longrightarrow> \<not> pointsEqual a b"
   by (metis pointsEqual1)
 lemma distEdge1 : "pointList L \<Longrightarrow> i < size L \<Longrightarrow> k < size L \<Longrightarrow> k \<noteq> i \<Longrightarrow> \<not> pointsEqual (L ! i) (L ! k)"
-  by (auto simp add: pointList_def distinct_conv_nth)
+  by (metis nth_eq_iff_index_eq pointList_def pointsEqual1)
+
    
 (*keine der Kanten kann sich wiederholen*)
 lemma distVertex : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> set P \<and> c \<in> set P \<and> d \<in> set P
@@ -42,6 +44,15 @@ lemma distVertex : "pointList P \<Longrightarrow> a \<in> set P \<and> b \<in> s
   apply (auto, subgoal_tac "segment a b", subgoal_tac "segment c d")
   apply (auto simp add: segment_Same_def distEdge segment_def pointsEqual_def)
 done
+
+
+(*es gibt kein Punkt in der Punkt Liste, mit gleicher xCoordinate*)
+definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
+  "uniqueXCoord L \<equiv> \<forall> a b. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
+lemma uniqueXCoordPointList: "3 \<le> length L \<Longrightarrow> uniqueXCoord L \<Longrightarrow> pointList (L)"
+  apply (simp add: uniqueXCoord_def pointList_def)
+by (metis distinct_conv_nth)
+
 
 (*alle Kanten von pointList sind segmente*)
 lemma pointsSegments: "pointList L \<Longrightarrow> 0 \<le> i \<and> i < (size L - 1) \<Longrightarrow> segment (L!i) (L! Suc i)"
