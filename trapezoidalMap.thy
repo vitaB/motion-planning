@@ -155,11 +155,7 @@ lemma "pointInTrapez T P \<Longrightarrow> pointInTrapez T Q \<Longrightarrow> p
   D=tDagList (addSegmentToTrapezoidalMap (Tip T) P Q) \<Longrightarrow> \<exists> i < length D. pointInTrapez (D!i) a"
   apply (simp add: addSegmentToTrapezoidalMap_def followSegment_def) (*del:followSegment.simps*)
 oops
-(*zeige das jedes neue Trapez ein convexes Polygon ist*)
-lemma "segment P Q \<Longrightarrow> uniqueXCoord (P#Q#S) \<Longrightarrow> pointList R \<Longrightarrow> rBoxS R (P#Q#S) \<Longrightarrow>
- DS = addSegmentToTrapezoidalMap (Tip (rBoxTrapez R)) P Q \<Longrightarrow> \<forall> a \<in> set (tDagList(DS)). trapezIsCPolygon a"
- apply (simp add: addSegmentToTrapezoidalMap_def)
-oops
+
 
 (*zeige das keine der Seiten von den neuen trapezodialMaps das polygon innerhalb von rBox schneidet*)
 (*untere und obere Strecken von trapezen, sind segmente von den polygonen*)
@@ -179,53 +175,27 @@ fun addPolygonToTrapezoidalMap :: "tDag \<Rightarrow> point2d list \<Rightarrow>
   | "addPolygonToTrapezoidalMap D (p#q#xs) =
   addPolygonToTrapezoidalMap (addSegmentToTrapezoidalMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
 
+
+
+(*Beweise erstmal mit nur einem Polygon*)
+
 (*Input: rBox, tDag(start with rBox) and a polygon forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure tDag.*)
 definition simpTrapezoidalMap :: "point2d list \<Rightarrow> point2d list \<Rightarrow> tDag" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> uniqueXCoord L \<Longrightarrow> rBoxS R P \<Longrightarrow>
   simpTrapezoidalMap R P \<equiv> addPolygonToTrapezoidalMap (Tip (rBoxTrapez R)) P"
 
-
-(*Beweise erstmal mit nur einem Polygon*)
-lemma "pointLists [P] \<Longrightarrow> polygonList [P] \<Longrightarrow> uniqueXCoord P \<Longrightarrow> TL = tDagList (trapezoidalMap [P])
-  \<Longrightarrow> i < length TL \<longrightarrow> trapezCollinearFree (TL!i)"
-  apply (simp add: trapezoidalMap_def, safe)
-  apply (rule_tac x="((Tip (rBoxTrapez [P])), P)" in polygonExtendTrapezoidalMap.cases, blast)
-  apply (simp)
-  apply (simp)
-  apply (case_tac "(leftPSegment p q) = p")
-  apply (subgoal_tac " (rightPSegment p q) = q")
-  apply (simp)
-  apply (simp add: segmentExtendTrapezoidalMap_def)
-oops
-(*trapeze sind keine collinearListen*)
-lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = tDagList (trapezoidalMap PL)
-  \<Longrightarrow> i < length TL \<longrightarrow> trapezCollinearFree(TL!i)"
-  apply (simp add: collinearList_def)
-  apply (safe)
-  apply (induction i, simp)
-  apply (cases PL)
-  apply (simp add: pointLists_def)
-  apply (simp add: trapezoidalMap_def rBoxTrapez_def)
-  apply (case_tac "aa", blast)
-  apply (simp add: rBox_def)
-
-oops
-(*zeige das jedes Trapez ein convexes Polygon ist*)
-lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = tDagList (trapezoidalMap PL)
-  \<Longrightarrow> i < length TL \<longrightarrow> cPolygon (cyclePath (trapezToPointList (TL!i)))"
-  apply (simp add: cPolygon_def)
-oops
-
 (*zeige das keine der segmente von trapezodialMap das polygon innerhalb von rBox schneidet*)
 (*untere und obere Strecken von trapezen, sind segmente von den polygonen*)
-lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = tDagList (trapezoidalMap PL)
-  \<Longrightarrow> i < length TL \<longrightarrow> segInPointLists PL (bottomT(TL!i)) \<and> segInPointLists PL (topT(TL!i))"
+lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> uniqueXCoord L \<Longrightarrow> rBoxS R L \<Longrightarrow>
+  TL = tDagList (simpTrapezoidalMap R P) \<Longrightarrow> i < length TL \<longrightarrow>
+    segInPointList P (bottomT(TL!i)) \<and> segInPointList P (topT(TL!i))"
   apply (auto simp add: segInPointLists_def)
 oops
 (*linke und rechte Strecke von trapezen schneiden die Polygone nicht(echt). *)
-lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> TL = tDagList (trapezoidalMap PL)
-  \<Longrightarrow> i < length TL \<longrightarrow> (j < length PL \<longrightarrow> \<not>polygonCrossing (PL!j) (TL!i))"     
+lemma "pointLists L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> uniqueXCoord L \<Longrightarrow> rBoxS R L \<Longrightarrow>
+  TL = tDagList (simpTrapezoidalMap R P)
+  \<Longrightarrow> i < length TL \<Longrightarrow> j < length TL \<Longrightarrow> \<not>polygonCrossing (PL!j) (TL!i)"     
 oops
 
 (*entferne die übrigen strecken die noch innerhalb der Polygone sind*)
