@@ -117,12 +117,12 @@ definition newDag :: "tDag \<Rightarrow> trapez \<Rightarrow> trapez list \<Righ
 
 
 (*gib eine Liste mit trapezen zurück die das Segment PQ schneiden. Reihenfolge von links nach rechts
-Input: suchBaum D, trapez list ist nach x-Coord von leftP sortiert und ist im Bereich P und Q, Start Trapez(in dem sich P befindet), Segment PQ
+Input: suchBaum D, trapez list ist nach x-Coord von leftP sortiert, Start Trapez(in dem sich P befindet), Segment PQ
 Output: liste mit trapezen*)
 (*man verpasst kein Nachbar! weil immer der nächste Nachbar gefunden wird, bevor man zu den zweitem kommen kann!*)
 fun followSegment :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where 
   "followSegment _ [] _ _ _ = []"
-  | "followSegment D (Ts#TM) T P Q = (if (neighbTrapez D T Ts P Q)
+  | "followSegment D (Ts#TM) T P Q = (if (xCoord Q \<ge> xCoord (rightP T) \<and> neighbTrapez D T Ts P Q)
     then (Ts # (followSegment D TM Ts P Q)) else (followSegment D TM T P Q))"
 lemma "length (tDagList D) > 1\<Longrightarrow>
   Ts = nextTrapez D (tDagList D) T P Q \<Longrightarrow> leftFromPoint (rightP T) (rightP Ts)"
@@ -136,7 +136,7 @@ lemma "length (tDagList D) > 1\<Longrightarrow>
 (*Nochmal anschauen! bzw. muss das erste Trapez(indem PQ steckt) nicht noch angefügt werden*)
 definition intersectedTrapez :: "tDag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
   "intersectedTrapez D P Q = (queryTrapezoidMap D P) #
-  (followSegment D (sortedIntersectTrapez (tDagList D) P Q) (queryTrapezoidMap D P) P Q)"
+  (followSegment D (sortedTrapez (tDagList D)) (queryTrapezoidMap D P) P Q)"
 
 
 (*ersetzt alle übergebenen Trapeze im tDag durch neue Trapeze, die mit PQ erstellt wurden

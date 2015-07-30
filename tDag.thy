@@ -148,23 +148,27 @@ theorem "replaceTip oT nT (replaceTip oT' nT' D) = replaceTip oT' nT' (replaceTi
 oops
 
 
-(*zwei Trapeze sind benachbart entland der Strecke PQ, die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
-und wenn topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
+(*zwei Trapeze sind benachbart entland der Strecke PQ, wenn :
+  - die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
+  - topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
 definition neighbTrapez:: "tDag \<Rightarrow> trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "neighbTrapez D T Ts P Q \<equiv> rightP T = leftP Ts \<and>
   ((rightTurn P Q (rightP T) \<and> topT T = topT Ts) \<or> (leftTurn P Q (rightP T) \<and> bottomT T = bottomT Ts))"
-(*gib den nächsten Nachbarn von einem Trapez folgend der Strecke PQ  aus der Trapez-Liste
+(*(*gib den nächsten Nachbarn von einem Trapez folgend der Strecke PQ  aus der Trapez-Liste
 Input: tDag, tDagList geordnet nach der x-Coordinate von leftP, Strecke PQ
 Output: nächster trapez-Nachbar, wenn man PQ folgt*)
-(*es muss ein Nachbar geben!*)
+(*es muss ein Nachbar geben! kein Nachbar wird ausgelassen!*)
 fun nextTrapez :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
-  "nextTrapez D (Ts#Tm) T P Q = (if(neighbTrapez D T Ts P Q) then(Ts) else(nextTrapez D Tm T P Q))"
+  "nextTrapez D (Ts#Tm) T P Q = (if(neighbTrapez D T Ts P Q) then(Ts) else(nextTrapez D Tm T P Q))"*)
 
 
 (*ordnungsrelation nach xCoord des linken Eckpunkts eines Trapezes*)
 definition trapezOrd :: "trapez \<Rightarrow> real" where
   "trapezOrd T = xCoord (leftP T)"
-(*ist P links vom rechten Eckpunkt des Trapez*)
+(*sortierte ausgabe von Trapezen (nach xCoord von leftP geordnet)*)
+definition sortedTrapez :: "trapez list \<Rightarrow> trapez list" where
+  "sortedTrapez TM \<equiv> sort_key (trapezOrd) TM"
+(*(*ist P links vom rechten Eckpunkt des Trapez*)
 definition trapezOrdL :: " point2d \<Rightarrow> trapez \<Rightarrow> bool" where
   "trapezOrdL P T \<equiv> leftFromPoint P (rightP T)"
 (*ist Q links vom linkem Eckpunkt des Trapez*)
@@ -174,7 +178,7 @@ definition trapezOrdR :: " point2d \<Rightarrow> trapez \<Rightarrow> bool" wher
 (*sortierte ausgabe von Trapezen (nach xCoord von leftP geordnet)
   und benschnitten so das nur die Trapeze zwischen P und Q ausgegeben werden*)
 definition sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "sortedIntersectTrapez TM P Q \<equiv> takeWhile (trapezOrdR Q) (dropWhile (trapezOrdL P) (sort_key (trapezOrd) TM))"
+  "sortedIntersectTrapez TM P Q \<equiv> takeWhile (trapezOrdR Q) (dropWhile (trapezOrdL P) (sort_key (trapezOrd) TM))"*)
 
 
 
