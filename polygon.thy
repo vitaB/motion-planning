@@ -4,11 +4,34 @@ begin
 
 (*definition für Polygon: intersectionfree*)
 definition polygon :: "point2d list \<Rightarrow> bool" where
-  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P = intersectionFreePList P"
+  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<equiv> intersectionFreePList P"
 (*Liste mit polygonen*)
 definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (cyclePath (PL!i))"
 
+fun countSegmentCrossPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> nat" where
+  "countSegmentCrossPolygon [] S E = 0"
+  | "countSegmentCrossPolygon [P] S E = 0"
+  | "countSegmentCrossPolygon (Pf#Pl#Ps) S E = (if (crossing Pf Pl S E)
+    then (1 + countSegmentCrossPolygon (Pl#Ps) S E)
+    else(countSegmentCrossPolygon (Pl#Ps) S E))"
+
+definition pointInPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
+  "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> pointInPolygon P A \<equiv>
+    odd(countSegmentCrossPolygon P A (Abs_point2d(xCoord (last(xCoordSort P)) + 1, yCoord A)))" (*austauschen durch unendlich*)
+
+(*evtl. kann ich diesen Fall für TrapezoidalMap ignorieren*)
+(*polygon ist partial or completle in another Polygon*)
+definition polygonInPolygon :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
+  "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow> Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow>
+    polygonInPolygon Pr Pt \<equiv> (\<exists> i < length Pr. pointInPolygon Pt (Pr!i)) \<or> (\<exists> j < length Pt. pointInPolygon Pr (Pt!j))"
+lemma polygonInPolygonSym : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow>
+  Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow> polygonInPolygon Pr Pt \<longleftrightarrow> polygonInPolygon Pt Pr"
+sorry
+
+lemma polygonCrossing : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow> Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow>
+   cyclePathIntersect Pr Pt \<Longrightarrow> polygonInPolygon Pr Pt"
+sorry
 
 (*Convexes Polygon.
 - keiner der Kanten des Polygons trennt irgendeine der übrigen Ecken einer der Kanten des Polygons
@@ -95,7 +118,7 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
 by (metis conflictingRigthTurns1 rightTurnRotate2)
 
 (*jedes conv. Polygon ist auch ein einfaches Polygon*)
-lemma "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow> polygon P"
+lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow> polygon P"
   by (simp add: polygon_def cPolygonIsIntersectionFree)
 
 
@@ -140,6 +163,11 @@ theorem pointInsideCPolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \
   apply (simp add: pointInsideCPolygonRev1 pointInsideCPolygon_def, safe)
   apply (auto simp add: pointInsideCPolygonCCl_def)
 sorry
+
+lemma "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow>
+  pointInsideCPolygon P a \<Longrightarrow> pointInPolygon P a" thm cPolygonIsPolygon
+  apply (cut_tac L=L and P=P in cPolygonIsPolygon, assumption+)
+oops
 
 (*Segment inside convex Polygon. Testweise*)
 definition segmentInsideCPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
