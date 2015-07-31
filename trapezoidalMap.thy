@@ -2,6 +2,19 @@ theory trapezoidalMap
 imports tDag
 begin
 
+(*zwei Trapeze sind benachbart entland der Strecke PQ, wenn :
+  - die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
+  - topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
+definition neighbTrapez:: "tDag \<Rightarrow> trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "tipInDag T D \<Longrightarrow> tipInDag Ts D \<Longrightarrow> neighbTrapez D T Ts P Q \<equiv> rightP T = leftP Ts \<and>
+  ((rightTurn P Q (rightP T) \<and> topT T = topT Ts) \<or> (leftTurn P Q (rightP T) \<and> bottomT T = bottomT Ts))"
+(*gib den nächsten Nachbarn von einem Trapez folgend der Strecke PQ  aus der Trapez-Liste
+Input: tDag, tDagList geordnet nach der x-Coordinate von leftP, Strecke PQ
+Output: nächster trapez-Nachbar, wenn man PQ folgt*)
+(*es muss ein Nachbar geben! kein Nachbar wird ausgelassen!*)
+fun nextTrapez :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
+  "nextTrapez D (Ts#Tm) T P Q = (if(neighbTrapez D T Ts P Q) then(Ts) else(nextTrapez D Tm T P Q))"
+
 (*gehe solange bis zum nächsten Nachbarn bis gesuchte Ecke gefunden ist
 Input: funktion die linke/rechte Ecke vom Trapez gibt, Liste mit Trapezen durch die PQ geht,
   Entscheidung Trapez-Ecke über/unter segment PQ liegt, Strecke PQ
@@ -33,6 +46,14 @@ fun queryTrapezoidMap :: "tDag \<Rightarrow> point2d \<Rightarrow> trapez" where
   |"queryTrapezoidMap (Node lf (yNode x) rt) p =
   (*lf ist über dem segment x, rt ist unter dem segment*)
    (if (leftTurn (fst x) (snd x) p) then (queryTrapezoidMap lf p) else (queryTrapezoidMap rt p))"
+(*welche Annahmen müssen in tDag stecken damit das stimmt?*)
+lemma "queryTrapezoidMap (Tl::tDag) P = queryTrapezoidMap (Node Tl x Tr) P"
+oops
+lemma queryTrapezoidMapComplete : "tipInDag T D \<longleftrightarrow> (\<exists> P. T = (queryTrapezoidMap D P))"
+  apply (induction D, auto)
+  apply (rule_tac x=Pb in exI)
+sorry
+lemma queryTrapezoidMapInDag: "tipInDag (queryTrapezoidMap D P) D" by (auto simp add: queryTrapezoidMapComplete)
 
 
 (*Einfacher Fall: allgemeinFall. weder P noch Q sind in T drin, auch nicht an den Ecken*)
@@ -218,20 +239,29 @@ oops
 
 
 (*alte Definition*)
-(*(*The termination argument for followS is based on the fact that the difference
+(*beweise das das nächste Trapez rechts von dem linkem Trapez*)
+lemma "leftFromPoint P Q \<Longrightarrow> Tl = queryTrapezoidMap D P \<Longrightarrow> Tl \<noteq> Tr \<Longrightarrow> Tr = queryTrapezoidMap D R \<Longrightarrow> tipInDag Tl D \<Longrightarrow> tipInDag Tr D \<Longrightarrow> 
+  leftFromPoint (leftP Tl) (leftP (nextTrapez D (tDagList D) Tl P Q))"
+  apply (subgoal_tac "tDagList D \<noteq> []")
+  apply (case_tac "(D, (tDagList D), Tl, P, Q)" rule: nextTrapez.cases)
+  apply (auto)
+oops
+(*The termination argument for followS is based on the fact that the difference
 between "xCoord (rightP T)" and  "xCoord Q"  gets smaller in every step*) 
-(*dafür müssen aber entweder in tDag noch annahmen stecken, annahmen für followS*)
-(*functions with conditional patterns are not supported by the code generator.*)
-(*fun followS :: "tDag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
+function followS :: "tDag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
   "followS D T P Q = (if(leftFromPoint (rightP T) Q)
   then(followS D (nextTrapez D (tDagList D) T P Q) P Q)
-  else ([]))"*)
-(*definition followSegment :: "tDag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "followSegment D P Q = (queryTrapezoidMap D P) # (sortedIntersectTrapez (tDagList D) P Q)"*)
+  else ([]))"
+by pat_completeness auto
+termination followS (*beweise das das nächste Trapez rechts von dem linkem Trapez
+  bzw. dass der Abstand zwischen rightP T und Q immer kleiner wird*)
+(*dafür müssen aber entweder in tDag noch annahmen stecken oder es muss eine condition für followS geben*)
+(*functions with conditional patterns are not supported by the code generator.*)
+sorry
 (*lemma "queryTrapezoidMap D p = queryTrapezoidMap D q \<Longrightarrow> followSegment D p q = tDagList(D)"
   apply (simp only: followSegment_def)
   apply (cases D)
-oops*)*)
+oops*)
 
 (*
 (*Input: tDag(start with rBox) and List of polygons forming a planar subdivision.
@@ -240,28 +270,7 @@ fun buildTrapezoidalMap :: "tDag \<Rightarrow> (point2d list) list \<Rightarrow>
   "buildTrapezoidalMap D [] = D"
   |"buildTrapezoidalMap D (P#Pl) = buildTrapezoidalMap (polygonExtendTrapezoidalMap D P) Pl"*)
 
-(*(*gehe von links nach rechts durch die Trapeze, die die Strecke S schneiden.
-Input: A Trapezoidal map T, a search structure D, segment PQ
-Output: list of trapezoids intersected by PQ *)
-fun followSegment :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "followSegment D TM T Q = (T # followSegment D (TM) (rightN TM T) Q)"
-(*function followSegment :: "tDag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "leftFromPoint (rightP T) (rightP (rightUpperN (tDagList D) T p q)) \<or> leftFromPoint (rightP T) (rightP (rightLowerN (tDagList D) T p q))
-  \<Longrightarrow> followSegment D T p q =
-  (if (leftFromPoint (rightP T) q)
-    then (T # followSegment D
-      (if (pointAboveSegment (rightP T) p q) then (rightUpperN (tDagList D) T p q)
-      else (rightLowerN (tDagList D) T p q)) p q)
-  else ([]))"
-by (auto, metis leftP leftPRigthFromRightP rightP)*)
-(*termination followSegment (*beweise das das nächste Trapez rechts von dem linkem Trapez*)
-apply (subgoal_tac "xCoord (leftP t) < xCoord (leftP (queryTrapezoidMap D (rightP t)))")
-sorry*)
-(*function followSegment :: "tDag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where
-  "bla D T p q = (if (leftFromPoint (rightP T) q)
-  then (T # followSegment D (queryTrapezoidMap D (Abs_point2d(xCoord (rightP T), lineFunktionY p q (xCoord (rightP T))))) p q)
-  else ([]))"
-by(auto)*)
+(*
 lemma "T = queryTrapezoidMap D q \<Longrightarrow> followSegment D T p q = [T]"
   apply (simp)
   apply (safe)

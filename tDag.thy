@@ -112,6 +112,9 @@ fun tipInDag :: "trapez \<Rightarrow> tDag \<Rightarrow> bool" where
   "tipInDag T (Tip D) = (if (T = D) then True else False)"
   | "tipInDag T (Node Tl x Tr) = (tipInDag T Tl \<or> tipInDag T Tr)"
 lemma tDagListComplete : "tipInDag T D \<longleftrightarrow> T \<in> set (tDagList D)" by (induction D, auto)
+lemma tDagListNotEmpty : "tipInDag Tl D \<Longrightarrow> tDagList D \<noteq> []"
+  by (cases D, auto simp add: tDagListComplete)
+
 
 (*Input Tip welches entfernt wird, tDag welches hinzugefügt wird, tDag-tree in dem ersetzt werden soll
 Output: neues tDag-tree*)
@@ -146,20 +149,6 @@ theorem "replaceTip oT nT (replaceTip oT' nT' D) = replaceTip oT' nT' (replaceTi
   apply (case_tac "D = oT'")
   apply (simp)
 oops
-
-
-(*zwei Trapeze sind benachbart entland der Strecke PQ, wenn :
-  - die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
-  - topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
-definition neighbTrapez:: "tDag \<Rightarrow> trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "neighbTrapez D T Ts P Q \<equiv> rightP T = leftP Ts \<and>
-  ((rightTurn P Q (rightP T) \<and> topT T = topT Ts) \<or> (leftTurn P Q (rightP T) \<and> bottomT T = bottomT Ts))"
-(*(*gib den nächsten Nachbarn von einem Trapez folgend der Strecke PQ  aus der Trapez-Liste
-Input: tDag, tDagList geordnet nach der x-Coordinate von leftP, Strecke PQ
-Output: nächster trapez-Nachbar, wenn man PQ folgt*)
-(*es muss ein Nachbar geben! kein Nachbar wird ausgelassen!*)
-fun nextTrapez :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
-  "nextTrapez D (Ts#Tm) T P Q = (if(neighbTrapez D T Ts P Q) then(Ts) else(nextTrapez D Tm T P Q))"*)
 
 
 (*ordnungsrelation nach xCoord des linken Eckpunkts eines Trapezes*)
