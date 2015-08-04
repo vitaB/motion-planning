@@ -114,8 +114,11 @@ fun tipInDag :: "trapez \<Rightarrow> tDag \<Rightarrow> bool" where
   | "tipInDag T (Node Tl x Tr) = (tipInDag T Tl \<or> tipInDag T Tr)"
 
 lemma tDagListComplete : "tipInDag T D \<longleftrightarrow> T \<in> set (tDagList D)" by (induction D, auto)
-lemma tDagListNotEmpty : "tipInDag Tl D \<Longrightarrow> tDagList D \<noteq> []"
-  by (cases D, auto simp add: tDagListComplete)
+lemma tDagListNotEmpty[dest] : "tDagList D = [] \<Longrightarrow> False" by (induction D, auto)
+
+(*wann ist ein Punkt im tDag*)
+definition pointInDag :: "tDag \<Rightarrow> point2d \<Rightarrow> bool" where
+  "pointInDag D A \<equiv> \<exists> i < length (tDagList D). pointInTrapez ((tDagList D)!i) A"
 
 
 
