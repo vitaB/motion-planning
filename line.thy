@@ -114,8 +114,13 @@ definition leftPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d"
 (*rechte Ecke des Segments*)
 definition rightPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A \<noteq> xCoord B \<Longrightarrow> rightPSegment A B \<equiv> (if (leftFromPoint A B) then B else A)"
-lemma legtPNotEqualRightP : "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<noteq> rightPSegment A B"
+lemma leftPNotEqualRightP : "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<noteq> rightPSegment A B"
   by (auto simp add: rightPSegment_def leftPSegment_def)
+lemma leftPRightPSimp [simp] : "xCoord p \<noteq> xCoord q \<Longrightarrow> p = leftPSegment p q \<Longrightarrow> q = rightPSegment p q"
+  by (auto simp add: leftPSegment_def rightPSegment_def)
+lemma leftPRightPSimp1 [simp] : "xCoord p \<noteq> xCoord q \<Longrightarrow> q = rightPSegment p q \<Longrightarrow> p = leftPSegment p q"
+  by (auto simp add: leftPSegment_def rightPSegment_def)
+
 
 
 (*Zusätliche Lemmas*)
