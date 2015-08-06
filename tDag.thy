@@ -180,8 +180,9 @@ definition pointInRBox :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" wher
 lemma rBoxIsTrapez1 [simp]: "pointInRBox R P \<Longrightarrow> isTrapez R"
   sorry
 definition rBoxTrapezS :: "point2d list \<Rightarrow> trapez \<Rightarrow> bool" where
-  "pointList PL \<Longrightarrow> rBoxTrapezS PL R \<equiv> \<forall> i < length PL. pointInRBox R (PL!i)"
-lemma rBoxIsTrapez [simp]: "pointList PL \<Longrightarrow> rBoxTrapezS PL R \<Longrightarrow> isTrapez R"
+  "rBoxTrapezS PL R \<equiv> \<forall> i < length PL. pointInRBox R (PL!i)"
+lemma rBoxTrapezSSimp [simp] : "rBoxTrapezS [a] R = pointInRBox R a" by (simp add: rBoxTrapezS_def) 
+lemma rBoxIsTrapez [simp]: "rBoxTrapezS PL R \<Longrightarrow> isTrapez R"
   sorry
 
 (*order for tDag*)
