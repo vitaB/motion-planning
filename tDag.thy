@@ -184,6 +184,43 @@ definition rBoxTrapezS :: "point2d list \<Rightarrow> trapez \<Rightarrow> bool"
 lemma rBoxIsTrapez [simp]: "pointList PL \<Longrightarrow> rBoxTrapezS PL R \<Longrightarrow> isTrapez R"
   sorry
 
+(*order for tDag*)
+(*jedes Trapez dessen rightP \<le> x ist ist im Tl von Tl x Tr*)
+fun tDagOrdX1 :: "tDag \<Rightarrow> real \<Rightarrow> bool" where
+  "tDagOrdX1 (Tip T) x = (xCoord(leftP T) < x)"
+  | "tDagOrdX1 (Node lf (xNode n) rt) x = (tDagOrdX1 lf x \<and> xCoord n < x)"
+  | "tDagOrdX1 (Node lf (yNode n) rt) x = (tDagOrdX1 lf x \<and> tDagOrdX1 rt x)"
+fun tDagOrdX2 :: "tDag \<Rightarrow> real \<Rightarrow> bool" where
+  "tDagOrdX2 (Tip T) x = (xCoord(rightP T) \<ge> x)"
+  | "tDagOrdX2 (Node lf (xNode n) rt) x = (tDagOrdX2 lf x \<and> x > xCoord n)"
+  | "tDagOrdX2 (Node lf (yNode n) rt) x = (tDagOrdX2 lf x \<and> tDagOrdX2 rt x)"
+fun tDagOrdX :: "tDag \<Rightarrow> bool" where
+  "tDagOrdX (Tip T) = True"
+  | "tDagOrdX (Node lf (xNode n) rt) = (tDagOrdX1 lf (xCoord n) \<and> tDagOrdX2 rt (xCoord n)
+    \<and> tDagOrdX lf \<and> tDagOrdX rt)"
+  | "tDagOrdX (Node lf (yNode n) rt) = (tDagOrdX lf \<and> tDagOrdX rt)"
+fun tDagOrdY1 :: "tDag \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
+  "tDagOrdY1 (Tip T) y = (signedArea (fst y) (snd y) (rightP T) \<ge> 0 \<and> signedArea (fst y) (snd y) (leftP T) \<ge> 0)"
+  | "tDagOrdY1 (Node lf (yNode n) rt) y = (tDagOrdY1 lf y \<and> tDagOrdY1 rt y
+    \<and> signedArea (fst y) (snd y) (fst y) > 0 \<and> signedArea (fst y) (snd y) (snd y) > 0)"
+  | "tDagOrdY1 (Node lf (xNode n) rt) y = (tDagOrdY1 lf y \<and> tDagOrdY1 rt y)"
+fun tDagOrdY2 :: "tDag \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
+  "tDagOrdY2 (Tip T) y = (signedArea (fst y) (snd y) (rightP T) \<le> 0 \<and> signedArea (fst y) (snd y) (leftP T) \<le> 0)"
+  | "tDagOrdY2 (Node lf (yNode n) rt) y = (tDagOrdY2 lf y \<and> tDagOrdY2 rt y
+    \<and> signedArea (fst y) (snd y) (fst y) < 0 \<and> signedArea (fst y) (snd y) (snd y) < 0)"
+  | "tDagOrdY2 (Node lf (xNode n) rt) y = (tDagOrdY2 lf y \<and> tDagOrdY2 rt y)"
+fun tDagOrdY :: "tDag \<Rightarrow> bool" where
+  "tDagOrdY (Tip T) = True"
+  | "tDagOrdY (Node lf (xNode n) rt) = (tDagOrdY lf \<and> tDagOrdY rt)"
+  | "tDagOrdY (Node lf (yNode n) rt) = (tDagOrdY1 lf n \<and> tDagOrdY2 rt n
+    \<and> tDagOrdY lf \<and> tDagOrdY rt)"
+(*jedes Trapez in tDag ist so aufgebaut, dass für alle Trapeze im Baum (Node lf k rt) gilt:
+  -rechteEcke von Trapez ist links von k
+  -rechteEcke ist über der Kante k*)
+fun tDagOrdMap :: "tDag \<Rightarrow> bool" where
+  "tDagOrdMap (Tip T)  = True"
+  | "tDagOrdMap (Node lf (xNode x) rt) = (tDagOrdX lf \<and> tDagOrdX rt)"
+  | "tDagOrdMap (Node lf (yNode y) rt) = (tDagOrdY lf \<and> tDagOrdY rt)"
 
 
 
