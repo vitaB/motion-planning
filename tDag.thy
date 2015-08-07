@@ -7,62 +7,62 @@ begin
 (*Definition für Trapez ((a,b),(c,d),e,f)) top: (a,b), bottom:(c,d), leftP:e, rightP: f
   a=fst(fst p), b = snd(fst p), c=fst(fst(snd p)), d=snd(fst(snd p)), e=fst(snd(snd p)), f=snd(snd(snd p))*)
 typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). True}" by (auto)
-definition "isTrapez p \<equiv> leftFromPoint (fst(snd(snd(Rep_trapez p)))) (snd(snd(snd(Rep_trapez p)))) (*e links von f*)
-  \<and> (signedArea (fst(fst (Rep_trapez p))) (snd(fst (Rep_trapez p))) (fst(snd(snd (Rep_trapez p)))) \<le> 0 \<and> signedArea (fst(fst(snd (Rep_trapez p)))) (snd(fst(snd (Rep_trapez p)))) (fst(snd(snd (Rep_trapez p)))) \<ge> 0) (*e ist zwischen ab und cd*)
-  \<and> (signedArea (fst(fst(Rep_trapez p))) (snd(fst(Rep_trapez p))) (snd(snd(snd(Rep_trapez p)))) \<le> 0 \<and> signedArea (fst(fst(snd(Rep_trapez p)))) (snd(fst(snd(Rep_trapez p)))) (snd(snd(snd(Rep_trapez p)))) \<ge> 0) (*f ist zwischen ab und cd*)
-  \<and> ( (leftTurn (fst(fst(snd(Rep_trapez p)))) (snd(fst(snd(Rep_trapez p)))) (fst(fst(Rep_trapez p))) \<and> leftTurn (fst(fst(snd(Rep_trapez p)))) (snd(fst(snd(Rep_trapez p)))) (snd(fst(Rep_trapez p))) ) (*a und b über c d*)
-    \<or> ( leftTurn (fst(fst(snd(Rep_trapez p)))) (snd(fst(snd(Rep_trapez p)))) (fst(fst(Rep_trapez p))) \<and> ((snd(fst(snd(Rep_trapez p)))) = (snd(fst(Rep_trapez p)))) ) (*a ist über cd und d=b*)
-    \<or> ( ((fst(fst(snd(Rep_trapez p)))) = (fst(fst(Rep_trapez p)))) \<and> leftTurn (fst(fst(snd(Rep_trapez p)))) (snd(fst(snd(Rep_trapez p)))) (snd(fst(Rep_trapez p))) ) ) (*a = c und b über c d*)
-  \<and> leftFromPoint (fst(fst(Rep_trapez p))) (snd(fst(Rep_trapez p))) (*ab ist ein segment, wobei a links von b ist*)
-  \<and> leftFromPoint (fst(fst(snd(Rep_trapez p)))) (snd(fst(snd(Rep_trapez p))))" (*cd ist ein segment, wobei c links von d ist*)  
-definition "isTrapezList TL \<equiv> \<forall> i < length TL. isTrapez (TL!i)"
+lemma [simp]: "fst (Rep_trapez (Abs_trapez (a, c, e, f))) = a" by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv) 
+lemma [simp]:"fst(snd (Rep_trapez (Abs_trapez (a, c, e, f)))) = c" by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv)
+lemma [simp]:"fst(snd(snd (Rep_trapez (Abs_trapez (a, c, e, f))))) = e" by (metis Abs_trapez_inverse Collect_const UNIV_I fst_conv snd_conv) 
+lemma [simp]:"snd(snd(snd (Rep_trapez (Abs_trapez (a, c, e, f))))) = f" by (metis Abs_trapez_inverse Collect_const UNIV_I snd_conv) 
 
 (*identifiers for Trapez-parts*)
 definition topT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where  "topT T \<equiv> fst(Rep_trapez T)"
 definition bottomT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where "bottomT T \<equiv> fst(snd(Rep_trapez T))"
 definition leftP :: "trapez \<Rightarrow> point2d" where "leftP T \<equiv> fst(snd(snd(Rep_trapez T)))"
 definition rightP :: "trapez \<Rightarrow> point2d" where "rightP T \<equiv> snd(snd(snd(Rep_trapez T)))"
-lemma leftPRigthFromRightP [simp] : "isTrapez T \<Longrightarrow> leftFromPoint (leftP T) (rightP T)"
-  by (simp add: leftP_def rightP_def, metis (no_types, lifting) isTrapez_def)
-  
-(*topT und bottomT sind segmente*)
-lemma topTSegment [simp]: "isTrapez T \<Longrightarrow> segment (fst(topT T)) (snd(topT T))"
-  apply (cases T, subgoal_tac "xCoord (fst(topT T)) \<noteq> xCoord (snd(topT T))")
-  apply (simp add: topT_def segment_def isTrapez_def, (erule conjE)+, metis (no_types, lifting))
-by (metis (no_types, lifting) isTrapez_def dual_order.irrefl leftFromPoint_def topT_def)
-lemma bottomTSegment [simp]: "isTrapez T \<Longrightarrow>segment (fst(bottomT T)) (snd(bottomT T))"
-  apply (cases T, subgoal_tac "xCoord (fst(bottomT T)) \<noteq> xCoord (snd(bottomT T))")
-  apply (simp add: bottomT_def segment_def isTrapez_def, (erule conjE)+, metis (no_types, lifting))
-by (metis (no_types, lifting) isTrapez_def bottomT_def leftFromPoint_def less_irrefl)
-
-(*Beweise über die Positionen der Ecken vom Trapez*)
-(*mind. einer der Ecken von topT ist über bottomT*)
-lemma topAboveBottom [intro] :"isTrapez T \<Longrightarrow> leftTurn (fst (bottomT T)) (snd (bottomT T)) (fst (topT T))
-  \<or> leftTurn (fst (bottomT T)) (snd (bottomT T)) (snd (topT T))"
-  by (simp add: topT_def bottomT_def, metis (no_types, lifting) isTrapez_def leftRightTurn)
-(*leftP ist über bottom T oder ist die linke Ecke von bottomT*)
-lemma leftPPos [intro] : "isTrapez T \<Longrightarrow> leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fst(bottomT T)) = (leftP T)"
-  apply (simp add: leftP_def bottomT_def del: leftRightTurn leftTurnRotate leftTurnRotate2,
-    cases T, simp del: leftRightTurn leftTurnRotate leftTurnRotate2, safe)
-  apply (subgoal_tac "fst ((a, b), (aa, ba), ab, bb) = (a,b) \<and>  snd ((a, b), (aa, ba), ab, bb) = ((aa, ba), ab, bb)
-    \<and> fst(snd ((a, b), (aa, ba), ab, bb)) = (aa, ba) \<and> fst(snd(snd ((a, b), (aa, ba), ab, bb))) = ab
-    \<and> snd(snd(snd ((a, b), (aa, ba), ab, bb))) = bb")
-  apply (simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
-  apply (subgoal_tac "leftTurn (fst (fst (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))))
-        (snd (fst (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))))
-        (fst (snd (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb)))))) = leftTurn aa ba ab")
-  apply (subgoal_tac "fst (fst (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))) = aa \<and> fst (snd (snd (Rep_trapez (Abs_trapez ((a, b), (aa, ba), ab, bb))))) = ab")
-  apply (simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
-
-  apply (subgoal_tac "0 \<noteq> signedArea aa ba ab")
-
-oops
-
 (*Lemmas zum reduzieren von trapez Termen*)
 lemma topT [simp]: "topT (Abs_trapez (a, b, e, f)) = a" by (auto simp add: topT_def Abs_trapez_inverse)
 lemma bottomT [simp]: "bottomT (Abs_trapez (a , b, e, f)) = b" by (auto simp add: bottomT_def Abs_trapez_inverse)
 lemma leftP [simp]: "leftP (Abs_trapez (a, b, e, f)) = e" by (auto simp add: leftP_def Abs_trapez_inverse)
 lemma rightP [simp]: "rightP (Abs_trapez (a, b, e, f)) = f" by (auto simp add: rightP_def Abs_trapez_inverse)
+
+definition "isTrapez p \<equiv> leftFromPoint (leftP p) (rightP p) (*e links von f*)
+  \<and> (signedArea (fst(topT p)) (snd(topT p)) (leftP p) \<le> 0 \<and> signedArea (fst(bottomT p)) (snd(bottomT p)) (leftP p) \<ge> 0) (*e ist zwischen ab und cd*)
+  \<and> (signedArea (fst(topT p)) (snd(topT p)) (rightP p) \<le> 0 \<and> signedArea (fst(bottomT p)) (snd(bottomT p)) (rightP p) \<ge> 0) (*f ist zwischen ab und cd*)
+  \<and> ( (*echtes Trapez oder Dreieck*)
+    (leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p)) \<and> leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p)) ) (*a und b über c d*)
+    \<or> (leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p)) \<and> fst(bottomT p) = snd(bottomT p) )  (*oder a ist über cd und d=b*)
+    \<or> (fst(topT p) = fst(bottomT p) \<and> leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p)) ) (*oder a = c und b über c d*)
+    )
+  \<and> leftFromPoint (fst(topT p)) (snd(topT p)) (*a ist links von b*)
+  \<and> leftFromPoint (fst(bottomT p)) (snd(bottomT p))" (*c ist links von d*)  
+definition "isTrapezList TL \<equiv> \<forall> i < length TL. isTrapez (TL!i)"
+
+lemma leftPRigthFromRightP [simp] : "isTrapez T \<Longrightarrow> leftFromPoint (leftP T) (rightP T)"
+  by (simp add: isTrapez_def)
+
+  
+(*topT und bottomT sind segmente*)
+lemma topTSegment [simp]: "isTrapez T \<Longrightarrow> segment (fst(topT T)) (snd(topT T))"
+  apply (cases T, subgoal_tac "xCoord (fst(topT T)) \<noteq> xCoord (snd(topT T))")
+  apply (simp add: isTrapez_def)
+by (metis (no_types, lifting) isTrapez_def dual_order.irrefl leftFromPoint_def)
+lemma bottomTSegment [simp]: "isTrapez T \<Longrightarrow>segment (fst(bottomT T)) (snd(bottomT T))"
+  apply (cases T, subgoal_tac "xCoord (fst(bottomT T)) \<noteq> xCoord (snd(bottomT T))")
+  apply (simp add: isTrapez_def)
+by (metis (no_types, lifting) isTrapez_def leftFromPoint_def less_irrefl)
+
+(*Beweise über die Positionen der Ecken vom Trapez*)
+(*mind. einer der Ecken von topT ist über bottomT*)
+lemma topAboveBottom [intro] :"isTrapez T \<Longrightarrow> leftTurn (fst (bottomT T)) (snd (bottomT T)) (fst (topT T))
+  \<or> leftTurn (fst (bottomT T)) (snd (bottomT T)) (snd (topT T))"
+  by (auto simp add: isTrapez_def)
+(*leftP ist über bottom T oder ist die linke Ecke von bottomT.
+das muss in die definition von Trapez rein! allerdings erweitern, da beim Dreicek auch die Entgegengesetzte Ecke beachtet werden muss
+* bläht die Definiton von trapez unnötig auf (?)*)
+lemma leftPPos [intro] : "isTrapez T \<Longrightarrow> leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fst(bottomT T) = leftP T)"
+  apply (simp add: leftP_def bottomT_def del: leftRightTurn leftTurnRotate leftTurnRotate2,
+    cases T, simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
+oops
+lemma rightPPos [intro] : "isTrapez T \<Longrightarrow> rightTurn (fst(topT T)) (snd(topT T)) (rightP T) \<or> (snd(topT T) = rightP T)"
+oops
 
 
 (*Trapez Equiv.*)
@@ -119,14 +119,25 @@ definition pointInDag :: "tDag \<Rightarrow> point2d \<Rightarrow> bool" where
 
 (*Input Tip welches entfernt wird, tDag welches hinzugefügt wird, tDag-tree in dem ersetzt werden soll
 Output: neues tDag-tree*)
+(* wie verbiete ich replaceTip a D D?*)
 fun replaceTip :: "trapez \<Rightarrow> tDag \<Rightarrow> tDag \<Rightarrow> tDag" where
   "replaceTip oT nT (Tip D) = (if (D = oT) then (nT) else (Tip D))"
  |"replaceTip oT nT (Node Tl x Tr) = Node (replaceTip oT nT Tl) x (replaceTip oT nT Tr)"
+(*keine unendliche regression*)
+lemma "a\<noteq>b \<Longrightarrow> replaceTip a (Node (Tip a) (xNode (c)) (Tip b)) (Node (Tip a) (xNode (c)) (Tip b))
+  = (Node ((Node (Tip a) (xNode (c)) (Tip b))) (xNode (c)) (Tip b))" by (auto)
 
 lemma replaceMiss [simp]: "\<not>tipInDag oT D \<Longrightarrow> replaceTip oT nT D = D"
   by (induction oT nT D rule: replaceTip.induct, case_tac "oT = D", simp+)
 lemma replaceAfter: "\<not>tipInDag oT nT \<Longrightarrow> \<not>tipInDag oT (replaceTip oT nT D)"
   by (induction oT nT D rule: replaceTip.induct, simp+)
+lemma replaceAfter1 : "tipInDag oT nT \<Longrightarrow> tipInDag oT D \<Longrightarrow> tipInDag oT (replaceTip oT nT D)"
+  by (induction oT nT D rule: replaceTip.induct,case_tac "oT = D", auto)
+lemma replaceInDWithD [simp] : "tipInDag a D \<Longrightarrow> tipInDag a (replaceTip a D D)"
+  by (auto simp add: replaceAfter1)
+
+(*lemma replaceTrans : "\<not>tipInDag c b \<Longrightarrow> replaceTip c b (replaceTip a b D) = replaceTip a b (replaceTip c b D)"
+  apply (induction c b D rule: replaceTip.induct, auto)*)
 
 lemma replaceTipSize1 : "size (replaceTip oT (Tip nT) D) = size D"
   by (induction oT "Tip nT" D rule: replaceTip.induct, simp+)

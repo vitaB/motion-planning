@@ -133,6 +133,9 @@ definition newDag :: "tDag \<Rightarrow> trapez \<Rightarrow> trapez list \<Righ
         else (newDagM T TM P Q)
       )
     ))"
+(*stimmt nur wenn tDag eine echte TrapezoidalMap*)
+lemma "\<forall> a \<in> set (tDagList (newDag D T TM P Q)). a \<notin> set(tDagList D)"
+oops
 
 
 (*****Find and replace Segment which intersected from added Segment*)
@@ -172,7 +175,6 @@ Output: neues Dag, nachdem alle Trapeze ersetzt wurden*)
 fun replaceDag :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> tDag" where
   "replaceDag D [] _ _ _ = D"
   | "replaceDag D (T#Ts) TM P Q = replaceDag (replaceTip T (newDag D T TM P Q ) D) Ts TM P Q"
-
 
 
 (******add Segment to trapezoidal-map*)
