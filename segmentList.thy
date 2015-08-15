@@ -71,7 +71,7 @@ lemma pointsSegmentsAppend2: "length L \<ge> 1 \<Longrightarrow> \<forall>i < le
   apply (erule_tac x="length L - 1" in allE)
   apply (simp)
   apply (auto simp add: nth_append)
-  apply (smt2 Suc_eq_plus1 Suc_pred add.commute diff_self_eq_0 last_conv_nth le_Suc_ex less_not_refl list.size(3) monoid_add_class.add.left_neutral neq0_conv nth_Cons_0 old.nat.distinct(2))
+  apply (smt Suc_eq_plus1 Suc_pred add.commute diff_self_eq_0 last_conv_nth le_Suc_ex less_not_refl list.size(3) monoid_add_class.add.left_neutral neq0_conv nth_Cons_0 old.nat.distinct(2))
 done
 theorem pointsSegmentsAppend: "pointList L \<Longrightarrow> k < size L - 1 \<Longrightarrow> (\<forall>i < (size (L @ [a]) - 1). segment ((L @ [a])!i) ((L @ [a])! Suc i))
   = (segment (L!k) (L ! Suc k) \<and> segment (last L) a)"

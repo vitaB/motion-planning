@@ -133,7 +133,7 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   apply (simp add: intersect_def, safe)
   apply (metis crossingLeftTurn notLeftTurn notRightTurn1)
   apply (metis notRightTurn)
-by (smt2 intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
+by (smt intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
 
 
 

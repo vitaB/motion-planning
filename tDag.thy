@@ -23,16 +23,18 @@ lemma bottomT [simp]: "bottomT (Abs_trapez (a , b, e, f)) = b" by (auto simp add
 lemma leftP [simp]: "leftP (Abs_trapez (a, b, e, f)) = e" by (auto simp add: leftP_def Abs_trapez_inverse)
 lemma rightP [simp]: "rightP (Abs_trapez (a, b, e, f)) = f" by (auto simp add: rightP_def Abs_trapez_inverse)
 
-definition "isTrapez p \<equiv> leftFromPoint (leftP p) (rightP p) (*e links von f*)
+definition "isTrapez p \<equiv> 
+  leftFromPoint (leftP p) (rightP p) (*e links von f*)
+  \<and> leftFromPoint (fst(topT p)) (snd(topT p)) (*a ist links von b*)
+  \<and> leftFromPoint (fst(bottomT p)) (snd(bottomT p)) (*c ist links von d*) 
+  (*e ist zwischen ab und cd oder e=a oder e=c*)
   \<and> (signedArea (fst(topT p)) (snd(topT p)) (leftP p) \<le> 0 \<and> signedArea (fst(bottomT p)) (snd(bottomT p)) (leftP p) \<ge> 0) (*e ist zwischen ab und cd*)
   \<and> (signedArea (fst(topT p)) (snd(topT p)) (rightP p) \<le> 0 \<and> signedArea (fst(bottomT p)) (snd(bottomT p)) (rightP p) \<ge> 0) (*f ist zwischen ab und cd*)
   \<and> ( (*echtes Trapez oder Dreieck*)
     (leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p)) \<and> leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p)) ) (*a und b über c d*)
     \<or> (leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p)) \<and> fst(bottomT p) = snd(bottomT p) )  (*oder a ist über cd und d=b*)
     \<or> (fst(topT p) = fst(bottomT p) \<and> leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p)) ) (*oder a = c und b über c d*)
-    )
-  \<and> leftFromPoint (fst(topT p)) (snd(topT p)) (*a ist links von b*)
-  \<and> leftFromPoint (fst(bottomT p)) (snd(bottomT p))" (*c ist links von d*)  
+    )" 
 definition "isTrapezList TL \<equiv> \<forall> i < length TL. isTrapez (TL!i)"
 
 lemma leftPRigthFromRightP [simp] : "isTrapez T \<Longrightarrow> leftFromPoint (leftP T) (rightP T)"
@@ -90,13 +92,13 @@ definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" wh
 
 (******directed acyclic graph*)
 (*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)
-datatype_new kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
+datatype kNode = xNode "point2d" | yNode "(point2d\<times>point2d)"
 
 (*x-nodes stores a segment endpoint that defines a vertical extension in the trapezoid map,
 and has leftChild and rightChild pointers to nodes.*)
 (*y-node stores a line segment and its children are also recorded by the pointers are aboveChild
 and belowChild depending on whether the child item is above or below the segment stored at the y-node.*)
-datatype_new tDag = Tip "trapez" | Node "tDag" kNode "tDag"
+datatype tDag = Tip "trapez" | Node "tDag" kNode "tDag"
 
 (*Wandle DAG in eine Trapez-Liste um*)
 primrec tDagList :: "tDag \<Rightarrow> trapez list" where
