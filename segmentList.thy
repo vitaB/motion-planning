@@ -1,5 +1,5 @@
 theory segmentList
-imports line
+imports segment
 begin
 
 (*Zusätzliche Sätze die ich brauche*)

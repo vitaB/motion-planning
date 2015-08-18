@@ -1,4 +1,4 @@
-theory line
+theory segment
 imports point
 begin
 
