@@ -2,13 +2,14 @@ theory polygon
 imports cyclePath
 begin
 
-(*definition für Polygon: intersectionfree*)
+(*definition for polygon: intersectionfree cyclePath*)
 definition polygon :: "point2d list \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<equiv> intersectionFreePList P"
-(*Liste mit polygonen*)
+(*List with polygons*)
 definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (cyclePath (PL!i))"
 
+(*count how many times a track intersects the polygon*)
 fun countSegmentCrossPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> nat" where
   "countSegmentCrossPolygon [] S E = 0"
   | "countSegmentCrossPolygon [P] S E = 0"
@@ -16,27 +17,39 @@ fun countSegmentCrossPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow
     then (1 + countSegmentCrossPolygon (Pl#Ps) S E)
     else(countSegmentCrossPolygon (Pl#Ps) S E))"
 
+(*When is a point in a polygon?*)
 definition pointInPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> pointInPolygon P A \<equiv>
     odd(countSegmentCrossPolygon P A (Abs_point2d(xCoord (last(xCoordSort P)) + 1, yCoord A)))" (*austauschen durch unendlich*)
 
-(*evtl. kann ich diesen Fall für TrapezoidalMap ignorieren*)
-(*polygon ist partial or completle in another Polygon*)
+(*polygon is partial or complete in another Polygon*)
 definition polygonInPolygon :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
-  "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow> Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow>
-    polygonInPolygon Pr Pt \<equiv> (\<exists> i < length Pr. pointInPolygon Pt (Pr!i)) \<or> (\<exists> j < length Pt. pointInPolygon Pr (Pt!j))"
+  "pointList Lr\<Longrightarrow> Pr=cyclePath Lr\<Longrightarrow> polygon Pr\<Longrightarrow> pointList Lt\<Longrightarrow>Pt=cyclePath Lt \<Longrightarrow> polygon Pt\<Longrightarrow>
+    polygonInPolygon Pr Pt \<equiv> (\<exists> i < length Pr. pointInPolygon Pt (Pr!i))
+    \<or> (\<exists> j < length Pt. pointInPolygon Pr (Pt!j))"
+
 lemma polygonInPolygonSym : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow>
   Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow> polygonInPolygon Pr Pt \<longleftrightarrow> polygonInPolygon Pt Pr"
 sorry
 
-lemma polygonCrossing : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow> Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow>
-   cyclePathIntersect Pr Pt \<Longrightarrow> polygonInPolygon Pr Pt"
+lemma polygonCrossing : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow>
+    Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow> cyclePathIntersect Pr Pt \<Longrightarrow> polygonInPolygon Pr Pt"
 sorry
 
-(*Convexes Polygon.
-- keiner der Kanten des Polygons trennt irgendeine der übrigen Ecken einer der Kanten des Polygons
-- 3 aufeainder folgenden Kanten sind nicht kollinear*)
-(*Bemerkung: im cyclePath gibt es hier collinearität. Und zwar an der letzten+ersten Kante*)
+definition polygonDisjoint :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
+  "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P\<Longrightarrow> pointList Lr\<Longrightarrow> R=cyclePath Lr\<Longrightarrow> polygon R \<Longrightarrow>
+    polygonDisjoint P R \<equiv> \<not>polygonInPolygon P R \<and> \<not>cyclePathIntersect P R" (*point on Segment case*)
+
+definition polygonsDisjoint :: "(point2d list) list \<Rightarrow> bool" where
+  "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> polygonsDisjoint PL \<equiv> \<forall> i j. i\<noteq>j \<and>
+    i < length PL \<and> j < length PL \<and> polygonDisjoint (PL!i) (PL!j)"
+
+
+
+(*convex Polygon:
+- none of the edges of the polygon separates any of the remaining corners of the polygon
+- 3 consecutive edges are not collinear*)
+(*Note: in cyclepath there collinearität here. Namely, at the first edge + the last*)
 definition cPolygon :: "point2d list \<Rightarrow> bool" where
 "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<equiv> (\<forall> k < length P - 1.
   \<not>(\<exists> i. i < length P - 1 \<and> lineSeparate (P ! k) (P ! Suc k) (P ! i) (P ! Suc i)))"
@@ -44,18 +57,17 @@ definition cPolygon :: "point2d list \<Rightarrow> bool" where
 lemma cPolygonRevEq: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon (rev P) \<equiv>
   (\<forall> k < length (rev P) - 1.
   \<not>(\<exists> i. i < length (rev P) - 1 \<and> lineSeparate ((rev P) ! k) ((rev P) ! Suc k) ((rev P) ! i) ((rev P) ! Suc i)))"
-  apply (cut_tac P="rev P" and L="hd L # rev (tl L)" in cPolygon_def)
-  apply (simp, simp add: cyclePath_def)
-  apply (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def rev.simps(2) zero_less_Suc)
-  apply (simp)+
-done
-lemma cPolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<Longrightarrow> cPolygon (rev P)"
+  apply (cut_tac P="rev P" and L="hd L # rev (tl L)" in cPolygon_def, simp,simp add: cyclePath_def)
+by (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def
+    rev.simps(2) zero_less_Suc, (simp)+)
+lemma cPolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<Longrightarrow>
+    cPolygon (rev P)"
   apply (simp add: cPolygonRevEq cPolygon_def, auto)
   apply (subgoal_tac "rev P = revCycle L")
   apply (simp add: cPolygon_def)
 sorry
 
-(*alle Dreiecke sind conv. Polygone*)
+(*all triangles are conv. polygon*)
 lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P"
  (*Beweis braucht zu lange: apply (simp add:cPolygon_def cyclePath_def, safe)
   apply (simp add: lineSeparate_def, safe)
@@ -80,45 +92,46 @@ lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collin
     apply (smt2 Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length numeral_3_eq_3 signedAreaRotate)
 done*)sorry
 
-(*in einem conv. polygon kreuzt sich keiner der Strecken*)
-theorem cPolygonIsCrossingFree: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow> crossingFreePList P"
-  apply (simp add: crossingFreePList_def, safe)
-  apply (simp add: cPolygon_def)
+(*in a conv. polygon none of the lines intersects*)
+theorem cPolygonIsCrossingFree: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+    cPolygon P \<Longrightarrow> crossingFreePList P"
+  apply (simp add: crossingFreePList_def, safe, simp add: cPolygon_def)
   apply (erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
-  apply (simp add: lineSeparate_def, safe)
-  apply (auto simp add: conflictingRigthTurns)
-  apply (metis collRotate crossingCollinear crossingSym1 crossingRightTurn crossingSym rightTurnRotate2)+
-done
+  apply (simp add: lineSeparate_def, safe, auto simp add: conflictingRigthTurns)
+by(metis collRotate crossingCollinear crossingSym1 crossingRightTurn crossingSym rightTurnRotate2)+
 
-(*in einem conv. polygon überschneidet sich keiner der Strecken*)
-theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow> intersectionFreePList P"
+(*in a conv. polygon none of the lines intersects(real)*)
+theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+    cPolygon P \<Longrightarrow> intersectionFreePList P"
   apply (simp add: intersectionFreePList_def, safe)
   apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
     apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def)+)
   apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
-    apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
+    apply (cut_tac L=L and P=P and i=i in cyclePathSegments,
+      (simp add: segment_def cyclePathAdjacentSame1)+)
   apply (cut_tac L=L and P=P and a="i" and b="Suc k" and c="k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
-    apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
+    apply (cut_tac L=L and P=P and i=k in cyclePathSegments,
+      (simp add: segment_def cyclePathAdjacentSame1)+)
   apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
     apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
-  apply (simp add: cPolygon_def)
-  apply (erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
-  apply (simp add: lineSeparate_def, safe)
-  apply (metis conflictingRigthTurns)
+  apply (simp add: cPolygon_def, erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
+  apply (simp add: lineSeparate_def, safe, metis conflictingRigthTurns)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectSym1)
     apply (simp)
-    apply (cut_tac A="(cyclePath L ! k)" and B="(cyclePath L ! Suc k)" and P="(cyclePath L ! i)" and R="(cyclePath L ! Suc i)" in intersectRightTurn)
+    apply (cut_tac A="(cyclePath L ! k)" and B="(cyclePath L ! Suc k)" and P="(cyclePath L ! i)"
+      and R="(cyclePath L ! Suc i)" in intersectRightTurn)
   apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
     apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
 by (metis conflictingRigthTurns1 rightTurnRotate2)
 
-(*jedes conv. Polygon ist auch ein einfaches Polygon*)
-lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P \<Longrightarrow> polygon P"
+(*each conv. polygon is also a simple polygon*)
+lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+    cPolygon P \<Longrightarrow> polygon P"
   by (simp add: polygon_def cPolygonIsIntersectionFree)
 
 
@@ -192,14 +205,6 @@ oops
 
 
 
-(*alte Definition
-(*conv. Polygone die im Uhrzeigersinn gespeichert werden, werden damit nicht erkannt!*)
-fun pointsACl :: "point2d list \<Rightarrow> bool" where 
-  "pointsACl [] = True"
-|  "pointsACl [a] = True"
-|  "pointsACl [a,b] = True"
-|  "pointsACl (a#b#c#xs) = (signedArea a b c > 0 \<and> pointsACl (b#c#xs))"
-definition pointsCl :: "point2d list \<Rightarrow> bool" where 
-  "pointsCl P \<equiv> pointsACl (rev P)"
-*)
+
+(*alte Definition*)
 end
