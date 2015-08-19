@@ -1,15 +1,15 @@
 theory trapezoidalMap
-imports tDag
+imports tDag (*"~~/src/HOL/Library/Multiset"*)
 begin
 
 (*zwei Trapeze sind benachbart entland der Strecke PQ, wenn :
   - die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
   - topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
-definition neighbTrapez:: "trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "neighbTrapez T Ts P Q \<equiv> rightP T = leftP Ts \<and>
+definition neighborAlongSeg:: "trapez \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "neighborAlongSeg T Ts P Q \<equiv> rightP T = leftP Ts \<and>
   ((rightTurn P Q (rightP T) \<and> topT T = topT Ts) \<or> (leftTurn P Q (rightP T) \<and> bottomT T = bottomT Ts))"
-lemma neighbTrapezSame [dest] : "isTrapez T \<Longrightarrow> neighbTrapez T T P Q \<Longrightarrow> False"
-  by (auto simp add: neighbTrapez_def,(metis leftFromPoint_def less_irrefl trapezNeighbour2)+)
+lemma neighborTrapezSame [dest] : "isTrapez T \<Longrightarrow> neighborAlongSeg T T P Q \<Longrightarrow> False"
+  by (auto simp add: neighborAlongSeg_def,(metis leftFromPoint_def less_irrefl trapezNeighbour2)+)
 
 
 (*gehe solange bis zum nächsten Nachbarn bis gesuchte Ecke gefunden ist
@@ -145,7 +145,7 @@ Output: liste mit trapezen*)
 (*man verpasst kein Nachbar! weil immer der nächste Nachbar gefunden wird, bevor man zu den zweitem kommen kann!*)
 fun followSegment :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez list" where 
   "followSegment _ [] _ _ _ = []"
-  | "followSegment D (Ts#TM) T P Q = (if (xCoord Q \<ge> xCoord (rightP T) \<and> neighbTrapez T Ts P Q)
+  | "followSegment D (Ts#TM) T P Q = (if (xCoord Q \<ge> xCoord (rightP T) \<and> neighborAlongSeg T Ts P Q)
     then (Ts # (followSegment D TM Ts P Q)) else (followSegment D TM T P Q))"
 
 (*gib eine trapezliste, die on PQ geschnitten werden.*)
@@ -158,14 +158,14 @@ lemma oneIntersectedTrapez : "pointInDag D p \<Longrightarrow> pointInDag D q \<
   apply (simp add: intersectedTrapez_def)
   apply (cases D, safe)
     (*Case D = Tip x*)
-    apply (subgoal_tac "neighbTrapez x1 x1 p q = False", simp add: sortedTrapez_def, metis neighbTrapezSame)
+    apply (subgoal_tac "neighborAlongSeg x1 x1 p q = False", simp add: sortedTrapez_def, metis neighborTrapezSame)
     (*Case D = tl kNode tr*)
     apply (simp add: sortedTrapez_def)
 oops
 
 (*intersectedTrapez gibt eine Liste mit echten Nachbarn entlang PQ zurück, dass von P und Q begrenzt ist*)
 lemma intersectedTrapezComp : "leftFromPoint P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
-  TM = intersectedTrapez D P Q \<Longrightarrow> (\<forall> i < length TM - 1. neighbTrapez (TM!i) (TM!Suc i) P Q)
+  TM = intersectedTrapez D P Q \<Longrightarrow> (\<forall> i < length TM - 1. neighborTrapez (TM!i) (TM!Suc i) P Q)
   \<and> hd TM = queryTrapezoidMap D P \<and> TM!(length TM - 1) = queryTrapezoidMap D Q"
 sorry
 
@@ -188,7 +188,7 @@ definition addSegmentToTrapezoidalMap :: "tDag \<Rightarrow> point2d \<Rightarro
 lemma "leftFromPoint P Q \<Longrightarrow> rBoxTrapezS [P,Q,a] R \<Longrightarrow>  D=(addSegmentToTrapezoidalMap (Tip R) P Q)
   \<Longrightarrow> i<length(tDagList D) \<Longrightarrow> isTrapez ((tDagList D)!i)"
   apply (simp add: addSegmentToTrapezoidalMap_def intersectedTrapez_def sortedTrapez_def)
-  apply (subgoal_tac "\<not>neighbTrapez R R P Q", simp)
+  apply (subgoal_tac "\<not>neighborAlongSeg R R P Q", simp)
   apply (simp add: newDag_def newDagSimp_def)
   apply (subgoal_tac "leftP R \<noteq> P \<and> rightP R \<noteq> Q", simp add: newDagSimpQ_def newDagSimpA_def)
   apply (safe)
@@ -223,7 +223,7 @@ sorry
 lemma "leftFromPoint P Q \<Longrightarrow> rBoxTrapezS [P,Q,a] R \<Longrightarrow> D =(addSegmentToTrapezoidalMap (Tip R) P Q)
   \<Longrightarrow> (\<exists> i < length (tDagList D). pointInTrapez ((tDagList D)!i) a)"
   apply (simp add: addSegmentToTrapezoidalMap_def intersectedTrapez_def sortedTrapez_def)
-  apply (subgoal_tac "\<not>neighbTrapez R R P Q", simp, thin_tac "\<not>neighbTrapez R R P Q")
+  apply (subgoal_tac "\<not>neighborAlongSeg R R P Q", simp, thin_tac "\<not>neighborAlongSeg R R P Q")
   apply (simp add: newDag_def newDagSimp_def)
   apply (subgoal_tac "leftP R \<noteq> P \<and> rightP R \<noteq> Q", simp add: newDagSimpQ_def newDagSimpA_def)
   apply (thin_tac "leftP R \<noteq> P \<and> rightP R \<noteq> Q")
@@ -241,12 +241,12 @@ lemma "leftFromPoint P Q \<Longrightarrow> rBoxTrapezS [P,Q,a] R \<Longrightarro
   apply (metis leftFromPoint_def less_irrefl)
   apply (simp add: rBoxTrapezS_def, erule_tac x=1 in allE, safe,simp, (simp add: pointInRBox_def))
   apply (metis leftFromPoint_def less_irrefl)
-  apply (rule_tac T=R and P=P and Q=Q in neighbTrapezSame, auto)
+  apply (rule_tac T=R and P=P and Q=Q in neighborTrapezSame, auto)
 done
 lemma "leftFromPoint P Q\<Longrightarrow> rBoxTrapezS [P,Q,a] R \<Longrightarrow> D=(addSegmentToTrapezoidalMap (Tip R) P Q)\<Longrightarrow>
   (\<exists>i<length (tDagList D). pointInTrapez((tDagList D)!i) a \<and> ((tDagList D)!i=queryTrapezoidMap D a))"
   apply (simp add: addSegmentToTrapezoidalMap_def intersectedTrapez_def sortedTrapez_def)
-  apply (subgoal_tac "\<not>neighbTrapez R R P Q", simp)
+  apply (subgoal_tac "\<not>neighborAlongSeg R R P Q", simp)
   apply (simp add: newDag_def newDagSimp_def)
   apply (subgoal_tac "leftP R \<noteq> P \<and> rightP R \<noteq> Q",safe, simp add: newDagSimpQ_def newDagSimpA_def)
   apply (simp add: rBoxTrapezS_def pointInRBox_def, erule_tac x=2 in allE)
@@ -267,18 +267,18 @@ lemma "leftFromPoint P Q\<Longrightarrow> rBoxTrapezS [P,Q,a] R \<Longrightarrow
   apply (metis leftFromPoint_def less_irrefl)
   apply (simp add: rBoxTrapezS_def, erule_tac x=1 in allE, safe,simp, (simp add: pointInRBox_def))
   apply (metis leftFromPoint_def less_irrefl)
-  apply (rule_tac T=R and P=P and Q=Q in neighbTrapezSame, auto)
+  apply (rule_tac T=R and P=P and Q=Q in neighborTrapezSame, auto)
 oops
 
 
 (*****Add Polygon to trapezoidal-map*)
 (*Input: List of line segments(one Polygon) forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure tDag.*)
-fun addPolygonToTrapezoidalMap :: "tDag \<Rightarrow> point2d list \<Rightarrow> tDag" where
-  "addPolygonToTrapezoidalMap D [] = D"
-  | "addPolygonToTrapezoidalMap D [q] = D"
-  | "addPolygonToTrapezoidalMap D (p#q#xs) =
-  addPolygonToTrapezoidalMap (addSegmentToTrapezoidalMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
+fun addSegmentsToTrapezoidalMap :: "tDag \<Rightarrow> point2d list \<Rightarrow> tDag" where
+  "addSegmentsToTrapezoidalMap D [] = D"
+  | "addSegmentsToTrapezoidalMap D [q] = D"
+  | "addSegmentsToTrapezoidalMap D (p#q#xs) =
+  addSegmentsToTrapezoidalMap (addSegmentToTrapezoidalMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
 
 (*füge Segment in tDag ein, wenn tDag \<noteq> rBox*)
 lemma addSegmentToDag1: "uniqueXCoord (P#Q#L) \<Longrightarrow> intersectionFreePList L \<Longrightarrow>
@@ -292,7 +292,7 @@ oops
 Output:  A trapezoid map M in associated search structure tDag.*)
 definition simpTrapezoidalMap :: "trapez \<Rightarrow> point2d list \<Rightarrow> tDag" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> uniqueXCoord L \<Longrightarrow> rBoxTrapezS L R \<Longrightarrow>
-  simpTrapezoidalMap R P  \<equiv> addPolygonToTrapezoidalMap (Tip R) P"
+  simpTrapezoidalMap R P  \<equiv> addSegmentsToTrapezoidalMap (Tip R) P"
 
 (*jedes a was in rBox ist, ist auch nach dem Hinzufügen von einem Polygon in einem der Trapeze zu finden*)
 lemma addPolygonToRBox: "uniqueXCoord L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>
@@ -316,19 +316,20 @@ oops
 Output:  A trapezoid map M in associated search structure tDag.*)
 fun addPolygonsToTrapezoidalMap :: "tDag \<Rightarrow> (point2d list) list \<Rightarrow> tDag" where
   "addPolygonsToTrapezoidalMap D [] = D"
-  | "addPolygonsToTrapezoidalMap D (P#PL) = addPolygonsToTrapezoidalMap (addPolygonToTrapezoidalMap D (cyclePath P)) PL"
+  | "addPolygonsToTrapezoidalMap D (P#PL) = addPolygonsToTrapezoidalMap (addSegmentsToTrapezoidalMap D (cyclePath P)) PL"
 
 (*Input: rBox, tDag(start with rBox) and a polygon forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure tDag.*)
 definition buildTrapezoidalMap :: "trapez \<Rightarrow> (point2d list) list \<Rightarrow> tDag" where
   "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> rBoxTrapezS (concat PL) R \<Longrightarrow>
-  cyclePathsIntersect PL \<Longrightarrow> buildTrapezoidalMap R PL \<equiv> addPolygonsToTrapezoidalMap (Tip R) PL"
+  \<not>cyclePathsIntersect PL \<Longrightarrow> buildTrapezoidalMap R PL \<equiv> addPolygonsToTrapezoidalMap (Tip R) PL"
 
 (*jedes a was in rBox ist, ist auch nach dem Hinzufügen von mehreren Polygonen in einem der Trapeze zu finden*)
 lemma buildTrapezoidalMap : "uniqueXCoord ((concat PL)) \<Longrightarrow> polygonList PL \<Longrightarrow> cyclePathsIntersect PL \<Longrightarrow>
   rBoxTrapezS ((concat PL)) R \<Longrightarrow> D = buildTrapezoidalMap R PL \<Longrightarrow> rBoxTrapezS [a] R \<Longrightarrow>
   (\<exists> i < length (tDagList D). pointInTrapez ((tDagList D)!i) a \<and> ((tDagList D)!i = queryTrapezoidMap D a))"
 oops
+
 
 
 
@@ -340,7 +341,7 @@ Input: tDag, tDagList geordnet nach der x-Coordinate von leftP, Strecke PQ
 Output: nächster trapez-Nachbar, wenn man PQ folgt*)
 (*es muss ein Nachbar geben! kein Nachbar wird ausgelassen!*)
 fun nextTrapez :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez" where
-  "nextTrapez (Ts#Tm) T P Q = (if(neighbTrapez T Ts P Q) then(Ts) else(nextTrapez Tm T P Q))"
+  "nextTrapez (Ts#Tm) T P Q = (if(neighborAlongSeg T Ts P Q) then(Ts) else(nextTrapez Tm T P Q))"
 (*beweise das das nächste Trapez rechts von dem linkem Trapez*)
 lemma "leftFromPoint P Q \<Longrightarrow> Tl = queryTrapezoidMap D P \<Longrightarrow> Tl \<noteq> Tr \<Longrightarrow> Tr = queryTrapezoidMap D R \<Longrightarrow> 
   leftFromPoint (leftP Tl) (leftP (nextTrapez (tDagList D) Tl P Q))"
@@ -352,7 +353,7 @@ oops
 lemma "length (tDagList D) > 1\<Longrightarrow>
   Ts = nextTrapez (tDagList D) T P Q \<Longrightarrow> leftFromPoint (rightP T) (rightP Ts)"
   apply (cases "tDagList D", simp)
-  apply (auto simp add: neighbTrapez_def)
+  apply (auto simp add: neighborAlongSeg_def)
 oops
 
 
@@ -363,7 +364,8 @@ function followS :: "tDag \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarro
   then(followS D (nextTrapez (tDagList D) T P Q) P Q)
   else ([]))"
 by pat_completeness auto
-termination followS (*beweise das das nächste Trapez rechts von dem linkem Trapez
+termination followS 
+ apply (auto)(*beweise das das nächste Trapez rechts von dem linkem Trapez
   bzw. dass der Abstand zwischen rightP T und Q immer kleiner wird*)
 (*dafür müssen aber entweder in tDag noch annahmen stecken oder es muss eine condition für followS geben*)
 (*functions with conditional patterns are not supported by the code generator.*)
