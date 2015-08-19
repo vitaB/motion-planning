@@ -27,20 +27,22 @@ definition "isTrapez p \<equiv>
   leftFromPoint (leftP p) (rightP p) (*e links von f*)
   \<and> leftFromPoint (fst(topT p)) (snd(topT p)) (*a ist links von b*)
   \<and> leftFromPoint (fst(bottomT p)) (snd(bottomT p)) (*c ist links von d*) 
+  \<and> xCoord (leftP p) \<ge> xCoord (fst(topT p)) \<and> xCoord (leftP p) \<ge> xCoord (fst(bottomT p)) (*e \<ge> a \<and> c*)
+  \<and> xCoord (rightP p) \<le> xCoord (snd(topT p)) \<and> xCoord (rightP p) \<le> xCoord (snd(bottomT p))(*f \<le> b \<and> d*)
   (*e ist zwischen ab und cd oder e=a oder e=c*)
   \<and> (signedArea (fst(topT p)) (snd(topT p)) (leftP p) \<le> 0 \<and> signedArea (fst(bottomT p)) (snd(bottomT p)) (leftP p) \<ge> 0) (*e ist zwischen ab und cd*)
   \<and> (signedArea (fst(topT p)) (snd(topT p)) (rightP p) \<le> 0 \<and> signedArea (fst(bottomT p)) (snd(bottomT p)) (rightP p) \<ge> 0) (*f ist zwischen ab und cd*)
   \<and> ( (*echtes Trapez oder Dreieck*)
     (leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p)) \<and> leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p)) ) (*a und b über c d*)
-    \<or> (leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p)) \<and> fst(bottomT p) = snd(bottomT p) )  (*oder a ist über cd und d=b*)
-    \<or> (fst(topT p) = fst(bottomT p) \<and> leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p)) ) (*oder a = c und b über c d*)
+    \<or> (leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p)) \<and> fst(bottomT p) = snd(bottomT p) \<and> snd(bottomT p) = rightP p )  (*oder a ist über cd und d=b=f*)
+    \<or> (fst(topT p) = fst(bottomT p) \<and> fst(bottomT p) = leftP p \<and> leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p)) ) (*oder a=c=e und b über c d*)
     )" 
 definition "isTrapezList TL \<equiv> \<forall> i < length TL. isTrapez (TL!i)"
 
 lemma leftPRigthFromRightP [simp] : "isTrapez T \<Longrightarrow> leftFromPoint (leftP T) (rightP T)"
   by (simp add: isTrapez_def)
 
-  
+
 (*topT und bottomT sind segmente*)
 lemma topTSegment [simp]: "isTrapez T \<Longrightarrow> segment (fst(topT T)) (snd(topT T))"
   apply (cases T, subgoal_tac "xCoord (fst(topT T)) \<noteq> xCoord (snd(topT T))")
@@ -74,6 +76,12 @@ lemma trapezSameCoord [simp]: "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b
 definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "trapezNotEq A B \<equiv> A \<noteq> B"
 
+(*Trapez A ist benachbart mit Trapez B*)
+definition trapezNeighbor :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
+  "trapezNeighbor A B \<equiv> (rightP B = leftP A \<or> rightP A = leftP B)
+    \<and> ((topT A = topT B) \<or> (bottomT A = bottomT B))"
+lemma trapezNeighborSym: "trapezNeighbor A B \<longleftrightarrow> trapezNeighbor B A"
+  by(auto simp add: trapezNeighbor_def)
 
 (*Linke Ecken sind rechts von den rechten Ecken*)
 lemma trapezNeighbour1 : "isTrapez T \<Longrightarrow> isTrapez Ts \<Longrightarrow> rightP T = leftP Ts \<Longrightarrow>
@@ -89,6 +97,9 @@ definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" wh
   "pointInTrapez T P \<equiv> xCoord P \<le> xCoord (rightP T) \<and> xCoord P \<ge> xCoord (leftP T)
   \<and> signedArea (fst(bottomT T)) (snd(bottomT T)) P \<ge> 0 \<and> signedArea (fst(topT T)) (snd(topT T)) P \<le> 0"
 
+(*definition trapezSegmentCrossing :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "trapezSegmentCrossing T P Q \<equiv> crossing (fst (topT T)) (snd (topT T)) P Q
+    \<or> crossing (fst (bottomT T)) (snd (bottomT T)) P Q"*)
 
 (******directed acyclic graph*)
 (*Knoten des graphen kann enweder ein Endpunkt sein, oder ein Segment*)
@@ -106,7 +117,7 @@ primrec tDagList :: "tDag \<Rightarrow> trapez list" where
   | "tDagList (Node Tl x Tr) = ((tDagList Tl)@(tDagList Tr))"
 
 (*wann ist ein Trapez im Baum*)
-fun tipInDag :: "trapez \<Rightarrow> tDag \<Rightarrow> bool" where
+primrec tipInDag :: "trapez \<Rightarrow> tDag \<Rightarrow> bool" where
   "tipInDag T (Tip D) = (if (T = D) then True else False)"
   | "tipInDag T (Node Tl x Tr) = (tipInDag T Tl \<or> tipInDag T Tr)"
 
@@ -116,8 +127,6 @@ lemma tDagListNotEmpty[dest] : "tDagList D = [] \<Longrightarrow> False" by (ind
 (*wann ist ein Punkt im tDag*)
 definition pointInDag :: "tDag \<Rightarrow> point2d \<Rightarrow> bool" where
   "pointInDag D A \<equiv> \<exists> i < length (tDagList D). pointInTrapez ((tDagList D)!i) A"
-
-
 
 (*Input Tip welches entfernt wird, tDag welches hinzugefügt wird, tDag-tree in dem ersetzt werden soll
 Output: neues tDag-tree*)
