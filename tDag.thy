@@ -39,6 +39,15 @@ definition "isTrapez p \<equiv>
     )" 
 definition "isTrapezList TL \<equiv> \<forall> i < length TL. isTrapez (TL!i)"
 
+(*jeder Punkt der auf der xCoordinate von rightP steht und von topT und bottomT eingegrenzt wird*)
+definition pointOnLeftT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where
+  "isTrapez T \<Longrightarrow> pointOnLeftT T p \<equiv> rightTurn (fst(topT T)) (snd(topT T)) p
+    \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (leftP T) = xCoord p"
+definition pointOnRightT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where
+  "isTrapez T \<Longrightarrow> pointOnRightT T p \<equiv> rightTurn (fst(topT T)) (snd(topT T)) p
+    \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (rightP T) = xCoord p"
+  
+
 lemma leftPRigthFromRightP [simp] : "isTrapez T \<Longrightarrow> leftFromPoint (leftP T) (rightP T)"
   by (simp add: isTrapez_def)
 
@@ -96,6 +105,11 @@ lemma trapezNeighbour2 : "isTrapez T \<Longrightarrow> isTrapez Ts \<Longrightar
 definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
   "pointInTrapez T P \<equiv> xCoord P \<le> xCoord (rightP T) \<and> xCoord P \<ge> xCoord (leftP T)
   \<and> signedArea (fst(bottomT T)) (snd(bottomT T)) P \<ge> 0 \<and> signedArea (fst(topT T)) (snd(topT T)) P \<le> 0"
+definition pointInTrapezS :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
+  "pointInTrapezS T P \<equiv> xCoord P \<le> xCoord (rightP T) \<and> xCoord P \<ge> xCoord (leftP T)
+  \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) P  \<and> rightTurn (fst(topT T)) (snd(topT T)) P
+  \<and> P \<noteq> rightP T \<and> P \<noteq> leftP T"
+
 
 (*definition trapezSegmentCrossing :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "trapezSegmentCrossing T P Q \<equiv> crossing (fst (topT T)) (snd (topT T)) P Q
