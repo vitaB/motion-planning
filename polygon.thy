@@ -42,7 +42,7 @@ definition polygonDisjoint :: "point2d list \<Rightarrow> point2d list \<Rightar
 
 definition polygonsDisjoint :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> polygonsDisjoint PL \<equiv> \<forall> i j. i\<noteq>j \<and>
-    i < length PL \<and> j < length PL \<and> polygonDisjoint (PL!i) (PL!j)"
+    i < length PL \<and> j < length PL \<and> polygonDisjoint (cyclePath (PL!i)) (cyclePath (PL!j))"
 
 
 
