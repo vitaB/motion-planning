@@ -316,7 +316,8 @@ oops
 Output:  A trapezoid map M in associated search structure tDag.*)
 fun addPolygonsToTrapezoidalMap :: "tDag \<Rightarrow> (point2d list) list \<Rightarrow> tDag" where
   "addPolygonsToTrapezoidalMap D [] = D"
-  | "addPolygonsToTrapezoidalMap D (P#PL) = addPolygonsToTrapezoidalMap (addSegmentsToTrapezoidalMap D (cyclePath P)) PL"
+  | "addPolygonsToTrapezoidalMap D (P#PL) =
+    addPolygonsToTrapezoidalMap (addSegmentsToTrapezoidalMap D (cyclePath P)) PL"
 
 (*Input: rBox, tDag(start with rBox) and a polygon forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure tDag.*)

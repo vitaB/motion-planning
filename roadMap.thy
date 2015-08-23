@@ -4,13 +4,14 @@ begin
 
 (*jede Strecke von der linken Vertikale zur der rechten Vertikal eines beliebigen Trapezes
   aus der TrapezoidalMap schneidet keine der Polygone aus der Polygonen-Liste*)
-lemma segmentInTrapezIntersectFree: "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXCoord (concat PL) \<Longrightarrow> rBoxTrapezS (concat PL) R
+lemma segmentInTrapezIntersectFree: "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow>
+  uniqueXCoord (concat PL) \<Longrightarrow> rBoxTrapezS (concat PL) R
   \<Longrightarrow> polygonsDisjoint PL \<Longrightarrow> D = buildTrapezoidalMap R PL \<Longrightarrow> 
   i < length (tDagList D) \<Longrightarrow> k < length (tDagList D) \<Longrightarrow>
   A \<noteq> leftP ((tDagList D)!i) \<Longrightarrow> B \<noteq> rightP ((tDagList D)!i) \<Longrightarrow>
   (pointOnLeftT ((tDagList D)!i) A \<Longrightarrow> pointOnRightT ((tDagList D)!i) B \<Longrightarrow>
-    \<not>lineCyclePathInters (PL!k) A C)"
-oops
+    \<not>lineCyclePathInters (cyclePath (PL!k)) A C)"
+oopss
 
 (*es gibt einen Kanten-Zug für zwei beliebige benachbarten Trapeze aus der TrapezoidalMap,
   von der linken Vertikale zu der rechten Vertikale, so dass der Kanten-Zug
@@ -21,7 +22,7 @@ lemma "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> uniqueXC
   A \<noteq> leftP ((tDagList D)!i) \<Longrightarrow> C \<noteq> rightP ((tDagList D)!j) \<Longrightarrow>
   trapezNeighbor ((tDagList D)!i) ((tDagList D)!j) \<Longrightarrow> 
   (pointOnLeftT ((tDagList D)!i) A \<Longrightarrow> pointOnRightT ((tDagList D)!j) C \<Longrightarrow>
-   \<exists> B. \<not>cyclePathIntersect(PL!k) [A,B,C])"
+   \<exists> B. \<not>cyclePathIntersect(cyclePath (PL!k)) [A,B,C])"
 oops
 
 
