@@ -8,6 +8,16 @@ definition polygon :: "point2d list \<Rightarrow> bool" where
 (*List with polygons*)
 definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (cyclePath (PL!i))"
+lemma polygonListSimp: "pointLists PL \<Longrightarrow> i < length PL  \<Longrightarrow> polygonList PL \<Longrightarrow>
+    polygon (cyclePath (PL!i))"
+  by (simp add: polygonList_def)
+lemma polygonListSimp1: "pointLists [A,B] \<Longrightarrow> (polygon (cyclePath A) \<and> polygon (cyclePath B))
+    = polygonList [A,B]"
+  apply (auto simp add: polygonList_def)
+by (case_tac i, auto)
+lemma polygonListSimp2 [simp]: "pointLists [A] \<Longrightarrow> polygon (cyclePath A) = polygonList [A]"
+  by (auto simp add: polygonList_def)
+  
 
 (*count how many times a track intersects the polygon*)
 fun countSegmentCrossPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> nat" where
@@ -29,8 +39,8 @@ definition polygonInPolygon :: "point2d list \<Rightarrow> point2d list \<Righta
     \<or> (\<exists> j < length Pt. pointInPolygon Pr (Pt!j))"
 
 lemma polygonInPolygonSym : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow>
-  Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow> polygonInPolygon Pr Pt \<longleftrightarrow> polygonInPolygon Pt Pr"
-sorry
+  Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow> polygonInPolygon Pr Pt = polygonInPolygon Pt Pr"
+  by (simp add: polygonInPolygon_def, rule iffI, blast+)
 
 lemma polygonCrossing : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow>
     Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow> cyclePathIntersect Pr Pt \<Longrightarrow> polygonInPolygon Pr Pt"
@@ -38,12 +48,25 @@ sorry
 
 definition polygonDisjoint :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
   "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P\<Longrightarrow> pointList Lr\<Longrightarrow> R=cyclePath Lr\<Longrightarrow> polygon R \<Longrightarrow>
-    polygonDisjoint P R \<equiv> \<not>polygonInPolygon P R \<and> \<not>cyclePathIntersect P R" (*point on Segment case*)
-
+    polygonDisjoint P R \<equiv> \<not>polygonInPolygon P R \<and> \<not>cyclePathIntersect P R"(*point on Segment case*)
+lemma polygonDisjointSym: "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P\<Longrightarrow> pointList Lr\<Longrightarrow> 
+  R=cyclePath Lr\<Longrightarrow> polygon R \<Longrightarrow> polygonDisjoint P R = polygonDisjoint R P"
+  apply (safe, simp add: polygonDisjoint_def)
+  apply (simp add: cyclePathIntersectSym polygonInPolygonSym)
+by (simp add: cyclePathIntersectSym polygonDisjoint_def polygonInPolygonSym)
+  
 definition polygonsDisjoint :: "(point2d list) list \<Rightarrow> bool" where
-  "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> polygonsDisjoint PL \<equiv> \<forall> i j. i\<noteq>j \<and>
-    i < length PL \<and> j < length PL \<and> polygonDisjoint (cyclePath (PL!i)) (cyclePath (PL!j))"
-
+  "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> polygonsDisjoint PL \<equiv> \<forall> i j. (i\<noteq>j \<and>
+    i < length PL \<and> j < length PL) \<longrightarrow>  polygonDisjoint (cyclePath (PL!i)) (cyclePath (PL!j))"
+lemma polygonsDisjointSimp [simp] : "pointLists [A,B] \<Longrightarrow> polygonList [A,B] \<Longrightarrow>
+  polygonDisjoint (cyclePath A) (cyclePath B) = polygonsDisjoint [A,B]" 
+  apply (safe) defer apply (simp add: polygonsDisjoint_def)
+  apply (erule_tac x=0 in allE, erule_tac x=1 in allE, simp)
+  apply (simp add: polygonsDisjoint_def, (rule allI)+, safe)
+  apply (case_tac "i=0", subgoal_tac "j=1", simp+, subgoal_tac "j=0", auto)
+using pointListsSimp polygonDisjointSym polygonListSimp1 by blast
+  
+  
 
 
 (*convex Polygon:
