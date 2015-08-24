@@ -17,7 +17,7 @@ theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<fora
 every corner is found only one time. So therefore has only 2 neighbors*)
 definition pointList :: "point2d list \<Rightarrow> bool" where
 "pointList L \<equiv> (size L \<ge> 3 \<and> distinct L)"
-lemma pointListEmpty[dest]: "pointList [] \<Longrightarrow> False" by (simp add: pointList_def)
+lemma pointListNotEmpty[dest]: "pointList [] \<Longrightarrow> False" by (simp add: pointList_def)
 lemma pointListRev[simp] : "pointList L \<Longrightarrow> pointList (rev L)" by (simp add: pointList_def)
 (*List with pointList's*)
 definition pointLists :: "(point2d list) list \<Rightarrow> bool" where
@@ -27,6 +27,9 @@ lemma pointListsEmpty[dest]: "pointLists ([] # PL) \<Longrightarrow> False"
 lemma pointListsSimp : "(pointList A \<and> pointList B) \<longleftrightarrow> pointLists [A,B]"
   by (auto simp add: pointLists_def, case_tac i, auto)
 lemma pointListsSimp1 : "pointLists [A] = pointList A" by(simp add: pointLists_def)
+(*jedes Element ist eine pointList*)
+lemma pointListsSimp2 [simp]: "i < length PL \<Longrightarrow> pointLists PL \<Longrightarrow> pointList (PL!i)"
+  by (auto simp add: pointLists_def)
 
 (*is a segment in the pointList?*)
 definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
