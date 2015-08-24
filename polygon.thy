@@ -55,9 +55,13 @@ definition polygonDisjoint :: "point2d list \<Rightarrow> point2d list \<Rightar
   "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P \<Longrightarrow> pointList Lr\<Longrightarrow> R=cyclePath Lr \<Longrightarrow> polygon R \<Longrightarrow>
     polygonDisjoint P R \<equiv> \<not>polygonInPolygon P R \<and> \<not>cyclePathIntersect P R"(*point on Segment case*)
 (*polygon ist zu sich selbst nicht disjoint*)
-lemma polygonDisjointSame: "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P \<Longrightarrow> \<not>polygonDisjoint P P"
+lemma polygonDisjointSame: "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P \<Longrightarrow> 
+  polygonDisjoint P P \<Longrightarrow> False"
   apply (simp add: polygonDisjoint_def, safe)
 using cyclePathIntersectSame by blast
+lemma polygonDisjointSame1: "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P \<Longrightarrow> pointList Lr\<Longrightarrow>
+    R=cyclePath Lr \<Longrightarrow> polygon R \<Longrightarrow> polygonDisjoint P R \<Longrightarrow> R \<noteq> P"
+using polygonDisjointSame by blast
 lemma polygonDisjointSym: "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P\<Longrightarrow> pointList Lr\<Longrightarrow> 
   R=cyclePath Lr\<Longrightarrow> polygon R \<Longrightarrow> polygonDisjoint P R = polygonDisjoint R P"
   apply (safe, simp add: polygonDisjoint_def)
@@ -68,18 +72,24 @@ definition polygonsDisjoint :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> polygonsDisjoint PL \<equiv> \<forall> i j. (i\<noteq>j \<and>
     i < length PL \<and> j < length PL) \<longrightarrow>  polygonDisjoint (cyclePath (PL!i)) (cyclePath (PL!j))"
 
-lemma polygonsDisjointSimp [simp] : "pointLists [A,B] \<Longrightarrow> polygonList [A,B] \<Longrightarrow>
+lemma polygonsDisjointSimp [simp]: "pointLists [A,B] \<Longrightarrow> polygonList [A,B] \<Longrightarrow>
   polygonDisjoint (cyclePath A) (cyclePath B) = polygonsDisjoint [A,B]" 
   apply (safe) defer apply (simp add: polygonsDisjoint_def)
   apply (erule_tac x=0 in allE, erule_tac x=1 in allE, simp)
   apply (simp add: polygonsDisjoint_def, (rule allI)+, safe)
   apply (case_tac "i=0", subgoal_tac "j=1", simp+, subgoal_tac "j=0", auto)
-using pointListsSimp polygonDisjointSym polygonListSimp1 by blast
+by (meson pointListsSimp polygonDisjointSym polygonListSimp1)
 (*alle elemente sind disjoint, außer zu sich selbst*)
 lemma polygonsDisjointSimp1: "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow>
   i < length PL \<Longrightarrow> j < length PL \<Longrightarrow> i \<noteq> j \<Longrightarrow> polygonsDisjoint PL \<Longrightarrow>
   polygonDisjoint (cyclePath (PL!i)) (cyclePath (PL!j))" 
 by (auto simp add: polygonsDisjoint_def)
+(*kein Polygon kommt doppet vor*)
+lemma disjointPolygonListDistinct : "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> i < length PL \<Longrightarrow>
+  j < length PL \<Longrightarrow> i \<noteq> j \<Longrightarrow> polygonsDisjoint PL \<Longrightarrow> distinct PL"
+  apply (insert polygonDisjointSame1)
+by(metis distinct_conv_nth pointListsSimp2 polygonListSimp polygonsDisjointSimp1)
+  
 
 (*disjointe polygonenListe, hat keine schnittpunkte*)
 lemma polygonDisjoinPathsIntersect [simp]: "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow>
