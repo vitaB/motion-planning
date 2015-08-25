@@ -223,7 +223,13 @@ lemma rBoxTrapezSConcat: "rBoxTrapezS (concat PL) R \<Longrightarrow> i < length
   apply (auto simp add: rBoxTrapezS_def)
   apply (erule_tac x=i in allE, safe)
   apply (meson nth_mem)+
-sorry
+by (metis (full_types) UN_I in_set_conv_nth set_concat)
+lemma rBoxTrapezSConcatEq : "PL \<noteq> [] \<Longrightarrow>
+  rBoxTrapezS (concat PL) R = (\<forall> i < length PL. rBoxTrapezS (PL!i) R)"
+  apply (auto simp add: rBoxTrapezSConcat)
+  apply (subgoal_tac "(\<forall> a \<in> set (concat PL). pointInRBox R a)")
+  apply (auto simp add: rBoxTrapezS_def)
+by (smt UN_iff in_set_conv_nth set_concat)+
 
 (*order for tDag*)
 (*jedes Trapez dessen rightP \<le> x ist ist im Tl von Tl x Tr*)
