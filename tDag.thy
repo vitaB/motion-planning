@@ -194,6 +194,7 @@ definition trapezOrd :: "trapez \<Rightarrow> real" where
 (*sortierte ausgabe von Trapezen (nach xCoord von leftP geordnet)*)
 definition sortedTrapez :: "trapez list \<Rightarrow> trapez list" where
   "sortedTrapez TM \<equiv> sort_key (trapezOrd) TM"
+lemma sortedTrapezSimp [simp]: "sortedTrapez [T] = [T]" by (auto simp add: sortedTrapez_def)
 (*(*ist P links vom rechten Eckpunkt des Trapez*)
 definition trapezOrdL :: " point2d \<Rightarrow> trapez \<Rightarrow> bool" where
   "trapezOrdL P T \<equiv> leftFromPoint P (rightP T)"
@@ -211,15 +212,18 @@ definition sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightar
 (*********rBox. 4 Eckige Box um pointListe herum. First Trapez*)
 (*Definition wann ist R eine rechteckige Box um PL herum*)
 definition pointInRBox :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
-  "pointInRBox R P \<equiv> leftFromPoint P (rightP R) \<and> (leftFromPoint (leftP R) P)
+  "isTrapez R \<Longrightarrow> pointInRBox R P \<equiv> leftFromPoint P (rightP R) \<and> (leftFromPoint (leftP R) P)
   \<and> leftTurn (fst(bottomT R)) (snd(bottomT R)) P \<and> (rightTurn (fst(topT R)) (snd(topT R)) P)"
-lemma rBoxIsTrapez1 [simp]: "pointInRBox R P \<Longrightarrow> isTrapez R"
-  sorry
 definition rBoxTrapezS :: "point2d list \<Rightarrow> trapez \<Rightarrow> bool" where
-  "rBoxTrapezS PL R \<equiv> \<forall> i < length PL. pointInRBox R (PL!i)"
-lemma rBoxTrapezSSimp [simp] : "rBoxTrapezS [a] R = pointInRBox R a" by (simp add: rBoxTrapezS_def) 
-lemma rBoxIsTrapez [simp]: "rBoxTrapezS PL R \<Longrightarrow> isTrapez R"
-  sorry
+  "rBoxTrapezS PL R \<equiv> (\<forall> i < length PL. pointInRBox R (PL!i)) \<and> isTrapez R"
+lemma rBoxTrapezSSimp [simp] : "isTrapez R \<Longrightarrow> rBoxTrapezS [a] R = pointInRBox R a"
+  by (auto simp add: rBoxTrapezS_def)
+lemma rBoxTrapezSConcat: "rBoxTrapezS (concat PL) R \<Longrightarrow> i < length PL \<Longrightarrow> rBoxTrapezS (PL!i) R"
+  apply (subgoal_tac "\<forall> a \<in> set (concat PL). pointInRBox R a")
+  apply (auto simp add: rBoxTrapezS_def)
+  apply (erule_tac x=i in allE, safe)
+  apply (meson nth_mem)+
+sorry
 
 (*order for tDag*)
 (*jedes Trapez dessen rightP \<le> x ist ist im Tl von Tl x Tr*)
