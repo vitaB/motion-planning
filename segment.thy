@@ -29,34 +29,30 @@ lemma leftPRightPSimp1 [simp] : "xCoord p \<noteq> xCoord q \<Longrightarrow> q 
 
 
 (*Point p is on segment AB*)
+lemma isBetweenSegment: "isBetween p A B \<Longrightarrow> segment A B"
+  by (simp add: isBetweenPointsDistinct segment_def)
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "segment A B \<Longrightarrow> collinear p A B \<Longrightarrow> point_on_segment p A B \<equiv>
-  min (xCoord A)(xCoord B) \<le> xCoord p \<and> xCoord p \<le> max (xCoord A)(xCoord B) \<and>
-  min (yCoord A)(yCoord B) \<le> yCoord p \<and> yCoord p \<le> max (yCoord A)(yCoord B)"
+  "point_on_segment p A B \<equiv> isBetween p A B"
 (*point_on_segment is symmetrical*)
-lemma point_on_segmentSym: "segment A B \<Longrightarrow> collinear p A B \<Longrightarrow>
+lemma point_on_segmentSym: "segment A B \<Longrightarrow>
   point_on_segment p A B = point_on_segment p B A"
-  apply (subgoal_tac "collinear p B A \<and> segment B A", simp add: point_on_segment_def)
-by (simp add: max.commute min.commute, simp add: segment_Sym)
+by (simp add: point_on_segment_def)
 lemma point_on_segmentSame [simp]: "segment p B \<Longrightarrow> point_on_segment p p B"
-  by (simp add: point_on_segment_def segment_Sym)
+  apply (simp add: point_on_segment_def segment_Sym)
+using onePointIsBetween twoPointsColl by blast
+
 
 (*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken), dann trennt AB die Ecken P und R*)
-(****evtl. nicht Beweisbar... für point_on_segment sollte dann eine andere Definition gesucht werden*)
 lemma point_on_segment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear A P R \<Longrightarrow>
   point_on_segment A P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
   apply (auto simp add: point_on_segment_def)
-  apply (case_tac "min (xCoord P) (xCoord R) = xCoord P", simp)
-  apply (case_tac "max (xCoord P) (xCoord R) = xCoord P", simp)
-  apply (case_tac "max (yCoord P) (yCoord R) = yCoord P", simp)
-  apply (case_tac "min (yCoord P) (yCoord R) = yCoord P", simp)
-  apply (metis Rep_point2d_inverse prod.collapse xCoord_def yCoord_def)
-  apply (subgoal_tac "min (yCoord P) (yCoord R) = yCoord R", simp)
-sorry
+using notIsBetweenSelf point_on_segmentSame point_on_segment_def twoPointsColl2 by blast
+
 lemma point_on_segment_noRightTurn1 : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear B P R \<Longrightarrow>
   point_on_segment B P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
   apply (auto simp add: point_on_segment_def)
-sorry
+using notIsBetweenSelf point_on_segmentSame point_on_segment_def twoPointsColl2 by blast
+
 
 (*Segment AB separates the points P and R when the endpoints of PR lie's on different sides of AB.*)
 definition lineSeparate :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where

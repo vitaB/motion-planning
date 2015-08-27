@@ -117,13 +117,8 @@ lemma midpointNotSame: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrighta
  by (auto simp add: midpoint_def, smt pointsNotEqual1)
 
 
-
-
-
-
-(*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
 (*Punkte sind gleich, wenn*)
-(*lemma pointsEqualRight: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
+lemma pointsEqualRight: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
   apply (auto)
   apply (rule ccontr)
   apply (simp, erule_tac x=d in allE)
@@ -131,14 +126,17 @@ lemma midpointNotSame: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrighta
 sorry
 (*mögliche Definitionen für isBetween. Nochmal anschauen!*)
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where(*[1]*)
-" isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
-(\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
-(0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 ))"
+  "isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
+    (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
+    (0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 ))"
 lemma swapIsBetween [simp]: "isBetween a c b = isBetween a b c" (*[1]*)
   apply (simp add: isBetween_def, safe)
   apply (rule_tac x=d in exI, metis collSwap colliniearRight)
   apply (erule_tac x=da in allE)
 sorry
+(*(*formalizing Analytic Geometries. Pasch's axiom*)
+lemma "isBetween P A C \<Longrightarrow> isBetween Q B C \<Longrightarrow> (\<exists> X. isBetween X P B \<and> isBetween X Q A)"
+oops*)
 lemma notIsBetweenSamePoint [dest]: "isBetween a b b \<Longrightarrow> False"(*[1]*)
   by (simp add: isBetween_def)
 lemma isBetweenCollinear [intro] : "isBetween a b c \<longrightarrow> collinear a b c"(*[1]*)
@@ -161,7 +159,8 @@ lemma notBetween2 [dest]: "\<lbrakk>isBetween A B C ;isBetween C A B\<rbrakk>  \
   using onePointIsBetween twoPointsColl by blast
 lemma notBetween3 [dest]: "\<lbrakk>isBetween B A C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
   using onePointIsBetween twoPointsColl by blast
-*)
+
+(*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
 (*
 definition betwpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "betwpoint a b c = (\<forall> n. n > 1 \<longrightarrow> (n * yCoord a = yCoord b + yCoord c \<and> n * xCoord a = xCoord b + xCoord c))"
