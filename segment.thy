@@ -29,29 +29,22 @@ lemma leftPRightPSimp1 [simp] : "xCoord p \<noteq> xCoord q \<Longrightarrow> q 
 
 
 (*Point p is on segment AB*)
-lemma isBetweenSegment: "isBetween p A B \<Longrightarrow> segment A B"
-  by (simp add: isBetweenPointsDistinct segment_def)
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "point_on_segment p A B \<equiv> isBetween p A B"
 (*point_on_segment is symmetrical*)
-lemma point_on_segmentSym: "segment A B \<Longrightarrow>
-  point_on_segment p A B = point_on_segment p B A"
-by (simp add: point_on_segment_def)
-lemma point_on_segmentSame [simp]: "segment p B \<Longrightarrow> point_on_segment p p B"
-  apply (simp add: point_on_segment_def segment_Sym)
-using onePointIsBetween twoPointsColl by blast
-
+lemma point_on_segmentSym: "point_on_segment p A B = point_on_segment p B A"
+  by (simp add: point_on_segment_def)
 
 (*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken), dann trennt AB die Ecken P und R*)
 lemma point_on_segment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear A P R \<Longrightarrow>
   point_on_segment A P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
   apply (auto simp add: point_on_segment_def)
-using notIsBetweenSelf point_on_segmentSame point_on_segment_def twoPointsColl2 by blast
+oops
 
 lemma point_on_segment_noRightTurn1 : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear B P R \<Longrightarrow>
   point_on_segment B P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
   apply (auto simp add: point_on_segment_def)
-using notIsBetweenSelf point_on_segmentSame point_on_segment_def twoPointsColl2 by blast
+oops
 
 
 (*Segment AB separates the points P and R when the endpoints of PR lie's on different sides of AB.*)
@@ -96,13 +89,17 @@ lemma crossingRightTurn [dest] : "crossing A B P R \<Longrightarrow> rightTurn A
   by (simp add: crossing_def lineSeparate_def, metis conflictingRigthTurns)
 lemma crossingLeftTurn [dest] : "crossing A B P R \<Longrightarrow> leftTurn A B P \<and> leftTurn A B R \<Longrightarrow> False"
   by (simp add: crossing_def lineSeparate_def, metis conflictingRigthTurns)
+lemma notSelfCrossing [simp]: "\<not>crossing A B A B" by (simp add: crossing_def)
 
 (*intersection, even if endpoint is on segment*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> (crossing A B P R \<or>
   (collinear A B P \<and> point_on_segment P A B) \<or> (collinear A B R \<and> point_on_segment R A B)
   \<or> (collinear P R A \<and> point_on_segment A P R) \<or> (collinear P R B \<and> point_on_segment B P R))"
-lemma intersectSame [simp] : "segment A B \<Longrightarrow> intersect A B A B" by (simp add: intersect_def)
+lemma intersectSame [simp] : "segment A B \<Longrightarrow> intersect A B A B"
+by (simp add: intersect_def isBetween_def point_on_segment_def pointsEqualRight segment_def)
+
+  
 lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A B P R"
   apply (subgoal_tac "segment A B \<and> segment P R")
 by (auto simp add: intersect_def crossingSym1, simp only: crossingSegment1)

@@ -38,8 +38,8 @@ lemma leftFromPointDest [dest]: "leftFromPoint a b \<Longrightarrow> leftFromPoi
 - if the points are ordered anti-clockwise, the area is positive
 - if the points are ordered clockwise, the area is negative.*)
 definition signedArea :: "[point2d, point2d, point2d] \<Rightarrow> real" where(*[1]*)
-"signedArea a b c \<equiv> (xCoord b - xCoord a)*(yCoord c - yCoord a)
-- (yCoord b - yCoord a)*(xCoord c - xCoord a)"
+  "signedArea a b c \<equiv> (xCoord b - xCoord a)*(yCoord c - yCoord a)
+    - (yCoord b - yCoord a)*(xCoord c - xCoord a)"
 lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c"(*[1]*)
   by (simp add: signedArea_def, algebra)
 lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b"(*[1]*)
@@ -117,7 +117,10 @@ lemma midpointNotSame: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrighta
  by (auto simp add: midpoint_def, smt pointsNotEqual1)
 
 
-(*Punkte sind gleich, wenn*)
+(*definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where
+  "isBetween A B C \<equiv> (\<exists> (k::real). 0 \<le> k \<and> k \<le> 1
+    \<and> (xCoord B - xCoord A = k * (xCoord C - xCoord A))
+    \<and> (yCoord B - yCoord A = k * (yCoord C - yCoord A)))"*)
 lemma pointsEqualRight: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
   apply (auto)
   apply (rule ccontr)
@@ -128,37 +131,54 @@ sorry
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where(*[1]*)
   "isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
     (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
-    (0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 ))"
+    (0 \<le> (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) \<le> 1 ))"
+lemma isBetweenSelf[simp]: "A \<noteq> B \<Longrightarrow> isBetween A A B"
+  by (simp add: isBetween_def pointsEqualRight)
+lemma isBetweenSelf1[simp]: "A \<noteq> B \<Longrightarrow> isBetween B A B"
+  by (simp add: isBetween_def pointsEqualRight)
+lemma isBetweenSelf2[simp]: "isBetween A B A \<Longrightarrow> isBetween A A B"
+  by (metis isBetweenSelf)
+lemma isBetweenSelf3[simp]: "isBetween A A B \<Longrightarrow> isBetween A B A"
+  by (metis isBetweenSelf1)
 lemma swapIsBetween [simp]: "isBetween a c b = isBetween a b c" (*[1]*)
-  apply (simp add: isBetween_def, safe)
-  apply (rule_tac x=d in exI, metis collSwap colliniearRight)
-  apply (erule_tac x=da in allE)
+  apply (auto simp add: isBetween_def)
 sorry
-(*(*formalizing Analytic Geometries. Pasch's axiom*)
-lemma "isBetween P A C \<Longrightarrow> isBetween Q B C \<Longrightarrow> (\<exists> X. isBetween X P B \<and> isBetween X Q A)"
-oops*)
+
+
+lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> b \<noteq> d \<Longrightarrow>
+  (isBetween a b c \<or> isBetween b a c \<or> isBetween c a b)"
+  apply (safe)
+  apply (simp add: colliniearRight isBetween_def pointsEqualRight, auto)
+  apply (metis divide_self_if pointsEqualRight signedAreaRotate zero_le_one)
+  apply (metis divide_self_if pointsEqualRight signedAreaRotate zero_le_one)
+  apply (metis divide_self_if pointsEqualRight signedAreaRotate zero_le_one)
+  apply (metis divide_self_if order_refl pointsEqualRight signedAreaRotate)
+oops
+
 lemma notIsBetweenSamePoint [dest]: "isBetween a b b \<Longrightarrow> False"(*[1]*)
   by (simp add: isBetween_def)
-lemma isBetweenCollinear [intro] : "isBetween a b c \<longrightarrow> collinear a b c"(*[1]*)
+lemma isBetweenCollinear [intro] : "isBetween a b c \<Longrightarrow> collinear a b c"(*[1]*)
   by (simp add: isBetween_def)
-lemma isBetweenCollinear2 [intro] : "isBetween b a c \<longrightarrow> collinear a b c"(*[1]*)
+lemma isBetweenCollinear2 [intro] : "isBetween b a c \<Longrightarrow> collinear a b c"(*[1]*)
   by (simp add: isBetween_def)
-lemma isBetweenCollinear3 [intro] : "isBetween c a b \<longrightarrow> collinear a b c"(*[1]*)
+lemma isBetweenCollinear3 [intro] : "isBetween c a b \<Longrightarrow> collinear a b c"(*[1]*)
   by (simp add: isBetween_def)
-lemma notIsBetweenSelf [simp]: "\<not> (isBetween a a b)"(*[1]*)
-  by (rule notI, auto simp add: isBetween_def)
-lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*)
-  by (auto simp add: isBetween_def) 
-lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow>
-  isBetween a b c \<or> isBetween b a c \<or> isBetween c a b"(*[1]*)
-  apply (safe)
-sorry
-lemma notBetween [dest]: "\<lbrakk>isBetween A B C;isBetween B A C\<rbrakk>  \<Longrightarrow> False" (*[1]*)
-  using onePointIsBetween twoPointsColl by blast
-lemma notBetween2 [dest]: "\<lbrakk>isBetween A B C ;isBetween C A B\<rbrakk>  \<Longrightarrow> False"(*[1]*)
-  using onePointIsBetween twoPointsColl by blast
-lemma notBetween3 [dest]: "\<lbrakk>isBetween B A C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
-  using onePointIsBetween twoPointsColl by blast
+
+lemma notBetween [dest]: "\<lbrakk>A \<noteq> B; isBetween A B C;isBetween B A C\<rbrakk> \<Longrightarrow> False"
+  oops
+lemma notBetween2 [dest]: "\<lbrakk>A \<noteq> C; isBetween A B C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"
+  oops
+lemma notBetween3 [dest]: "\<lbrakk>C \<noteq> B; isBetween B A C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"
+  oops
+
+
+(*formalizing Analytic Geometries. Pasch's axiom*)
+lemma paschAxiom: "isBetween P A C \<Longrightarrow> isBetween Q B C \<Longrightarrow> (\<exists> X. isBetween X P B \<and> isBetween X Q A)"
+oops
+
+
+
+
 
 (*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
 (*
