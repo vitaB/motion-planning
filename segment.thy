@@ -30,10 +30,18 @@ lemma leftPRightPSimp1 [simp] : "xCoord p \<noteq> xCoord q \<Longrightarrow> q 
 
 (*Point p is on segment AB*)
 definition point_on_segment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "point_on_segment p A B \<equiv> isBetween p A B"
+  "segment A B \<Longrightarrow> point_on_segment p A B \<equiv> isBetween p A B \<or> p = A \<or> p = B"
 (*point_on_segment is symmetrical*)
-lemma point_on_segmentSym: "point_on_segment p A B = point_on_segment p B A"
+lemma point_on_segmentSelf[simp]: "segment A B \<Longrightarrow> point_on_segment A A B"
   by (simp add: point_on_segment_def)
+lemma point_on_segmentSelf1[simp]: "segment A B \<Longrightarrow> point_on_segment B A B"
+  by (simp add: point_on_segment_def)
+(*formalizing Analytic Geometries. Pasch's axiom*)
+lemma paschAxiom: "isBetween P A C \<Longrightarrow> isBetween Q B C \<Longrightarrow> (\<exists> X. isBetween X P B \<and> isBetween X Q A)"
+oops
+
+lemma point_on_segmentSym: "segment A B \<Longrightarrow> point_on_segment p A B = point_on_segment p B A"
+  using point_on_segment_def segment_Sym by auto
 
 (*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken), dann trennt AB die Ecken P und R*)
 lemma point_on_segment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear A P R \<Longrightarrow>
