@@ -3,7 +3,8 @@ imports Complex_Main (*"~~/src/HOL/Library/Old_Datatype.thy"*)
 begin
 
 (*References
-[1] "Automation for Geometry in Isabelle/HOL", Laura Meikle*)
+[1] "Automation for Geometry in Isabelle/HOL", Laura Meikle
+[2] Intuition in Formal Proof: A Novel Framework for Combining Mathematical Tools, Laura Meikle*)
 
 (*defintion for Points*)
 typedef point2d = "{p::(real*real). True}" by(auto)(*[1]*)
@@ -46,6 +47,8 @@ lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b"(*[1]*)
   by (simp add: signedArea_def,  algebra)
 lemma areaDoublePoint [simp]: "signedArea a a b = 0"(*[1]*) by (simp add: signedArea_def)
 lemma areaDoublePoint2 [simp]: "signedArea a b b = 0"(*[1]*) by (simp add: signedArea_def)
+lemma hausner: "signedArea P A B + signedArea P B C + signedArea P C A = signedArea A B C" (*[2]*)
+  by (simp add: mult.commute right_diff_distrib' signedArea_def)
   
 (*3 points are on a line*)
 definition collinear :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where(*[1]*)
@@ -90,11 +93,18 @@ lemma notRightTurn1 [simp]: "(\<not> rightTurn a b c) = (leftTurn a b c \<or> co
 lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False"(*[1]*) by (metis notLeftTurn) 
 lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"(*[1]*)
   by (metis collSwap notLeftTurn)
-lemma conflictingRigthTurns [dest]: "rightTurn a b c \<Longrightarrow> rightTurn a c b \<Longrightarrow> False" by (metis notRightTurn) 
+lemma conflictingRigthTurns [dest]: "rightTurn a b c \<Longrightarrow> rightTurn a c b \<Longrightarrow> False"
+  by (metis notRightTurn) 
 lemma conflictingRigthTurns1 [dest]: "rightTurn a b c \<Longrightarrow> rightTurn b a c \<Longrightarrow> False"
   by (metis leftRightTurn notLeftTurn)
-lemma conflictingRightTurns2 [dest]: "rightTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"
+lemma conflictingRightTurns3 [dest]: "rightTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"
   by (metis collSwap notRightTurn)
+
+lemma interiority: "leftTurn t q r \<Longrightarrow> leftTurn p t r \<Longrightarrow> leftTurn p q t \<Longrightarrow> leftTurn p q r" (*[2]*)
+  by (smt hausner leftRightTurn rightTurn_def)
+lemma transitivity: "leftTurn t s p \<Longrightarrow> leftTurn t s q \<Longrightarrow> leftTurn t s r \<Longrightarrow> leftTurn t p q (*[2]*)
+  \<Longrightarrow> leftTurn t q r \<Longrightarrow> leftTurn t p r"
+sorry
 
 (*lemmas for collinear und signedArea*)
 lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*) by (auto)
@@ -116,58 +126,82 @@ lemma midPointSym : "midpoint a b c = midpoint a c b" by (auto simp add: midpoin
 lemma midpointNotSame: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrightarrow> midpoint b a c \<Longrightarrow> False"
  by (auto simp add: midpoint_def, smt pointsNotEqual1)
 
-
-(*Punkte sind gleich, wenn*)
-lemma pointsEqualRight: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
-  apply (auto)
-  apply (rule ccontr)
-  apply (simp, erule_tac x=d in allE)
-  apply (simp)
-sorry
 (*mögliche Definitionen für isBetween. Nochmal anschauen!*)
-definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool" where(*[1]*)
-" isBetween b a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
-(\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
-(0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 ))"
-lemma swapBetween [simp]: "isBetween a c b = isBetween a b c" (*[1]*)
+definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool"
+  ("_ isBetween _ _ " [60, 60, 60] 60) where(*[1]*)
+  "b isBetween  a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
+  (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
+  (0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 ))"
+(*Punkte sind gleich, wenn*)
+lemma pointsEqualArea: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
+  apply (auto)
+  apply (case_tac "xCoord a = xCoord b", rule_tac x="Abs_point2d(xCoord b + 1, yCoord b)" in exI)
+    apply (metis Abs_point2d_inverse Collect_const Rep_point2d_inverse UNIV_I add_diff_cancel_left'
+    eq_iff_diff_eq_0 mult.left_neutral mult_zero_left prod.collapse prod.sel(1) signedAreaRotate
+    signedArea_def xCoord_def yCoord_def)
+  apply (case_tac "yCoord a = yCoord b", rule_tac x="Abs_point2d(xCoord b, yCoord b + 1)" in exI)
+    apply (simp add: signedArea_def)
+  apply (case_tac "xCoord a < xCoord b", rule_tac x="Abs_point2d((xCoord b) + 1, yCoord b)" in exI)
+    apply (simp add: signedArea_def)
+  apply (rule_tac x="Abs_point2d((xCoord b) - 1, yCoord b)" in exI)
+    apply (simp add: signedArea_def)
+done
+
+lemma swapBetween [simp]: "a isBetween c b = a isBetween b c" (*[1]*)
   apply (simp add: isBetween_def, safe)
   apply (rule_tac x=d in exI, metis collSwap colliniearRight)
   apply (erule_tac x=da in allE)
 sorry
-lemma notBetweenSamePoint [dest]: "isBetween a b b \<Longrightarrow> False"(*[1]*)
+lemma notBetweenSamePoint [dest]: "a isBetween b b \<Longrightarrow> False"(*[1]*)
   by (simp add: isBetween_def)
-lemma isBetweenImpliesCollinear [intro] : "isBetween a b c \<longrightarrow> collinear a b c"(*[1]*)
+lemma isBetweenImpliesCollinear [intro] : "a isBetween b c \<longrightarrow> collinear a b c"(*[1]*)
   by (simp add: isBetween_def)
-lemma isBetweenImpliesCollinear2 [intro] : "isBetween b a c \<longrightarrow> collinear a b c"(*[1]*)
+lemma isBetweenImpliesCollinear2 [intro] : "b isBetween a c \<longrightarrow> collinear a b c"(*[1]*)
   by (simp add: isBetween_def)
-lemma isBetweenImpliesCollinear3 [intro] : "isBetween c a b \<longrightarrow> collinear a b c"(*[1]*)
+lemma isBetweenImpliesCollinear3 [intro] : "c isBetween a b \<longrightarrow> collinear a b c"(*[1]*)
   by (simp add: isBetween_def)
-lemma notBetweenSelf [simp]: "\<not> (isBetween a a b)"(*[1]*)
+lemma notBetweenSelf [simp]: "\<not> (a isBetween a b)"(*[1]*)
   by (rule notI, auto simp add: isBetween_def)
-lemma notBetweenSelf2 [simp]: "\<not> (isBetween b a b)"(*[1]*)
+lemma notBetweenSelf2 [simp]: "\<not> (b isBetween a b)"(*[1]*)
   by (rule notI, auto simp add: isBetween_def)
 
-lemma isBetweenPointsDistinct [intro]: "isBetween a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*)
+lemma isBetweenPointsDistinct [intro]: "a isBetween b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*)
   by (auto simp add: isBetween_def) 
-lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> isBetween a b c \<Longrightarrow> False" (*[1]*)
-  using isBetween_def by auto 
+lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> a isBetween b c \<Longrightarrow> False" (*[1]*)
+  using isBetween_def by auto
+lemma conflictingRightTurns2 [dest]: "rightTurn a b c \<Longrightarrow> a isBetween b c \<Longrightarrow> False" (*[1]*)
+  using isBetween_def by auto
 lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> b \<noteq> c \<Longrightarrow>
-  isBetween a b c \<or> isBetween b a c \<or> isBetween c a b"
+  a isBetween b c \<or> b isBetween a c \<or> c isBetween a b"
   apply (safe)
 sorry
 
-lemma notBetween [dest]: "\<lbrakk>isBetween A B C;isBetween B A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
-  oops
-lemma notBetween2 [dest]: "\<lbrakk>isBetween A B C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
-  oops
-lemma notBetween3 [dest]: "\<lbrakk>isBetween B A C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
-  oops
-lemma notBetween [dest]: "\<lbrakk>A \<noteq> B; isBetween A B C;isBetween B A C\<rbrakk> \<Longrightarrow> False"
-  oops
-lemma notBetween2 [dest]: "\<lbrakk>A \<noteq> C; isBetween A B C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"
-  oops
-lemma notBetween3 [dest]: "\<lbrakk>C \<noteq> B; isBetween B A C ;isBetween C A B\<rbrakk> \<Longrightarrow> False"
-  oops
+lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<Longrightarrow> collinear B C D \<Longrightarrow>
+  C isBetween B D" (*[2]*)
+  apply (auto simp add: divide_less_eq isBetween_def leftTurn_def notCollThenDiffPoints 
+    not_less_iff_gr_or_eq onePointIsBetween rightTurn_def)
+  apply (metis areaContra pointsEqualArea signedAreaRotate)
+sorry
+
+lemma notBetween [dest]: "\<lbrakk>A isBetween B C; B isBetween A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
+  apply (auto simp add: isBetween_def)
+  apply (subgoal_tac "A = B")
+  apply auto[1]
+  apply (auto simp add: colliniearRight divide_less_eq_1 isBetween_def zero_less_divide_iff)
+sorry
+lemma notBetween2 [dest]: "\<lbrakk>A isBetween B C ; C isBetween A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
+  sorry
+lemma notBetween3 [dest]: "\<lbrakk>B isBetween A C ; C isBetween A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
+  sorry
+
+lemma newLeftTurn: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn B C D" (*[2]*)
+sorry
+lemma newLeftTurn1: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn D B A" (*[1]*)
+  apply (subgoal_tac "A = Abs_point2d (0,0)")
+  apply (cases A, cases B, cases C, cases D)
+  apply (simp add: isBetween_def leftTurn_def collinear_def signedArea_def)
+  apply (atomize(full))
+oops
 
 
 lemma collinearTransitiv : "a \<noteq> b \<Longrightarrow> collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> collinear a c d"
@@ -182,15 +216,13 @@ lemma collinearOrient :"a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrighta
   collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> (leftTurn a c e \<and> leftTurn a d e) \<or> (rightTurn a c e \<and> rightTurn a d e)
   \<or> (collinear a c e \<and> collinear a d e)"
   apply (subgoal_tac " collinear a c d", simp add: colliniearRight)
+  apply (case_tac "b = c")
+  apply (case_tac "b = d")
+  using colliniearRight apply auto[1]
   apply (cases "a = e")
   apply (cases "e = c")
   apply (cases "e = d", simp)
-oops
-lemma newLeftTurn: "\<lbrakk>isBetween A C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn D B A"
-  apply (subgoal_tac "A = Abs_point2d (0,0)")
-  apply (cases A, cases B, cases C, cases D)
-  apply (simp add: isBetween_def leftTurn_def collinear_def signedArea_def)
-  apply (atomize(full))
-oops
+  apply (simp)+
+sorry
 
 end
