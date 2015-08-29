@@ -152,7 +152,9 @@ lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longri
   apply (rule_tac x=0 in exI, safe, simp add: pointList_def, simp)
   apply (case_tac "(B,a, b)" rule: lineCyclePathInters.cases, simp add: cyclePath_def)
   apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
-  apply (metis lineCyclePathIntersSimp3 intersectSym1)
+  apply (smt butlast.simps(2) butlast_snoc cyclePathLastSegment cyclePath_def
+    distinct_length_2_or_more intersectSym1 last.simps lineCyclePathIntersSimp3 pointListNotEmpty
+    pointList_def pointsEqual1 segment_def)
   apply (case_tac "((cyclePath Q), ((a # b # xs) ! i), ((b # xs) ! i))"
     rule: lineCyclePathInters.cases)
   apply (simp add: cyclePath_def)

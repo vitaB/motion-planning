@@ -125,7 +125,8 @@ lemma cPolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarr
 sorry
 
 (*all triangles are conv. polygon*)
-lemma "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> cPolygon P"
+lemma conVextriangles: "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow>
+  P = cyclePath L \<Longrightarrow> cPolygon P"
  (*Beweis braucht zu lange: apply (simp add:cPolygon_def cyclePath_def, safe)
   apply (simp add: lineSeparate_def, safe)
   apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", safe)
@@ -178,10 +179,9 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
   apply (simp add: cPolygon_def, erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
   apply (simp add: lineSeparate_def, safe, metis conflictingRigthTurns)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectSym1)
-    apply (simp)
-    apply (cut_tac A="(cyclePath L ! k)" and B="(cyclePath L ! Suc k)" and P="(cyclePath L ! i)"
-      and R="(cyclePath L ! Suc i)" in intersectRightTurn)
-  apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
+    using segment_def apply auto[1]
+  apply ((simp add: cyclePathSegments conflictingRigthTurns1))
+  using cyclePathSegments intersect_def apply auto[1]
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
     apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
 by (metis conflictingRigthTurns1 rightTurnRotate2)
@@ -253,7 +253,7 @@ lemma twoPointPolygonInter : "pointList L \<Longrightarrow> P = cyclePath L \<Lo
     apply (simp add: pointInsideCPolygonCClEq, safe)
     apply (erule_tac x="ia" in allE, simp)
     apply (rule_tac x="ia" in exI, simp)
-    apply (subgoal_tac "segment (cyclePath L ! ia) (cyclePath L ! Suc ia)")   
+    apply (subgoal_tac "segment (cyclePath L ! ia) (cyclePath L ! Suc ia)")
 sorry
 (*wenn segment inside convex Polygon, dann schneidet das segment das Polygon nicht*)
 lemma "segment A B \<Longrightarrow> pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<Longrightarrow>
