@@ -114,12 +114,36 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
 definition collinearList :: "point2d list \<Rightarrow> bool" where
   "collinearList L \<equiv> (\<exists> a b c. a < length L \<and> b < length L \<and> c < length L \<and>
   a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> collinear (L!a) (L!b) (L!c))"
+lemma collinearListLength[dest]: "length L < 3 \<Longrightarrow> collinearList L \<Longrightarrow> False"
+  apply (simp add: collinearList_def, safe)
+  apply (case_tac "a=0", subgoal_tac "b = 1", simp)
+    using numeral_3_eq_3 apply linarith
+  apply (subgoal_tac "b = 0", simp)
+  using numeral_3_eq_3 apply linarith
+done
+lemma collinearListNoPointsEq: "length L \<ge> 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow> i < size L \<Longrightarrow> k < size L
+  \<Longrightarrow> k \<noteq> i \<Longrightarrow> \<not>pointsEqual (L ! i) (L ! k)"
+  apply (auto simp add: collinearList_def)
+  apply (erule_tac x=i in allE, simp, erule_tac x=k in allE, safe)
+  apply (case_tac "k=0")
+    apply (case_tac "i = 1")
+    apply (erule_tac x=2 in allE, simp)
+    apply (subgoal_tac "i = 2")
+    apply (erule_tac x=1 in allE, simp)
+    apply (rule ccontr, erule_tac x=2 in allE, simp)
+  apply (case_tac "i=0")
+    apply (case_tac "k=1")
+    apply (erule_tac x=2 in allE, simp)
+    apply (erule_tac x=1 in allE, simp)
+  apply (erule_tac x=0 in allE, simp)
+done
 (*mit der negation, brauche ich evtl. die Definition von pointList nicht mehr*)
 lemma "3 \<le> length L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> pointList L"
   apply (simp add: pointList_def collinearList_def)
   apply (subgoal_tac "\<forall> i k. i < size L \<and> k < size L \<and> k \<noteq> i \<longrightarrow> \<not>pointsEqual (L ! i) (L ! k)")
   apply (simp add: distinct_conv_nth)
-oops
+using collinearListNoPointsEq collinearList_def by auto
+
 lemma collinearList1: "collinear a b c = collinearList [a,b,c]"
   apply (simp add: collinearList_def, rule iffI)
   apply (rule_tac  x=0 in exI, simp, rule_tac  x=1 in exI, simp, rule_tac  x=2 in exI, simp, safe)
@@ -150,9 +174,12 @@ lemma collinearListAppendB [simp]: "collinearList xs \<Longrightarrow> collinear
   by (induction x, simp+)
 lemma collinearListAppend2 [simp]: "collinearList xs \<Longrightarrow> collinearList (xs @ [a])"
   by (metis collinearList2 collinearListRev rev.simps(2) rev_rev_ident)
-lemma collinearListAppendA [simp]: "collinearList xs \<Longrightarrow> collinearList (xs @ x)"
-  apply (induction x, simp+)
-oops
+lemma collinearListAppend [simp]: "collinearList xs \<Longrightarrow> collinearList (xs @ x)"
+  apply (cases xs, simp)
+  apply (simp add: collinearList_def, safe)+
+  apply (rule_tac x="aa" in exI, simp, rule_tac x=b in exI, simp, rule_tac x=c in exI, simp)
+by (metis append_Cons length_Cons nth_append)
+
 
 (*no 3 corners behind each other are collinear if \<not>collinearList L*)
 lemma collinearListAdj: "\<not>collinearList L \<Longrightarrow> a < length L - 2 \<Longrightarrow>

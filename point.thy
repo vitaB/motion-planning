@@ -90,7 +90,8 @@ lemma notRightTurn [simp]: "(\<not> rightTurn a c b) = (rightTurn a b c \<or> co
   by (simp add: rightTurn_def, subst colliniearRight,auto simp add: signedArea_def mult.commute)
 lemma notRightTurn1 [simp]: "(\<not> rightTurn a b c) = (leftTurn a b c \<or> collinear a b c)"
   by (metis leftRightTurn leftTurnRotate2 notLeftTurn)
-lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False"(*[1]*) by (metis notLeftTurn) 
+lemma conflictingLeftTurns [dest]: "leftTurn a b c \<Longrightarrow> leftTurn a c b \<Longrightarrow> False"(*[1]*)
+  by (metis notLeftTurn) 
 lemma conflictingLeftTurns3 [dest]: "leftTurn a b c \<Longrightarrow> collinear a b c \<Longrightarrow> False"(*[1]*)
   by (metis collSwap notLeftTurn)
 lemma conflictingRigthTurns [dest]: "rightTurn a b c \<Longrightarrow> rightTurn a c b \<Longrightarrow> False"
@@ -171,7 +172,7 @@ lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> a isBetwee
   using isBetween_def by auto
 lemma conflictingRightTurns2 [dest]: "rightTurn a b c \<Longrightarrow> a isBetween b c \<Longrightarrow> False" (*[1]*)
   using isBetween_def by auto
-lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> b \<noteq> c \<Longrightarrow>
+lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> b \<noteq> c \<Longrightarrow> (*[2]*)
   a isBetween b c \<or> b isBetween a c \<or> c isBetween a b"
   apply (safe)
 sorry
@@ -203,16 +204,18 @@ lemma newLeftTurn1: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longri
   apply (atomize(full))
 oops
 
-
-lemma collinearTransitiv : "a \<noteq> b \<Longrightarrow> collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> collinear a c d"
+lemma collinearTransitiv: "a \<noteq> b \<Longrightarrow> collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> collinear a c d"
   apply (simp add: colliniearRight)
   apply (cases "a = c", simp, cases "a = d", simp)
   apply (cases "c = d", simp, cases "c = b", simp)
   apply (cases "b = d", metis collSwap colliniearRight) 
   apply (rule ccontr, subgoal_tac "signedArea a c d > 0 \<or> signedArea a c d < 0", safe, simp)
   apply (simp add: signedArea_def)
-oops
-lemma collinearOrient :"a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> a \<noteq> d \<Longrightarrow>
+sorry
+lemma collinearTransitiv2: "b \<noteq> c \<Longrightarrow> collinear a b c \<Longrightarrow> collinear b c d \<Longrightarrow> collinear a b d"
+  using collRotate collinearTransitiv by blast
+
+lemma collinearOrient[intro] :"a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> a \<noteq> d \<Longrightarrow>
   collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> (leftTurn a c e \<and> leftTurn a d e) \<or> (rightTurn a c e \<and> rightTurn a d e)
   \<or> (collinear a c e \<and> collinear a d e)"
   apply (subgoal_tac " collinear a c d", simp add: colliniearRight)

@@ -42,11 +42,49 @@ lemma point_on_segmentEQ : "segment a c \<Longrightarrow> point_on_segment b a c
   apply (auto simp add: point_on_segment_def isBetween_def)
   apply (simp add: pointsEqualArea segment_def, simp add: pointsEqualArea segment_def)
   apply (erule_tac x=da in allE, auto)
-sorry
+oops
 (*formalizing Analytic Geometries. Pasch's axiom*)
 lemma paschAxiom: "segment A C \<Longrightarrow> segment B C \<Longrightarrow> segment P B \<Longrightarrow> segment Q A \<Longrightarrow>
-  point_on_segment P A C \<Longrightarrow> point_on_segment Q B C \<Longrightarrow> (\<exists> X. point_on_segment X P B \<and> point_on_segment X Q A)"
-oops
+  point_on_segment P A C \<Longrightarrow> point_on_segment Q B C \<Longrightarrow>
+  (\<exists> X. point_on_segment X P B \<and> point_on_segment X Q A)"
+  apply (case_tac "A = C")
+    apply (subgoal_tac "P = A")
+    apply (rule_tac x="P" in exI, auto)
+    apply (simp add: segment_def)
+  apply (case_tac "B = C")
+    apply (subgoal_tac "B = Q")
+    apply (rule_tac x="P" in exI, simp add: segment_def)
+    apply (simp add: segment_def)
+  apply (case_tac "C = P")
+    apply (rule_tac x="Q" in exI)
+    using point_on_segment_def apply auto[1]
+  apply (case_tac "C = Q")
+    apply (rule_tac x="P" in exI)
+    using point_on_segment_def apply auto[1]
+  apply (case_tac "A = B")
+    apply (rule_tac x="B" in exI)
+    using point_on_segment_def apply auto[1]
+  apply (case_tac "collinear A C B")
+    apply (subgoal_tac "collinear A P Q")
+    apply (case_tac "C isBetween A B")
+      apply (rule_tac x="C" in exI)
+      apply (rule conjI)
+      apply (smt collSwap collinearOrient collinearTransitiv2 conflictingLeftTurns3
+      conflictingRigthTurns1 isBetweenImpliesCollinear isBetweenImpliesCollinear3 leftRightTurn
+      leftTurnRotate2 leftTurnsImplyBetween newLeftTurn notBetween notBetween2 notBetweenSamePoint
+      notLeftTurn notRightTurn notRightTurn1 pointsEqualArea rightTurnEq rightTurnRotate
+      signedAreaRotate swapBetween twoPointsColl)
+      apply (smt collSwap collinearOrient collinearTransitiv2 notLeftTurn notRightTurn1 
+        pointsEqualArea rightTurnEq rightTurnRotate)
+    apply (case_tac "B isBetween A C")
+      apply (rule_tac x="B" in exI)
+      apply (smt collSwap collinearOrient collinearTransitiv2 leftRightTurn leftTurnRotate2
+      leftTurnsImplyBetween notLeftTurn pointsEqualArea rightTurnEq)
+    apply (smt collSwap collinearOrient collinearTransitiv2 leftRightTurn leftTurnRotate2
+      leftTurnsImplyBetween notLeftTurn pointsEqualArea rightTurnEq)
+    apply (metis collRotate collinearTransitiv2 isBetweenImpliesCollinear point_on_segment_def)
+by (smt collinearOrient isBetweenImpliesCollinear3 notLeftTurn notRightTurn1 point_on_segment_def
+  rightTurnRotate)
 
 lemma point_on_segmentSym: "segment A B \<Longrightarrow> point_on_segment p A B = point_on_segment p B A"
   using point_on_segment_def segment_Sym by auto
@@ -150,9 +188,10 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   apply (simp add: intersect_def, safe)
   apply (metis crossingLeftTurn notLeftTurn notRightTurn1, metis notRightTurn)
 by (smt intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
-
-
-
+lemma paschIntersection: "segment A C \<Longrightarrow> segment B C \<Longrightarrow> segment P B \<Longrightarrow> segment Q A \<Longrightarrow>
+  point_on_segment P A C \<Longrightarrow> point_on_segment Q B C \<Longrightarrow> intersect P B Q A"
+  apply (cut_tac A=A and C=C and B=B and P=P and Q=Q in paschAxiom, assumption+)
+oops
 
 (*alte Definition*)
 (*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
