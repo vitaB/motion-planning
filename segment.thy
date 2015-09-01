@@ -69,11 +69,10 @@ lemma paschAxiom: "segment A C \<Longrightarrow> segment B C \<Longrightarrow> s
     apply (case_tac "C isBetween A B")
       apply (rule_tac x="C" in exI)
       apply (rule conjI)
+      
 (*
-
     apply (case_tac "B isBetween A C")
       apply (rule_tac x="B" in exI)
-
 *)
 oops
 
@@ -140,11 +139,13 @@ lemma crossingRightTurn [dest] : "crossing A B P R \<Longrightarrow> rightTurn A
 lemma crossingLeftTurn [dest] : "crossing A B P R \<Longrightarrow> leftTurn A B P \<and> leftTurn A B R \<Longrightarrow> False"
   by (simp add: crossing_def lineSeparate_def, metis conflictingRigthTurns)
 lemma notSelfCrossing [simp]: "\<not>crossing A B A B" by (simp add: crossing_def)
+
 theorem crossingEq1: "segment A B \<Longrightarrow> segment P Q \<Longrightarrow> crossing A B P Q \<Longrightarrow>
   \<exists> X .X isBetween A B \<and> X isBetween P Q"
-  apply (subgoal_tac "\<exists>X. collinear X A B \<and> collinear X P Q")
-  apply (smt isBeetweenOrient isBetweenImpliesCollinear3 notLeftTurn notRightTurn1
-    point_on_segment_def rightTurnRotate)
+  apply (simp add: crossing_def, safe)
+  apply (simp add: lineSeparate_def, safe)
+  using interiority leftRightTurn apply blast
+  
 oops
 (*intersection, even if endpoint is on segment*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -221,11 +222,7 @@ oops
 theorem intersectionEq: "segment A B \<Longrightarrow> segment P Q \<Longrightarrow> (\<exists> X .point_on_segment X A B \<and>
   point_on_segment X P Q) = intersect A B P Q "  
 oops
-(*lemma paschIntersection: "segment A C \<Longrightarrow> segment B C \<Longrightarrow> segment P B \<Longrightarrow> segment Q A \<Longrightarrow>
-  point_on_segment P A C \<Longrightarrow> point_on_segment Q B C \<Longrightarrow> intersect P B Q A"
-  apply (cut_tac A=A and C=C and B=B and P=P and Q=Q in paschAxiom, assumption+)
-  apply (safe, simp add: paschIntersection1)
-done*)
+
 
 (*alte Definition*)
 (*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
