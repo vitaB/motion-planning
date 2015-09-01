@@ -51,43 +51,64 @@ done
 lemma cyclePathAdjacentSame1: "pointList L \<Longrightarrow> i < length (cyclePath L) - 1 \<Longrightarrow>
     k < length (cyclePath L) - 1 \<Longrightarrow> cyclePath L ! i \<noteq> cyclePath L ! k \<Longrightarrow>
     cyclePath L ! Suc i \<noteq> cyclePath L ! Suc k"
-sorry
+    apply (rule ccontr, simp)
+by (smt Cons_nth_drop_Suc Suc_lessI cyclePath_def diff_Suc_1 hd_append hd_drop_conv_nth
+  id_take_nth_drop nat.distinct(1) nth_append nth_append_length nth_eq_iff_index_eq pointList_def
+  take_0 zero_less_Suc)
 
 (*no 3 consecutive points in cyclepath L are collinear if L is collinear-free*)
 lemma cyclePathNotCollinear1:"pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
   a < length P - 2 \<Longrightarrow> signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0"
-  (*Beweis braucht zu lange: apply (subgoal_tac "(a = length P - 3 \<longrightarrow> \<not> collinear (P! a)(P!Suc a)(last P)) \<and>
+  (*apply (subgoal_tac "(a = length P - 3 \<longrightarrow> \<not> collinear (P! a)(P!Suc a)(last P)) \<and>
     (a < length P - 3 \<longrightarrow> signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) \<noteq> 0) ")
-    apply (simp only: colliniearRight )
-    apply (metis Suc_1 Suc_lessI diff_Suc_1 diff_Suc_eq_diff_pred diff_less_Suc diff_self_eq_0 last_conv_nth length_greater_0_conv numeral_3_eq_3 zero_less_diff)
+  apply (simp only: colliniearRight)
+  apply (metis Suc_1 Suc_lessI diff_Suc_1 diff_Suc_eq_diff_pred diff_less_Suc diff_self_eq_0
+    last_conv_nth length_greater_0_conv numeral_3_eq_3 zero_less_diff)
   apply (safe)
   apply (simp add: cyclePath_def collinearList_def)
   apply (erule_tac x=0 in allE, safe, simp)
   apply (erule_tac x="(length L - 2)" in allE, safe, simp)
   apply (erule_tac x="Suc (length L - 2)" in allE, safe, simp)
-  apply (smt2 One_nat_def Suc_1 Suc_diff_1 Suc_diff_Suc le_refl length_greater_0_conv list.size(3) not_less_eq_eq not_less_iff_gr_or_eq numeral_eq_Suc pointList_def pred_numeral_simps(3) zero_less_diff)
+  apply (smt One_nat_def Suc_1 Suc_diff_1 Suc_diff_Suc le_refl length_greater_0_conv list.size(3)
+    not_less_eq_eq not_less_iff_gr_or_eq numeral_eq_Suc pointList_def pred_numeral_simps(3) zero_less_diff)
   apply (simp)
-(*hä?*)
-  apply (metis One_nat_def Suc_eq_plus1 Suc_lessD hd_conv_nth length_0_conv less_diff_conv less_nat_zero_code nth_append)
+  apply (metis One_nat_def Suc_eq_plus1 Suc_lessD hd_conv_nth length_0_conv less_diff_conv
+    less_nat_zero_code nth_append)
   apply (simp add: cyclePath_def collinearList_def)
   apply (erule_tac x=a in allE, safe, simp)
   apply (erule_tac x="Suc a" in allE, safe, simp)
   apply (erule_tac x="Suc (Suc a)" in allE, safe, simp)
   apply (simp, simp, simp)
-  apply(smt2 One_nat_def Suc_eq_plus1 Suc_lessD add_Suc_right colliniearRight less_diff_conv nth_append numeral_2_eq_2)
-done*)sorry
+by(smt One_nat_def Suc_eq_plus1 Suc_lessD add_Suc_right colliniearRight less_diff_conv
+    nth_append numeral_2_eq_2)*)sorry
+
 (*all consecutive 3 corners in cyclepath are left or right oriented; if L is collinear-free*)
-theorem "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
-  (\<forall> a < length P - 2. signedArea (P!a) (P ! Suc a) (P ! Suc(Suc a)) < 0)
-  \<or> (\<forall> a < length P - 2. signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
+theorem cyclePathNotCollinear2: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+  a < length P - 2 \<Longrightarrow> (signedArea (P!a) (P ! Suc a) (P ! Suc(Suc a)) < 0)
+  \<or> ( signedArea (P ! a) (P ! Suc a) (P ! Suc (Suc a)) > 0)"
   apply (safe del: allI)
   apply (simp)
   apply (simp add: collinearList_def)
-oops
+  apply (case_tac "a < length P - 3", simp)
+    apply (subgoal_tac "signedArea (cyclePath L ! a) (cyclePath L ! Suc a)
+      (cyclePath L ! Suc (Suc a)) = signedArea (L ! a) (L ! Suc a) (L ! Suc (Suc a))")
+    apply (smt collinearListAdj collinearList_def colliniearRight)
+    apply (simp add: cyclePath_def)
+    apply (smt Suc_diff_Suc Suc_less_SucD Suc_mono diff_Suc_less diff_less_Suc less_trans_Suc nth_append numeral_2_eq_2 zero_less_diff)
+  apply (simp)
+  apply (case_tac "a = length L - 2", auto simp add: cyclePath_def)
+  apply (subgoal_tac "signedArea ((L @ [hd L]) ! (length L - 2)) ((L @ [hd L]) ! Suc (length L - 2))
+     ((L @ [hd L]) ! Suc (Suc (length L - 2))) \<noteq> 0", simp)
+using collinearList_def cyclePathNotCollinear1 cyclePath_def less_imp_Suc_add by auto
+
 (*no 3 corners in cyclepath are collinear, except Last node; if L is collinear-free*)
 theorem cyclePathNotCollinear: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+  a < length P \<Longrightarrow> b < length P \<Longrightarrow> c < length P \<Longrightarrow>
   P!a \<noteq> P!b \<and> P!a \<noteq> P!c \<and> P!c \<noteq> P!b \<Longrightarrow> \<not>collinear (P ! a) (P ! b) (P ! c)"
-sorry
+by (smt Cons_nth_drop_Suc collRotate collinearList_def cyclePath_def diff_Suc_1 hd_append
+  hd_drop_conv_nth id_take_nth_drop last_conv_nth last_snoc length_append_singleton nth_append
+  length_greater_0_conv less_antisym less_imp_Suc_add less_nat_zero_code list.size(3) take_0)
+
   
 (*intersection(cyclePath, Strecke A B)*)
 fun lineCyclePathInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -126,7 +147,7 @@ lemma lineCyclePathInters2: "segment A B \<Longrightarrow> (\<exists> i. i < len
 (*indexverschiebung*)
   apply(erule_tac exE)
 sorry
-theorem lineCyclePathIntersEq : "segment A B \<Longrightarrow> lineCyclePathInters L A B =
+theorem lineCyclePathIntersEq: "segment A B \<Longrightarrow> lineCyclePathInters L A B =
   (\<exists> i. i < length L - 1 \<and> intersect (L!i) (L ! Suc i) A B)"
   apply (rule iffI, metis lineCyclePathInters1)
 by(metis lineCyclePathInters2)
@@ -145,20 +166,20 @@ lemma cyclePathIntersectSame: "pointList P \<Longrightarrow> A = cyclePath P \<L
 by(cut_tac L=P and i=0 in cyclePathAdjacentSame, auto simp add: segment_def)
 
 lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longrightarrow> A = cyclePath P \<Longrightarrow> B = cyclePath Q\<Longrightarrow> 
-  cyclePathIntersect A B \<longleftrightarrow> cyclePathIntersect B A"
+  cyclePathIntersect A B = cyclePathIntersect B A"
   apply (auto simp add: cyclePathIntersect_def)
   apply (case_tac "(A, (B ! i), (B ! Suc i))" rule: lineCyclePathInters.cases,safe)
   apply (simp+, safe)
   apply (rule_tac x=0 in exI, safe, simp add: pointList_def, simp)
   apply (case_tac "(B,a, b)" rule: lineCyclePathInters.cases, simp add: cyclePath_def)
-  apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
-  apply (smt butlast.simps(2) butlast_snoc cyclePathLastSegment cyclePath_def
-    distinct_length_2_or_more intersectSym1 last.simps lineCyclePathIntersSimp3 pointListNotEmpty
-    pointList_def pointsEqual1 segment_def)
+    apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
+    apply (smt butlast.simps(2) butlast_snoc cyclePathLastSegment cyclePath_def
+      distinct_length_2_or_more intersectSym1 last.simps lineCyclePathIntersSimp3 pointListNotEmpty
+      pointList_def pointsEqual1 segment_def)
   apply (case_tac "((cyclePath Q), ((a # b # xs) ! i), ((b # xs) ! i))"
     rule: lineCyclePathInters.cases)
-  apply (simp add: cyclePath_def)
-  apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
+    apply (simp add: cyclePath_def)
+    apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
 sorry
 
 

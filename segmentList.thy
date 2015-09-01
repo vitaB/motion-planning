@@ -138,7 +138,7 @@ lemma collinearListNoPointsEq: "length L \<ge> 3 \<Longrightarrow> \<not>colline
   apply (erule_tac x=0 in allE, simp)
 done
 (*mit der negation, brauche ich evtl. die Definition von pointList nicht mehr*)
-lemma "3 \<le> length L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> pointList L"
+lemma collinearPointList: "3 \<le> length L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> pointList L"
   apply (simp add: pointList_def collinearList_def)
   apply (subgoal_tac "\<forall> i k. i < size L \<and> k < size L \<and> k \<noteq> i \<longrightarrow> \<not>pointsEqual (L ! i) (L ! k)")
   apply (simp add: distinct_conv_nth)
