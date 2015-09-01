@@ -179,9 +179,13 @@ sorry
 
 lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<Longrightarrow> collinear B C D \<Longrightarrow>
   C isBetween B D" (*[2]*)
-  apply (auto simp add: divide_less_eq isBetween_def leftTurn_def notCollThenDiffPoints 
-    not_less_iff_gr_or_eq onePointIsBetween rightTurn_def)
-  apply (metis areaContra pointsEqualArea signedAreaRotate)
+  apply (case_tac "B = D", blast, case_tac "C = B", blast, case_tac "C = D", blast)
+  apply (case_tac "A = B", blast, case_tac "A = C") using leftTurnDiffPoints apply blast
+  apply (case_tac "A = D") using leftTurnDiffPoints apply blast
+  apply (simp add: isBetween_def)
+  apply (safe)
+  apply (simp add: pointsEqualArea)
+  apply (subgoal_tac "signedArea d B C \<noteq> 0")
 sorry
 
 lemma notBetween [dest]: "\<lbrakk>A isBetween B C; B isBetween A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
@@ -202,11 +206,11 @@ lemma newLeftTurn1: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longri
   apply (cases A, cases B, cases C, cases D)
   apply (simp add: isBetween_def leftTurn_def collinear_def signedArea_def)
   apply (atomize(full))
-oops
+sorry
 
 lemma collinearTransitiv: "a \<noteq> b \<Longrightarrow> collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> collinear a c d"
   apply (simp add: colliniearRight)
-  apply (cases "a = c", simp, cases "a = d", simp)
+  apply (cases "a = c", simp, cases "a = d", simp, cases "a = b", simp)
   apply (cases "c = d", simp, cases "c = b", simp)
   apply (cases "b = d", metis collSwap colliniearRight) 
   apply (rule ccontr, subgoal_tac "signedArea a c d > 0 \<or> signedArea a c d < 0", safe, simp)
@@ -215,8 +219,8 @@ sorry
 lemma collinearTransitiv2: "b \<noteq> c \<Longrightarrow> collinear a b c \<Longrightarrow> collinear b c d \<Longrightarrow> collinear a b d"
   using collRotate collinearTransitiv by blast
 
-lemma collinearOrient[intro] :"a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> a \<noteq> d \<Longrightarrow>
-  collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> (leftTurn a c e \<and> leftTurn a d e) \<or> (rightTurn a c e \<and> rightTurn a d e)
+lemma isBeetweenOrient[intro] :"c isBetween a b \<Longrightarrow> d isBetween a b \<Longrightarrow>
+  (leftTurn a c e \<and> leftTurn a d e) \<or> (rightTurn a c e \<and> rightTurn a d e)
   \<or> (collinear a c e \<and> collinear a d e)"
   apply (subgoal_tac " collinear a c d", simp add: colliniearRight)
   apply (case_tac "b = c")
@@ -226,6 +230,9 @@ lemma collinearOrient[intro] :"a \<noteq> b \<Longrightarrow> a \<noteq> c \<Lon
   apply (cases "e = c")
   apply (cases "e = d", simp)
   apply (simp)+
-sorry
+  apply (smt collSwap collinearTransitiv2 isBetweenImpliesCollinear3 leftRightTurn
+    leftTurnsImplyBetween newLeftTurn notBetween notLeftTurn notRightTurn1 rightTurnEq)
+using collinearTransitiv isBetweenImpliesCollinear3 isBetweenPointsDistinct by blast
+
 
 end
