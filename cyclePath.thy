@@ -125,8 +125,11 @@ lemma lineCyclePathIntersSimp1 [simp]: "length L \<ge> 1 \<Longrightarrow> \<not
 lemma lineCyclePathIntersSimp2 [simp]: "\<not>lineCyclePathInters [a,b] A B \<Longrightarrow>
     lineCyclePathInters (a#b#L) A B = lineCyclePathInters (b#L) A B"
   by (simp)
-lemma lineCyclePathIntersSimp3 : "intersect P R ((a # b # xs) ! i) ((b # xs) ! i)
-  \<Longrightarrow> \<not>lineCyclePathInters (b # xs) P R \<Longrightarrow> intersect P R a b"
+lemma lineCyclePathIntersSimp3 : "i < length (a # b # xs) \<Longrightarrow> \<not>lineCyclePathInters (b # xs) P R \<Longrightarrow>
+  intersect P R ((a # b # xs) ! i) ((b # xs) ! i) \<Longrightarrow> intersect P R a b"
+  apply (simp)
+  apply (subgoal_tac "\<not>intersect P R ((b # xs) ! i) ((xs) ! i)", auto)
+  
 sorry
 lemma lineCyclePathIntersNeg : "\<not>lineCyclePathInters (a#b#L) A B \<Longrightarrow>
     \<not>lineCyclePathInters [a,b] A B \<and> \<not>lineCyclePathInters (b#L) A B"
@@ -144,8 +147,9 @@ lemma lineCyclePathInters2: "segment A B \<Longrightarrow> (\<exists> i. i < len
   apply (simp, simp)
   apply (safe)
   apply (simp, rule disjI2)
-(*indexverschiebung*)
-  apply(erule_tac exE)
+  (*indexverschiebung*)
+  apply (subgoal_tac "(\<exists>i<length xs. intersect ((b # xs) ! i) (xs ! i) P R
+    \<longrightarrow> lineCyclePathInters (b # xs) P R)", auto)
 sorry
 theorem lineCyclePathIntersEq: "segment A B \<Longrightarrow> lineCyclePathInters L A B =
   (\<exists> i. i < length L - 1 \<and> intersect (L!i) (L ! Suc i) A B)"
@@ -173,13 +177,14 @@ lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longri
   apply (rule_tac x=0 in exI, safe, simp add: pointList_def, simp)
   apply (case_tac "(B,a, b)" rule: lineCyclePathInters.cases, simp add: cyclePath_def)
     apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
-    apply (smt butlast.simps(2) butlast_snoc cyclePathLastSegment cyclePath_def
-      distinct_length_2_or_more intersectSym1 last.simps lineCyclePathIntersSimp3 pointListNotEmpty
-      pointList_def pointsEqual1 segment_def)
+    apply (metis cyclePathSegments cyclePath_def diff_Suc_1 intersectSym1 length_append_singleton
+      length_greater_0_conv less_SucI lineCyclePathIntersSimp3 nth_Cons_0 nth_Cons_Suc
+      pointListNotEmpty)
   apply (case_tac "((cyclePath Q), ((a # b # xs) ! i), ((b # xs) ! i))"
     rule: lineCyclePathInters.cases)
     apply (simp add: cyclePath_def)
     apply (simp add: cyclePath_def pointList_def, simp, safe, simp)
+    
 sorry
 
 

@@ -142,7 +142,7 @@ lemma midpointNotSame: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrighta
  by (auto simp add: midpoint_def, smt pointsNotEqual1)
 lemma midpointNotSame1: "a \<noteq> b \<Longrightarrow> midpoint a a b \<Longrightarrow> False" using midpointNotSame by blast
 
-(*mögliche Definitionen für isBetween. Nochmal anschauen!*)
+(*mögliche Definitionen für isBetween.*)
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool"
   ("_ isBetween _ _ " [60, 60, 60] 60) where(*[1]*)
   "b isBetween  a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
@@ -169,6 +169,9 @@ lemma swapBetween [simp]: "a isBetween c b = a isBetween b c" (*[1]*)
   apply (simp add: isBetween_def, safe)
   apply (rule_tac x=d in exI, metis collSwap colliniearRight)
   apply (erule_tac x=da in allE)
+    apply (case_tac "leftTurn da b a")
+    apply (subgoal_tac "leftTurn da b c")
+    using leftTurn_def apply auto[1]
 sorry
 lemma notBetweenSamePoint [dest]: "a isBetween b b \<Longrightarrow> False"(*[1]*)
   by (simp add: isBetween_def)
@@ -209,20 +212,45 @@ sorry
 
 lemma notBetween [dest]: "\<lbrakk>A isBetween B C; B isBetween A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
   apply (auto simp add: isBetween_def)
-  apply (subgoal_tac "A = B")
-  apply auto[1]
-  apply (auto simp add: colliniearRight divide_less_eq_1 isBetween_def zero_less_divide_iff)
-sorry
+  apply (case_tac "signedArea d B A \<noteq> 0")
+    apply (erule_tac x=d in allE, simp)
+    apply (erule_tac x=d in allE, safe, simp)
+    apply (simp add: colliniearRight divide_less_eq_1 left_diff_distrib' right_diff_distrib'
+      signedArea_def)
+    apply (smt mult.commute)
+    apply (simp add: divide_less_cancel divide_strict_right_mono_neg isBetween_def leftTurn_def
+      leftTurnsImplyBetween rightTurn_def zero_less_divide_iff)
+    apply (simp add: colliniearRight mult.commute right_diff_distrib' signedArea_def)
+    apply (smt divide_less_eq_1_neg)
+by (smt collSwap colliniearRight zero_less_divide_iff)
 lemma notBetween2 [dest]: "\<lbrakk>A isBetween B C ; C isBetween A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
-  sorry
+  apply (auto simp add: isBetween_def)
+  apply (case_tac "signedArea d B A \<noteq> 0")
+    apply (erule_tac x=d in allE, simp)
+    apply (erule_tac x=d in allE, safe, simp)
+    apply (simp add: colliniearRight divide_less_eq_1 left_diff_distrib' right_diff_distrib'
+      signedArea_def)
+    apply (smt mult.commute)
+    apply (simp add: divide_less_cancel divide_strict_right_mono_neg isBetween_def leftTurn_def
+      leftTurnsImplyBetween rightTurn_def zero_less_divide_iff)
+    apply (simp add: colliniearRight mult.commute right_diff_distrib' signedArea_def)
+    apply (smt divide_less_eq_1_neg less_divide_eq_1_pos)
+by (smt collSwap colliniearRight zero_less_divide_iff)
 lemma notBetween3 [dest]: "\<lbrakk>B isBetween A C ; C isBetween A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
-  sorry
+  apply (auto simp add: isBetween_def)
+  apply (case_tac "signedArea d A B \<noteq> 0")
+    apply (erule_tac x=d in allE, simp)
+    apply (erule_tac x=d in allE, safe, simp)
+by (smt divide_le_0_iff divide_less_eq_1)
 
 lemma newLeftTurn: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn B C D" (*[2]*)
   apply (subgoal_tac "signedArea B C D \<noteq> 0")
   apply (simp add: isBetween_def, safe)
   apply (erule_tac x=B in allE, simp)
   apply (smt divide_nonneg_nonpos leftTurn_def notLeftTurn notRightTurn1)
+  apply (auto simp add: isBetween_def)
+  apply (case_tac "signedArea d C D \<noteq> 0", erule_tac x=d in allE, simp)
+  
 sorry
 lemma newLeftTurn1: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn D B A" (*[1]*)
   apply (subgoal_tac "A = Abs_point2d (0,0)")
