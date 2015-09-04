@@ -243,22 +243,6 @@ lemma notBetween3 [dest]: "\<lbrakk>B isBetween A C ; C isBetween A B\<rbrakk> \
     apply (erule_tac x=d in allE, safe, simp)
 by (smt divide_le_0_iff divide_less_eq_1)
 
-lemma newLeftTurn: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn B C D" (*[2]*)
-  apply (subgoal_tac "signedArea B C D \<noteq> 0")
-  apply (simp add: isBetween_def, safe)
-  apply (erule_tac x=B in allE, simp)
-  apply (smt divide_nonneg_nonpos leftTurn_def notLeftTurn notRightTurn1)
-  apply (auto simp add: isBetween_def)
-  apply (case_tac "signedArea d C D \<noteq> 0", erule_tac x=d in allE, simp)
-  
-sorry
-lemma newLeftTurn1: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn D B A" (*[1]*)
-  apply (subgoal_tac "A = Abs_point2d (0,0)")
-  apply (cases A, cases B, cases C, cases D)
-  apply (simp add: isBetween_def leftTurn_def collinear_def signedArea_def)
-  apply (atomize(full))
-sorry
-
 lemma collinearTransitiv: "a \<noteq> b \<Longrightarrow> collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> collinear a c d"
   apply (simp add: colliniearRight)
   apply (cases "a = c", simp, cases "a = d", simp, cases "a = b", simp)
@@ -269,6 +253,30 @@ lemma collinearTransitiv: "a \<noteq> b \<Longrightarrow> collinear a b c \<Long
 sorry
 lemma collinearTransitiv2: "b \<noteq> c \<Longrightarrow> collinear a b c \<Longrightarrow> collinear b c d \<Longrightarrow> collinear a b d"
   using collRotate collinearTransitiv by blast
+
+lemma newLeftTurn: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn B C D" (*[2]*)
+  apply (subgoal_tac "signedArea B C D \<noteq> 0")
+  apply (simp add: isBetween_def, safe)
+  apply (erule_tac x=B in allE, simp)
+  apply (smt divide_nonneg_nonpos leftTurn_def notLeftTurn notRightTurn1)
+  apply (auto simp add: isBetween_def)
+  apply (case_tac "signedArea d C D \<noteq> 0", erule_tac x=d in allE, simp)
+  apply (metis areaDoublePoint collinearTransitiv2 colliniearRight notRightTurn1 signedAreaRotate)
+by blast
+
+lemma newLeftTurn1: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longrightarrow> leftTurn D B A" (*[1]*)
+  apply (subgoal_tac "rightTurn C B D")
+  apply (smt collinearTransitiv2 isBetweenPointsDistinct leftTurnRotate2 newLeftTurn notLeftTurn swapBetween)
+  apply (subgoal_tac "signedArea C B D \<noteq> 0")
+  apply (simp only: isBetween_def, safe)
+  apply (erule_tac x=B in allE, simp)
+  apply (smt colliniearRight divide_nonneg_nonpos notRightTurn rightTurn_def)
+  apply (auto simp add: isBetween_def)
+  apply (case_tac "signedArea d C D \<noteq> 0", erule_tac x=d in allE, simp)
+  apply (metis areaDoublePoint collinearTransitiv2 colliniearRight notRightTurn1 signedAreaRotate)
+by blast
+
+
 
 
 
