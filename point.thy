@@ -162,31 +162,22 @@ lemma pointsEqualArea: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0
   apply (rule_tac x="Abs_point2d((xCoord b) - 1, yCoord b)" in exI)
     apply (simp add: signedArea_def)
 done
+lemma swapBetween1: "a isBetween c b \<Longrightarrow> a isBetween b c" (*[1]*)
+  apply (simp add: isBetween_def, safe)
+  apply (rule_tac x=d in exI, metis collSwap colliniearRight)
+  apply (erule_tac x=da in allE, safe) using collSwap colliniearRight apply blast
+  apply (simp add: colliniearRight divide_neg_neg le_divide_eq_1 left_diff_distrib' mult.commute
+    signedArea_def)
+  apply (simp add: divide_less_eq_1 divide_neg_neg right_diff_distrib')
+  apply (smt divide_neg_neg divide_pos_pos)
+  apply (erule_tac x=da in allE, safe) using collSwap colliniearRight apply blast
+  apply (simp add: areaContra areaContra2 colliniearRight divide_le_0_iff divide_less_cancel
+    divide_less_eq_1 left_diff_distrib' right_diff_distrib' signedArea_def)
+  apply (simp add: mult.commute zero_less_divide_iff)
+by smt
 lemma swapBetween [simp]: "a isBetween c b = a isBetween b c" (*[1]*)
-  apply (safe)
-  apply (simp add: isBetween_def, safe)
-  apply (rule_tac x=d in exI, metis collSwap colliniearRight)
-  apply (erule_tac x=da in allE, safe) using collSwap colliniearRight apply blast
-  apply (simp add: colliniearRight divide_neg_neg le_divide_eq_1 left_diff_distrib' mult.commute
-    signedArea_def)
-  apply (simp add: divide_less_eq_1 divide_neg_neg right_diff_distrib')
-  apply (smt divide_neg_neg divide_pos_pos)
-  apply (erule_tac x=da in allE, safe) using collSwap colliniearRight apply blast
-  apply (simp add: areaContra areaContra2 colliniearRight divide_le_0_iff divide_less_cancel
-    divide_less_eq_1 left_diff_distrib' right_diff_distrib' signedArea_def)
-  apply (simp add: mult.commute zero_less_divide_iff) apply smt
-  apply (simp add: isBetween_def, safe)
-  apply (rule_tac x=d in exI, metis collSwap colliniearRight)
-  apply (erule_tac x=da in allE, safe) using collSwap colliniearRight apply blast
-  apply (simp add: colliniearRight divide_neg_neg le_divide_eq_1 left_diff_distrib' mult.commute
-    signedArea_def)
-  apply (simp add: divide_less_eq_1 divide_neg_neg right_diff_distrib')
-  apply (smt divide_neg_neg divide_pos_pos)
-  apply (erule_tac x=da in allE, safe) using collSwap colliniearRight apply blast
-  apply (simp add: areaContra areaContra2 colliniearRight divide_le_0_iff divide_less_cancel
-    divide_less_eq_1 left_diff_distrib' right_diff_distrib' signedArea_def)
-  apply (simp add: mult.commute zero_less_divide_iff) apply smt
-done
+  by (auto simp add: swapBetween1)
+
 lemma notBetweenSamePoint [dest]: "a isBetween b b \<Longrightarrow> False"(*[1]*)
   by (simp add: isBetween_def)
 lemma isBetweenImpliesCollinear [intro] : "a isBetween b c \<longrightarrow> collinear a b c"(*[1]*)
