@@ -74,7 +74,8 @@ lemma leftPPos [intro] : "isTrapez T \<Longrightarrow> leftTurn (fst(bottomT T))
   apply (simp add: leftP_def bottomT_def del: leftRightTurn leftTurnRotate leftTurnRotate2,
     cases T, simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
 oops
-lemma rightPPos [intro] : "isTrapez T \<Longrightarrow> rightTurn (fst(topT T)) (snd(topT T)) (rightP T) \<or> (snd(topT T) = rightP T)"
+lemma rightPPos [intro] : "isTrapez T \<Longrightarrow> rightTurn (fst(topT T)) (snd(topT T)) (rightP T)
+  \<or> (snd(topT T) = rightP T)"
 oops
 
 
@@ -105,6 +106,7 @@ lemma trapezNeighbour2 : "isTrapez T \<Longrightarrow> isTrapez Ts \<Longrightar
 definition pointInTrapez :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
   "pointInTrapez T P \<equiv> xCoord P \<le> xCoord (rightP T) \<and> xCoord P \<ge> xCoord (leftP T)
   \<and> signedArea (fst(bottomT T)) (snd(bottomT T)) P \<ge> 0 \<and> signedArea (fst(topT T)) (snd(topT T)) P \<le> 0"
+(*Punkt ist im Trapez, aber nicht auf den Kanten*)
 definition pointInTrapezS :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
   "pointInTrapezS T P \<equiv> xCoord P \<le> xCoord (rightP T) \<and> xCoord P \<ge> xCoord (leftP T)
   \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) P  \<and> rightTurn (fst(topT T)) (snd(topT T)) P
@@ -211,6 +213,7 @@ definition sortedIntersectTrapez :: "trapez list \<Rightarrow> point2d \<Rightar
 
 (*********rBox. 4 Eckige Box um pointListe herum. First Trapez*)
 (*Definition wann ist R eine rechteckige Box um PL herum*)
+(*lassen sich die 3 pointInTrapez definitionen vereinheitlichen?*)
 definition pointInRBox :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
   "isTrapez R \<Longrightarrow> pointInRBox R P \<equiv> leftFromPoint P (rightP R) \<and> (leftFromPoint (leftP R) P)
   \<and> leftTurn (fst(bottomT R)) (snd(bottomT R)) P \<and> (rightTurn (fst(topT R)) (snd(topT R)) P)"
