@@ -132,16 +132,6 @@ lemma collinearTransitiv1 : "\<exists> a. collinear a b c \<and> collinear a b d
   by (simp add: colliniearRight, rule_tac x=d in exI, simp)
 
 
-(*A point between B and C*)
-definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"
-lemma midPointCollinear[simp]: "midpoint a b c \<Longrightarrow> collinear a b c"
-  by (auto simp add: midpoint_def collinear_def, algebra)
-lemma midPointSym : "midpoint a b c = midpoint a c b" by (auto simp add: midpoint_def)
-lemma midpointNotSame[dest]: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrightarrow> midpoint b a c \<Longrightarrow> False"
- by (auto simp add: midpoint_def, smt pointsNotEqual1)
-lemma midpointNotSame1[dest]: "a \<noteq> b \<Longrightarrow> midpoint a a b \<Longrightarrow> False" using midpointNotSame by blast
-
 (*mögliche Definitionen für isBetween.*)
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool"
   ("_ isBetween _ _ " [60, 60, 60] 60) where(*[1]*)
@@ -284,7 +274,18 @@ by blast
 
 
 
+
 (*evtl. noch nützlich*)
+(*A point between B and C*)
+definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"
+lemma midPointCollinear[simp]: "midpoint a b c \<Longrightarrow> collinear a b c"
+  by (auto simp add: midpoint_def collinear_def, algebra)
+lemma midPointSym : "midpoint a b c = midpoint a c b" by (auto simp add: midpoint_def)
+lemma midpointNotSame[dest]: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrightarrow> midpoint b a c \<Longrightarrow> False"
+ by (auto simp add: midpoint_def, smt pointsNotEqual1)
+lemma midpointNotSame1[dest]: "a \<noteq> b \<Longrightarrow> midpoint a a b \<Longrightarrow> False" using midpointNotSame by blast
+
 (*scalar multiplication*)
 definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) where (*[2]*)
   "a *s P \<equiv> (\<lambda>(p1,p2). Abs_point2d (a*p1,a*p2)) (Rep_point2d P)"
