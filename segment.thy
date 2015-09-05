@@ -12,6 +12,7 @@ lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segm
 definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
 
+
 (*left corner of the segment*)
 definition leftPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
   "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<equiv> (if (leftFromPoint A B) then A else B)"
@@ -36,45 +37,6 @@ lemma point_on_segmentSelf[simp]: "segment A B \<Longrightarrow> point_on_segmen
   by (simp add: point_on_segment_def)
 lemma point_on_segmentSelf1[simp]: "segment A B \<Longrightarrow> point_on_segment B A B"
   by (simp add: point_on_segment_def)
-lemma point_on_segmentEQ : "segment a c \<Longrightarrow> point_on_segment b a c = (collinear a b c \<and>
-  (\<exists> d. signedArea a c d \<noteq> 0) \<and> (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
-  (0 \<le> (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) \<le> 1 )))"
-  apply (auto simp add: point_on_segment_def isBetween_def)
-  apply (simp add: pointsEqualArea segment_def, simp add: pointsEqualArea segment_def)
-  apply (erule_tac x=da in allE, auto)
-oops
-(*formalizing Analytic Geometries. Pasch's axiom*)
-lemma paschAxiom: "segment A C \<Longrightarrow> segment B C \<Longrightarrow> segment P B \<Longrightarrow> segment Q A \<Longrightarrow>
-  point_on_segment P A C \<Longrightarrow> point_on_segment Q B C \<Longrightarrow>
-  (\<exists> X. point_on_segment X P B \<and> point_on_segment X Q A)"
-  apply (case_tac "A = C")
-    apply (subgoal_tac "P = A")
-    apply (rule_tac x="P" in exI, auto)
-    apply (simp add: segment_def)
-  apply (case_tac "B = C")
-    apply (subgoal_tac "B = Q")
-    apply (rule_tac x="P" in exI, simp add: segment_def)
-    apply (simp add: segment_def)
-  apply (case_tac "C = P")
-    apply (rule_tac x="Q" in exI)
-    using point_on_segment_def apply auto[1]
-  apply (case_tac "C = Q")
-    apply (rule_tac x="P" in exI)
-    using point_on_segment_def apply auto[1]
-  apply (case_tac "A = B")
-    apply (rule_tac x="B" in exI)
-    using point_on_segment_def apply auto[1]
-  apply (case_tac "collinear A C B")
-    apply (subgoal_tac "collinear A P Q")
-    apply (case_tac "C isBetween A B")
-      apply (rule_tac x="C" in exI)
-      apply (rule conjI)
-      
-(*
-    apply (case_tac "B isBetween A C")
-      apply (rule_tac x="B" in exI)
-*)
-oops
 
 lemma point_on_segmentSym: "segment A B \<Longrightarrow> point_on_segment p A B = point_on_segment p B A"
   using point_on_segment_def segment_Sym by auto
@@ -85,15 +47,11 @@ lemma point_on_segment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P
   apply (auto simp add: point_on_segment_def)
 by (smt collRotate collinearTransitiv conflictingRigthTurns1 isBetweenPointsDistinct
   leftTurnsImplyBetween notBetween notBetween2 notCollThenLfOrRt1 notRightTurn)
-  
-
-
 lemma point_on_segment_noRightTurn1 : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> collinear B P R \<Longrightarrow>
   point_on_segment B P R \<Longrightarrow> rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
   apply (auto simp add: point_on_segment_def)
 by (meson isBetweenImpliesCollinear3 leftRightTurn leftTurnRotate2 leftTurnsImplyBetween
   newLeftTurn notBetween3)
-
 
 
 (*Segment AB separates the points P and R when the endpoints of PR lie's on different sides of AB.*)
@@ -140,13 +98,6 @@ lemma crossingLeftTurn [dest] : "crossing A B P R \<Longrightarrow> leftTurn A B
   by (simp add: crossing_def lineSeparate_def, metis conflictingRigthTurns)
 lemma notSelfCrossing [simp]: "\<not>crossing A B A B" by (simp add: crossing_def)
 
-theorem crossingEq1: "segment A B \<Longrightarrow> segment P Q \<Longrightarrow> crossing A B P Q \<Longrightarrow>
-  \<exists> X .X isBetween A B \<and> X isBetween P Q"
-  apply (simp add: crossing_def, safe)
-  apply (simp add: lineSeparate_def, safe)
-  using interiority leftRightTurn apply blast
-  
-oops
 (*intersection, even if endpoint is on segment*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> (crossing A B P R \<or>
@@ -190,7 +141,77 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   apply (metis crossingLeftTurn notLeftTurn notRightTurn1, metis notRightTurn)
 by (smt intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
 
-theorem intersectionEq1: "segment A B \<Longrightarrow> segment P Q \<Longrightarrow> intersect A B P Q \<Longrightarrow> \<exists> X .point_on_segment X A B \<and>
+
+(*evtl. noch nützrlich*)
+(*lemma point_on_segmentEQ : "segment a c \<Longrightarrow> point_on_segment b a c = (collinear a b c \<and>
+  (\<exists> d. signedArea a c d \<noteq> 0) \<and> (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
+  (0 \<le> (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) \<le> 1 )))"
+  apply (auto simp add: point_on_segment_def isBetween_def)
+  apply (simp add: pointsEqualArea segment_def, simp add: pointsEqualArea segment_def)
+  apply (erule_tac x=da in allE, auto)
+oops*)
+(*formalizing Analytic Geometries. Pasch's axiom*)
+(*lemma paschAxiom: "segment A C \<Longrightarrow> segment B C \<Longrightarrow> segment P B \<Longrightarrow> segment Q A \<Longrightarrow>
+  point_on_segment P A C \<Longrightarrow> point_on_segment Q B C \<Longrightarrow>
+  (\<exists> X. point_on_segment X P B \<and> point_on_segment X Q A)"
+  apply (case_tac "A = C")
+    apply (subgoal_tac "P = A")
+    apply (rule_tac x="P" in exI, auto)
+    apply (simp add: segment_def)
+  apply (case_tac "B = C")
+    apply (subgoal_tac "B = Q")
+    apply (rule_tac x="P" in exI, simp add: segment_def)
+    apply (simp add: segment_def)
+  apply (case_tac "C = P")
+    apply (rule_tac x="Q" in exI)
+    using point_on_segment_def apply auto[1]
+  apply (case_tac "C = Q")
+    apply (rule_tac x="P" in exI)
+    using point_on_segment_def apply auto[1]
+  apply (case_tac "A = B")
+    apply (rule_tac x="B" in exI)
+    using point_on_segment_def apply auto[1]
+  apply (case_tac "collinear A C B")
+    apply (subgoal_tac "collinear A P Q")
+    apply (case_tac "C isBetween A B")
+      apply (rule_tac x="C" in exI)
+      apply (rule conjI)
+      apply (simp add: isBetweenImpliesCollinear leftTurn_def leftTurnsImplyBetween notBetween2 
+        point_on_segment_def pointsEqualArea rightTurn_def)
+      apply (smt collRotate collinearTransitiv collinearTransitiv2 colliniearRight
+        isBetweenImpliesCollinear3 isBetweenPointsDistinct leftTurnsImplyBetween notBetween3
+        notLeftTurn swapBetween)
+      apply (simp add: isBetweenImpliesCollinear leftTurn_def leftTurnsImplyBetween notBetween2 
+        point_on_segment_def pointsEqualArea rightTurn_def)
+      apply (smt collRotate collinearTransitiv collinearTransitiv2 colliniearRight
+        isBetweenImpliesCollinear3 isBetweenPointsDistinct leftTurnsImplyBetween notBetween3
+        notLeftTurn swapBetween)
+    apply (case_tac "B isBetween A C")
+      apply (rule_tac x="B" in exI)
+      apply (rule conjI)
+      apply (simp add: isBetweenImpliesCollinear leftTurn_def leftTurnsImplyBetween notBetween2
+        point_on_segment_def pointsEqualArea rightTurn_def)
+      apply (simp add: isBetweenImpliesCollinear leftTurn_def leftTurnsImplyBetween notBetween  point_on_segment_def pointsEqualArea rightTurn_def)
+      apply (smt collRotate collinearTransitiv2 colliniearRight isBetweenImpliesCollinear3 leftTurnsImplyBetween notBetween2 notLeftTurn signedAreaRotate swapBetween)
+      apply (simp add: isBetweenImpliesCollinear  leftTurn_def leftTurnsImplyBetween
+        notBetween2  point_on_segment_def pointsEqualArea rightTurn_def)
+      apply (smt collRotate collinearTransitiv2 colliniearRight isBetweenImpliesCollinear3
+        leftTurnsImplyBetween notBetween2 notLeftTurn signedAreaRotate swapBetween)
+    apply (simp add: collinearTransitiv collinearTransitiv2 collinear_def
+      isBetweenImpliesCollinear3 point_on_segment_def)
+    apply (metis cancel_comm_monoid_add_class.diff_cancel collinearTransitiv collinearTransitiv2
+      collinear_def isBetweenImpliesCollinear3 mult.commute mult_zero_right)
+  (*echter schnitt*)
+oops*)
+
+(*theorem crossingEq1: "segment A B \<Longrightarrow> segment P Q \<Longrightarrow> crossing A B P Q \<Longrightarrow>
+  \<exists> X .X isBetween A B \<and> X isBetween P Q"
+  apply (simp add: crossing_def, safe)
+  apply (simp add: lineSeparate_def, safe)
+  using interiority leftRightTurn apply blast
+oops*)
+
+(*theorem intersectionEq1: "segment A B \<Longrightarrow> segment P Q \<Longrightarrow> intersect A B P Q \<Longrightarrow> \<exists> X .point_on_segment X A B \<and>
   point_on_segment X P Q"
   apply (case_tac "A = P")using intersect_def notCollThenDiffPoints point_on_segment_def apply blast
   apply (case_tac "A = Q")using intersect_def notCollThenDiffPoints point_on_segment_def apply blast
@@ -221,17 +242,6 @@ lemma intersectionEq2: "segment A B \<Longrightarrow> segment P Q \<Longrightarr
 oops
 theorem intersectionEq: "segment A B \<Longrightarrow> segment P Q \<Longrightarrow> (\<exists> X .point_on_segment X A B \<and>
   point_on_segment X P Q) = intersect A B P Q "  
-oops
-
-
-(*alte Definition*)
-(*Lemmas und Definitionen, die momentan nicht gebraucht werden*)
-(*(*http://afp.sourceforge.net/browser_info/current/AFP/Impossible_Geometry/Impossible_Geometry.html*)
-definition is_intersection_def:
-  "is_intersection M A B C D = (collinear A M B \<and> collinear C M D)"
-lemma "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow> \<exists> M. is_intersection M A B P R"
-  apply (simp add: is_intersection_def intersect_def, safe)
-  apply (simp add: crossing_def lineSeparate_def, safe)
-sorry*)
+oops*)
 
 end
