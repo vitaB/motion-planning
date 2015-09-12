@@ -107,8 +107,7 @@ lemma notSelfCrossing [simp]: "\<not>crossing A B A B" by (simp add: crossing_de
 (*intersection, even if endpoint is on segment*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> (crossing A B P R \<or>
-  (collinear A B P \<and> pointOnSegment P A B) \<or> (collinear A B R \<and> pointOnSegment R A B)
-  \<or> (collinear P R A \<and> pointOnSegment A P R) \<or> (collinear P R B \<and> pointOnSegment B P R))"
+  pointOnSegment P A B \<or> pointOnSegment R A B \<or> pointOnSegment A P R \<or> pointOnSegment B P R)"
 lemma intersectSame [simp] : "segment A B \<Longrightarrow> intersect A B A B"
   by (simp add: intersect_def isBetween_def pointOnSegment_def pointsEqualArea segment_def)
 
@@ -116,7 +115,7 @@ lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A 
   apply (subgoal_tac "segment A B \<and> segment P R")
 by (auto simp add: intersect_def crossingSym1, simp only: crossingSegment1)
 lemma intersectSym : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect B A P R"
-  by (metis collRotate collSwap crossingSym intersect_def pointOnSegmentSym segment_Sym)
+  by (metis crossingSym intersect_def pointOnSegmentSym segment_Sym)
 lemma intersectSym1 : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect P R A B"
   using crossingSym1 intersect_def by auto
   
@@ -125,9 +124,11 @@ lemma intersectSym1 : "segment A B \<Longrightarrow> segment P R \<Longrightarro
 lemma intersectRightTurn: "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow>
   rightTurn A B P \<and> rightTurn A B R \<Longrightarrow> False"
   apply (simp only: intersect_def, auto)
-  apply (metis areaDoublePoint less_irrefl pointOnSegment_noRightTurn rightTurn_def signedAreaRotate)
-by (metis areaDoublePoint less_irrefl pointOnSegment_noRightTurn1 rightTurn_def signedAreaRotate)
-
+  using pointOnSegmentColl rightTurnRotate2 apply blast
+  using pointOnSegmentColl rightTurnRotate2 apply blast
+  apply (metis conflictingRigthTurns1 pointOnSegment_noRightTurn rightTurnRotate2)
+by (metis leftRightTurn leftTurnDiffPoints pointOnSegment_noRightTurn1)
+  
 
 lemma intersectRightTurn1 : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow>
   rightTurn A R P \<and> rightTurn P B R \<Longrightarrow> False"
@@ -135,8 +136,10 @@ lemma intersectRightTurn1 : "segment A B \<Longrightarrow> segment P R \<Longrig
   apply (metis crossingRightTurn crossingSym crossingSym1 rightTurnRotate2)
   apply (metis intersectRightTurn intersect_def rightTurnRotate2 segment_Sym)
   apply (metis intersectRightTurn intersect_def rightTurnRotate2 segment_Sym)
-  apply (metis notRightTurn rightTurnRotate2)
-by (metis notRightTurn)
+  using collSwap pointOnSegmentColl apply blast
+by (metis conflictingRightTurns2 leftRightTurn leftTurnDiffPoints pointOnSegmentSym
+  pointOnSegment_def rightTurnRotate2 segment_Sym)
+  
 
 (*additional Lemmas for intersect*)
 lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>
@@ -145,7 +148,11 @@ lemma intersectNotCollinear: "segment a b \<Longrightarrow> segment c d \<Longri
 lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longrightarrow> intersect a b c d \<Longrightarrow>
   \<not>collinear d c b \<Longrightarrow> \<not>collinear a c b  \<Longrightarrow> rightTurn a d b \<Longrightarrow> rightTurn a c b \<Longrightarrow> False"
   apply (simp add: intersect_def, safe)
-  apply (metis crossingLeftTurn notLeftTurn notRightTurn1, metis notRightTurn)
+  using lineSeparate_def apply auto[1]
+  using collRotate pointOnSegmentColl apply blast
+  apply (meson collRotate notRightTurn pointOnSegmentColl)
+  apply (metis colliniearRight conflictingRigthTurns leftRightTurn newLeftTurn1
+    notCollThenDiffPoints notCollThenLfOrRt1 pointOnSegment_def rightTurn_def)
 by (smt intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
 
 

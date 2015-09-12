@@ -181,7 +181,8 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectSym1)
     using segment_def apply auto[1]
   apply ((simp add: cyclePathSegments conflictingRigthTurns1))
-  using cyclePathSegments intersect_def apply auto[1]
+  apply (metis Suc_eq_plus1 Suc_mono cyclePathSegments cyclePath_def intersectRightTurn
+    length_append_singleton less_diff_conv rightTurnRotate2)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
     apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
 by (metis conflictingRigthTurns1 rightTurnRotate2)
