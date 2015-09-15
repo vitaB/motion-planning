@@ -114,6 +114,18 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
 definition collinearList :: "point2d list \<Rightarrow> bool" where
   "collinearList L \<equiv> (\<exists> a b c. a < length L \<and> b < length L \<and> c < length L \<and>
   a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> collinear (L!a) (L!b) (L!c))"
+lemma collinearListThree[simp]: "length L = 3 \<Longrightarrow> collinearList L = collinear (L!0) (L!1) (L!2)"
+  apply (auto simp add: collinearList_def)
+  apply (case_tac "a=0", case_tac "b=1", subgoal_tac "c=2", auto)
+    apply (case_tac "b=2", subgoal_tac "c=1", auto)
+  apply (case_tac "a=1", case_tac "b=0", subgoal_tac "c=2", auto)
+    apply (simp add: less_Suc_eq numeral_2_eq_2 numeral_3_eq_3)
+  apply (case_tac "b=0", subgoal_tac "c=1", auto)
+    apply (simp add: less_Suc_eq numeral_2_eq_2 numeral_3_eq_3)
+  apply (subgoal_tac "b=1", subgoal_tac "c=0", auto)
+    apply (simp add: less_Suc_eq numeral_2_eq_2 numeral_3_eq_3)
+  apply (rule_tac x=0 in exI, simp, rule_tac x=1 in exI, simp, rule_tac x=2 in exI, simp)
+done    
 lemma collinearListLength[dest]: "length L < 3 \<Longrightarrow> collinearList L \<Longrightarrow> False"
   apply (simp add: collinearList_def, safe)
   apply (case_tac "a=0", subgoal_tac "b = 1", simp)
@@ -199,9 +211,16 @@ definition crossingFreePList :: "point2d list \<Rightarrow> bool" where
 (*none of the segments from the point list intersect with another segment of the point list
   (except of course the each adjacent edge)*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
- "intersectionFreePList P \<equiv> \<forall>i k. ((k < length P - 1 \<and> i < length P - 1
-  \<and> (P!i) \<noteq> (P!k) \<and> (P ! i) \<noteq> (P ! Suc k)
- \<and> (P ! Suc i) \<noteq> (P ! k)) \<longrightarrow> \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))"
+ "intersectionFreePList P \<equiv> (\<forall>i k. ((k < length P - 1 \<and> i < length P - 1
+  \<and> (P!i) \<noteq> (P!k) \<and> (P ! i) \<noteq> (P ! Suc k) \<and> (P ! Suc i) \<noteq> (P ! k)) \<longrightarrow>
+    \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))
+  \<and> \<not>collinear (P!0)(P!1)(P!2))"
+lemma intersectionFreePListAdjacentColl: "pointList P \<Longrightarrow> intersectionFreePList P \<Longrightarrow>
+  \<forall> i < length P - 2. \<not>pointOnSegment (P!i) (P!Suc i) (P!Suc(Suc i))"
+  apply (auto simp add: intersectionFreePList_def pointOnSegment_def)
+  apply (subgoal_tac "segment (P ! Suc i) (P ! Suc (Suc i))")
+  apply (auto simp add: pointOnSegment_def)
+oops
 
 (*if in the first place no intersection, then at the second position*)
 lemma sizeOfList: "\<not> intersect a b A B \<Longrightarrow> intersect ((a#b# L) ! k) ((a#b# L) ! Suc k) A B \<Longrightarrow> k\<ge>1"

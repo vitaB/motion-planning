@@ -5,6 +5,9 @@ begin
 (*definition for polygon: intersectionfree cyclePath*)
 definition polygon :: "point2d list \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<equiv> intersectionFreePList P"
+lemma notPolygon: "pointList [A,B,C] \<Longrightarrow> A isBetween C B \<Longrightarrow> polygon (cyclePath [A,B,C]) \<Longrightarrow> False"
+  by(auto simp add: cyclePath_def polygon_def intersectionFreePList_def isBetweenImpliesCollinear)
+
 (*List with polygons*)
 definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<equiv> \<forall> i < length PL. polygon (cyclePath (PL!i))"
@@ -65,8 +68,10 @@ using polygonDisjointSame by blast
 lemma polygonDisjointSym: "pointList Ll\<Longrightarrow> P=cyclePath Ll\<Longrightarrow> polygon P\<Longrightarrow> pointList Lr\<Longrightarrow> 
   R=cyclePath Lr\<Longrightarrow> polygon R \<Longrightarrow> polygonDisjoint P R = polygonDisjoint R P"
   apply (safe, simp add: polygonDisjoint_def)
-  apply (simp add: cyclePathIntersectSym polygonInPolygonSym)
-by (simp add: cyclePathIntersectSym polygonDisjoint_def polygonInPolygonSym)
+  apply (simp add: cyclePathIntersect_def cyclePathSegments intersectSym1 lineCyclePathIntersEq
+    polygonInPolygonSym)
+by (simp add: cyclePathIntersect_def cyclePathSegments intersectSym1 lineCyclePathIntersEq
+  polygonDisjoint_def polygonInPolygonSym)
   
 definition polygonsDisjoint :: "(point2d list) list \<Rightarrow> bool" where
   "pointLists PL \<Longrightarrow> polygonList PL \<Longrightarrow> polygonsDisjoint PL \<equiv> \<forall> i j. (i\<noteq>j \<and>
@@ -127,28 +132,46 @@ sorry
 (*all triangles are conv. polygon*)
 lemma conVextriangles: "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow>
   P = cyclePath L \<Longrightarrow> cPolygon P"
-  (*apply (simp add:cPolygon_def cyclePath_def, safe)
+  apply (simp add:cPolygon_def cyclePath_def, safe)
   apply (simp add: lineSeparate_def, safe)
   apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", safe)
     apply (auto simp add: rightTurn_def)
-    apply (metis Nil_is_append_conv areaDoublePoint2 hd_append2 hd_conv_nth less_numeral_extra(3) list.size(3) nth_append_length signedAreaRotate)
-    apply (metis add_2_eq_Suc' areaDoublePoint less_numeral_extra(3) monoid_add_class.add.left_neutral signedAreaRotate)
-    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) numeral_eq_Suc pred_numeral_simps(3))
-    apply (smt Nil_is_append_conv Suc_lessI areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv neq0_conv not_less_iff_gr_or_eq nth_append_length numeral_3_eq_3 signedAreaRotate)
-    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq not_less_iff_gr_or_eq numeral_eq_Suc pred_numeral_simps(3))
-    apply (smt Suc_1 Suc_eq_plus1_left areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) monoid_add_class.add.right_neutral numeral_3_eq_3)
-    apply (metis colliniearRight less_2_cases less_Suc_eq less_numeral_extra(3) notCollThenDiffPoints numeral_eq_Suc pred_numeral_simps(3))
-    apply (smt Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length numeral_3_eq_3 signedAreaRotate)
+    apply (metis Nil_is_append_conv areaDoublePoint2 hd_append2 hd_conv_nth less_numeral_extra(3)
+      list.size(3) nth_append_length signedAreaRotate)
+    apply (metis add_2_eq_Suc' areaDoublePoint less_numeral_extra(3)
+      monoid_add_class.add.left_neutral signedAreaRotate)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3)
+      numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt Nil_is_append_conv Suc_lessI areaDoublePoint hd_append2 hd_conv_nth signedAreaRotate
+      length_greater_0_conv neq0_conv not_less_iff_gr_or_eq nth_append_length numeral_3_eq_3)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq not_less_iff_gr_or_eq numeral_eq_Suc
+      pred_numeral_simps(3))
+    apply (smt Suc_1 Suc_eq_plus1_left areaDoublePoint2 less_2_cases less_Suc_eq
+      less_numeral_extra(3) monoid_add_class.add.right_neutral numeral_3_eq_3)
+    apply (metis colliniearRight less_2_cases less_Suc_eq less_numeral_extra(3)
+      notCollThenDiffPoints numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth
+      length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length
+      numeral_3_eq_3 signedAreaRotate)
   apply (subgoal_tac "(k=0 \<and> i = 2) \<or> (k=1 \<and> i = 0) \<or> (k=2 \<and> i = 1)", auto)
-    apply (metis Nil_is_append_conv areaDoublePoint2 hd_append2 hd_conv_nth less_numeral_extra(3) list.size(3) nth_append_length signedAreaRotate)
-    apply (metis add_2_eq_Suc' areaDoublePoint less_numeral_extra(3) monoid_add_class.add.left_neutral)
-    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) numeral_eq_Suc pred_numeral_simps(3))
-    apply (smt Nil_is_append_conv Suc_lessI areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv neq0_conv not_less_iff_gr_or_eq nth_append_length numeral_3_eq_3 signedAreaRotate)
-    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq not_less_iff_gr_or_eq numeral_eq_Suc pred_numeral_simps(3))
-    apply (smt Suc_1 Suc_eq_plus1_left areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3) monoid_add_class.add.right_neutral numeral_3_eq_3)
-    apply (metis colliniearRight less_2_cases less_Suc_eq less_numeral_extra(3) notCollThenDiffPoints numeral_eq_Suc pred_numeral_simps(3))
-    apply (smt Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length numeral_3_eq_3 signedAreaRotate)
-done*)sorry
+    apply (metis Nil_is_append_conv areaDoublePoint2 hd_append2 hd_conv_nth less_numeral_extra(3)
+      list.size(3) nth_append_length signedAreaRotate)
+    apply (metis add_2_eq_Suc' areaDoublePoint less_numeral_extra(3)
+      monoid_add_class.add.left_neutral)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq less_numeral_extra(3)
+      numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt Nil_is_append_conv Suc_lessI areaDoublePoint hd_append2 hd_conv_nth signedAreaRotate
+      length_greater_0_conv neq0_conv not_less_iff_gr_or_eq nth_append_length numeral_3_eq_3)
+    apply (metis areaDoublePoint2 less_2_cases less_Suc_eq not_less_iff_gr_or_eq numeral_eq_Suc
+      pred_numeral_simps(3))
+    apply (smt Suc_1 Suc_eq_plus1_left areaDoublePoint2 less_2_cases less_Suc_eq
+      less_numeral_extra(3) monoid_add_class.add.right_neutral numeral_3_eq_3)
+    apply (metis colliniearRight less_2_cases less_Suc_eq less_numeral_extra(3)
+      notCollThenDiffPoints numeral_eq_Suc pred_numeral_simps(3))
+    apply (smt Nil_is_append_conv Suc_eq_plus1_left areaDoublePoint hd_append2 hd_conv_nth
+      length_greater_0_conv less_Suc_eq less_nat_zero_code less_numeral_extra(3) nth_append_length
+      numeral_3_eq_3 signedAreaRotate)
+done
 
 (*in a conv. polygon none of the lines intersects*)
 theorem cPolygonIsCrossingFree: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
@@ -184,8 +207,8 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
   apply (metis Suc_eq_plus1 Suc_mono cyclePathSegments cyclePath_def intersectRightTurn
     length_append_singleton less_diff_conv rightTurnRotate2)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
-    apply ((simp add: cyclePathSegments conflictingRigthTurns1)+)
-by (metis conflictingRigthTurns1 rightTurnRotate2)
+    apply ((simp add: cyclePathSegments conflictingRigthTurns1)+, blast)
+by (simp add: colliniearRight cyclePathNotCollinear1 numeral_2_eq_2 pointList_def)
 
 (*each conv. polygon is also a simple polygon*)
 lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>

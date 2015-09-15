@@ -106,19 +106,19 @@ lemma notSelfCrossing [simp]: "\<not>crossing A B A B" by (simp add: crossing_de
 
 (*intersection, even if endpoint is on segment*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> (crossing A B P R \<or>
-  pointOnSegment P A B \<or> pointOnSegment R A B \<or> pointOnSegment A P R \<or> pointOnSegment B P R)"
-lemma intersectSame [simp] : "segment A B \<Longrightarrow> intersect A B A B"
+  "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> crossing A B P R \<or>
+  pointOnSegment P A B \<or> pointOnSegment R A B \<or> pointOnSegment A P R \<or> pointOnSegment B P R"
+lemma intersectSame [simp]: "segment A B \<Longrightarrow> intersect A B A B"
   by (simp add: intersect_def isBetween_def pointOnSegment_def pointsEqualArea segment_def)
 
 lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A B P R"
-  apply (subgoal_tac "segment A B \<and> segment P R")
-by (auto simp add: intersect_def crossingSym1, simp only: crossingSegment1)
+  apply (simp add: intersect_def)
+done
 lemma intersectSym : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect B A P R"
   by (metis crossingSym intersect_def pointOnSegmentSym segment_Sym)
 lemma intersectSym1 : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect P R A B"
   using crossingSym1 intersect_def by auto
-  
+
 
 (*if the segments AB and PR intersect, then both corners of PR can not be on the same side of AB*)
 lemma intersectRightTurn: "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow>

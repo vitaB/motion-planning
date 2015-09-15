@@ -302,6 +302,20 @@ lemma CollPointExist: "\<exists> X. collinear A B X" by (rule_tac x=A in exI, au
   apply (auto simp add: isBetween_def)
 oops*)
 
+definition segLength :: "point2d \<Rightarrow> point2d \<Rightarrow> real" where
+  "segLength A B \<equiv> sqrt ((xCoord A - xCoord B)*(xCoord A - xCoord B) +
+  (yCoord A - yCoord B)*(yCoord A - yCoord B))"
+lemma segLengthSym: "segLength A B = segLength B A"
+by (simp add: segLength_def, algebra)
+
+definition quadArea :: "[point2d, point2d, point2d, point2d] \<Rightarrow> real" where
+  "quadArea A B C D \<equiv> signedArea A B C + signedArea A C D"
+lemma quadAreaSym: "quadArea A B C D = quadArea B C D A"
+  by (auto simp add: quadArea_def signedArea_def, algebra)
+lemma quadAreaSym1: "quadArea A B C D = quadArea C D A B"
+  by (metis quadAreaSym)
+lemma quadAreaSym2: "quadArea A B C D = quadArea D A B C"
+  by (auto simp add: quadArea_def signedArea_def, algebra)
 (*theorem three: "A \<noteq> C \<Longrightarrow> \<exists> D. A isBetween D C"
   
 oops
