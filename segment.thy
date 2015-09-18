@@ -154,7 +154,10 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   apply (metis colliniearRight conflictingRigthTurns leftRightTurn newLeftTurn1
     notCollThenDiffPoints notCollThenLfOrRt1 pointOnSegment_def rightTurn_def)
 by (smt intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
-
+lemma "segment a b \<Longrightarrow> segment c d \<Longrightarrow> collinear a b m \<Longrightarrow> collinear c d m \<Longrightarrow> intersect a b c d"
+  apply (auto simp add: intersect_def)
+  apply (case_tac "collinear a b c")
+oops
 
 (*evtl. noch nützrlich*)
 (*lemma pointOnSegmentEQ : "segment a c \<Longrightarrow> pointOnSegment b a c = (collinear a b c \<and>

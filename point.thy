@@ -41,6 +41,8 @@ lemma leftFromPointDest [dest]: "leftFromPoint a b \<Longrightarrow> leftFromPoi
 definition signedArea :: "[point2d, point2d, point2d] \<Rightarrow> real" where(*[1]*)
   "signedArea a b c \<equiv> (xCoord b - xCoord a)*(yCoord c - yCoord a)
     - (yCoord b - yCoord a)*(xCoord c - xCoord a)"
+lemma signedAreaMin: "signedArea A B C = -signedArea A C B"
+  by (simp add: signedArea_def)
 lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c"(*[1]*)
   by (simp add: signedArea_def, algebra)
 lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b"(*[1]*)
@@ -246,6 +248,9 @@ lemma collinearTransitiv: "a \<noteq> b \<Longrightarrow> collinear a b c \<Long
   apply (rule ccontr, subgoal_tac "signedArea a c d > 0 \<or> signedArea a c d < 0", safe, simp)
   apply (simp add: signedArea_def)
 sorry
+lemma collinearTransitiv3: "a \<noteq> b \<Longrightarrow> collinear a b c \<Longrightarrow> collinear a b d \<Longrightarrow> collinear b c d"
+  by (smt collRotate collinearTransitiv)
+
 lemma collinearTransitiv2: "b \<noteq> c \<Longrightarrow> collinear a b c \<Longrightarrow> collinear b c d \<Longrightarrow> collinear a b d"
   using collRotate collinearTransitiv by blast
 
@@ -286,21 +291,42 @@ lemma midpointNotSame[dest]: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Long
  by (auto simp add: midpoint_def, smt pointsNotEqual1)
 lemma midpointNotSame1[dest]: "a \<noteq> b \<Longrightarrow> midpoint a a b \<Longrightarrow> False" using midpointNotSame by blast
 
+lemma midpointPointExist: "\<exists> X. midpoint X a b"
+  apply (auto simp add: midpoint_def)
+by(metis Abs_point2d_inverse Collect_const UNIV_I mult_2 prod.sel(1) prod.sel(2) real_sum_of_halves
+  xCoord_def yCoord_def)
+
 (*scalar multiplication*)
 definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) where (*[2]*)
   "a *s P \<equiv> (\<lambda>(p1,p2). Abs_point2d (a*p1,a*p2)) (Rep_point2d P)"
-(*definition pointPlus :: "[point2d, point2d] \<Rightarrow> point2d" (infixl "+p" 60) where 
+definition pointPlus :: "[point2d, point2d] \<Rightarrow> point2d" (infixl "+p" 60) where 
   "P +p Q \<equiv> Abs_point2d ((xCoord P) + (xCoord Q), (yCoord P) + (yCoord Q))"
 lemma cramersRule: "signedArea P Q R = 0 \<Longrightarrow> T =
   ((signedArea T Q R / signedArea P Q R) *s P) +p
   ((signedArea P T R / signedArea P Q R) *s Q) +p
-  ((signedArea P Q T / signedArea P Q R) *s R)"*)
+  ((signedArea P Q T / signedArea P Q R) *s R)"
+oops
 
 lemma CollPointExist: "\<exists> X. collinear A B X" by (rule_tac x=A in exI, auto)
 
-(*lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBetween a b"
+lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBetween a b"
+  apply (cut_tac a=a and b=b in midpointPointExist)
   apply (auto simp add: isBetween_def)
-oops*)
+  apply (rule_tac x=X in exI)
+  apply (safe)
+  apply (simp add: pointsEqualArea)
+  apply (simp add: pointsEqualArea)
+  apply (subgoal_tac "collinear X a b")
+    apply (case_tac "X = d", simp) using colliniearRight midPointCollinear apply blast
+    apply (case_tac "X = a", simp, blast)
+    apply (case_tac "X = b", simp)
+    apply (case_tac "d = a", simp)
+    apply (case_tac "d = b", simp)
+    apply (case_tac "xCoord a = xCoord b", subgoal_tac "xCoord X = xCoord b")
+      apply (case_tac "yCoord a < yCoord b", subgoal_tac "yCoord a < yCoord X \<and> yCoord X < yCoord b")
+      apply (case_tac "signedArea d a b > 0")
+      (*selbst hier kein Beweis*)
+oops
 
 definition segLength :: "point2d \<Rightarrow> point2d \<Rightarrow> real" where
   "segLength A B \<equiv> sqrt ((xCoord A - xCoord B)*(xCoord A - xCoord B) +
@@ -316,34 +342,5 @@ lemma quadAreaSym1: "quadArea A B C D = quadArea C D A B"
   by (metis quadAreaSym)
 lemma quadAreaSym2: "quadArea A B C D = quadArea D A B C"
   by (auto simp add: quadArea_def signedArea_def, algebra)
-(*theorem three: "A \<noteq> C \<Longrightarrow> \<exists> D. A isBetween D C"
-  
-oops
 
-lemma "b \<noteq> c \<Longrightarrow> midpoint a b c \<Longrightarrow> a isBetween b c"
-  apply (case_tac "a=b") using midpointNotSame1 apply blast
-  apply (case_tac "a=c") using midPointSym apply blast
-  apply (case_tac "xCoord b = xCoord c", subgoal_tac "xCoord a = xCoord b")
-    apply (simp add: isBetween_def,auto, simp add: pointsEqualArea)
-    apply (simp add:divide_neg_neg midpoint_def signedArea_def split_mult_pos_le zero_less_mult_iff)
-    apply (simp add: signedArea_def zero_less_divide_iff mult.commute mult_less_cancel_left_disj)
-    apply (smt mult_less_cancel_left_disj)
-    apply (simp add: pointsEqualArea isBetween_def)
-    apply (simp add:divide_neg_neg midpoint_def signedArea_def split_mult_pos_le zero_less_mult_iff)
-    apply (simp add: signedArea_def zero_less_divide_iff mult.commute mult_less_cancel_left_disj)
-    apply (smt divide_less_eq_1 mult_less_cancel_left_disj)
-    apply (simp add: midpoint_def)
-  apply (case_tac "yCoord b = yCoord c", subgoal_tac "yCoord a = yCoord b")
-    apply (simp add: isBetween_def,auto, simp add: pointsEqualArea)
-    apply (simp add: collinear_def midpoint_def rightTurn_def signedArea_def zero_less_divide_iff)
-    apply (smt mult.commute mult_less_cancel_left_neg real_mult_less_iff1)
-    apply (simp add: collinear_def midpoint_def rightTurn_def signedArea_def zero_less_divide_iff)
-    apply (simp add: divide_less_eq_1 divide_less_cancel mult.commute)
-    apply (smt mult_strict_right_mono mult_strict_right_mono_neg)
-    apply (simp add: midpoint_def)
-  apply (case_tac "xCoord b < xCoord c")
-    apply (simp add: isBetween_def,auto, simp add: pointsEqualArea)
-    apply (simp add: divide_less_cancel divide_neg_neg midpoint_def right_diff_distrib'
-      signedArea_def)
-  oops*)
 end
