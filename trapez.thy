@@ -5,12 +5,16 @@ begin
 (*identifiers for Trapez-parts*)
 definition topT1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> (point2d\<times>point2d)"
   where  "topT1 T \<equiv> fst T"
+lemma topT1[simp] :"topT1 ((a,b),(c,d),e,f) = (a,b)" by (simp add: topT1_def)
 definition bottomT1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> (point2d\<times>point2d)"
   where "bottomT1 T \<equiv> fst(snd T)"
+lemma bottomT1[simp] :"bottomT1 ((a,b),(c,d),e,f) = (c,d)" by (simp add: bottomT1_def)
 definition leftP1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> point2d" where
   "leftP1 T \<equiv> fst(snd(snd T))"
+lemma leftP1[simp] :"leftP1 ((a,b),(c,d),e,f) = e" by (simp add: leftP1_def)
 definition rightP1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> point2d" where
   "rightP1 T \<equiv> snd(snd(snd T))"
+lemma rightP1[simp] :"rightP1 ((a,b),(c,d),e,f) = f" by (simp add: rightP1_def)
 
 definition trapezPointsXOrder ::"(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> bool"where
   "trapezPointsXOrder p \<equiv> leftFromPoint (leftP1 p) (rightP1 p) (*e links von f*)
@@ -38,10 +42,10 @@ lemma trapezHasOrderetPoints4:"trapezPointsXOrder T \<Longrightarrow>leftFromPoi
 (*e ist zwischen ab und cd oder e=a oder e=c*)
 definition trapezQuad:: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> bool" where
   "trapezQuad p \<equiv>
-  rightTurn (fst(topT1 p)) (snd(topT1 p)) (leftP1 p) (*e ist zwischen ab und cd*)
-    \<and> leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (leftP1 p) 
-    \<and> rightTurn (fst(topT1 p)) (snd(topT1 p)) (rightP1 p)(* und f ist zwischen ab und cd*)
-    \<and> leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (rightP1 p)
+  (rightTurn (fst(topT1 p)) (snd(topT1 p)) (leftP1 p) \<or> fst(topT1 p) = (leftP1 p)) (*e ist zwischen ab und cd*)
+    \<and> (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (leftP1 p) \<or> fst(bottomT1 p) = (leftP1 p))
+    \<and> (rightTurn (fst(topT1 p)) (snd(topT1 p)) (rightP1 p) \<or> snd(topT1 p) = (rightP1 p))(* und f ist zwischen ab und cd*)
+    \<and> (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (rightP1 p) \<or> snd(bottomT1 p) = (rightP1 p))
     \<and> fst(topT1 p) \<noteq> fst(bottomT1 p) \<and> snd(topT1 p) \<noteq> snd(bottomT1 p) (*a\<noteq>c \<and> b\<noteq>d*)
     \<and> rightTurn (fst(topT1 p)) (snd(topT1 p)) (fst(bottomT1 p))(*a und b über c und d*)
     \<and> rightTurn (fst(topT1 p)) (snd(topT1 p)) (snd(bottomT1 p))"
@@ -49,19 +53,18 @@ definition trapezQuad:: "(point2d\<times>point2d)\<times>(point2d\<times>point2d
 lemma trapezTriangleVertex1: "trapezQuad p \<Longrightarrow>
   leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (snd(topT1 p))
   \<and> leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (fst(topT1 p))"
-  apply (auto simp add: trapezQuad_def)
 oops
 
 definition trapezTriangle :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> bool" where
    "trapezTriangle p \<equiv> (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (fst(topT1 p)) (*a ist über cd*)
-    \<and> leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (leftP1 p) (*e ist über cd*)
-    \<and> rightTurn (fst(topT1 p)) (snd(topT1 p)) (leftP1 p) (*e ist unter a b*)
+    \<and> (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (leftP1 p) \<or> fst(bottomT1 p) = leftP1 p) (*e ist über cd*)
+    \<and> (rightTurn (fst(topT1 p)) (snd(topT1 p)) (leftP1 p) \<or> fst(topT1 p) = leftP1 p) (*e ist unter a b*)
     \<and> snd(bottomT1 p) = snd(topT1 p) \<and> snd(bottomT1 p) = rightP1 p  (*und d=b=f*)
    )\<or>
    (fst(topT1 p) = fst(bottomT1 p) \<and> fst(bottomT1 p) = leftP1 p (*a=c=e*)
     \<and> leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (snd(topT1 p)) (*b über c d*)
-    \<and> rightTurn (fst(topT1 p)) (snd(topT1 p)) (rightP1 p) (*f ist unter a b*)
-    \<and> leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (rightP1 p))" (*f ist über c d*)
+    \<and> (rightTurn (fst(topT1 p)) (snd(topT1 p)) (rightP1 p) \<or> snd(topT1 p) = rightP1 p) (*f ist unter a b*)
+    \<and> (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (rightP1 p) \<or> snd(bottomT1 p) = rightP1 p))" (*f ist über c d*)
 
 lemma trapezTriangleVertex: "trapezTriangle p \<Longrightarrow> 
   (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (snd(topT1 p)) \<and> fst(topT1 p) = fst(bottomT1 p))
@@ -84,9 +87,21 @@ lemma trapezNeighbour2 : "isTrapez T \<Longrightarrow> isTrapez Ts \<Longrightar
   by (metis leftPRigthFromRightP)
 
 
-
+lemma "trapezPointsXOrder
+   ((Abs_point2d (2, 1), Abs_point2d (2, 2)), (Abs_point2d (1, 1), Abs_point2d (2, 1)), Abs_point2d (1, 1),
+    Abs_point2d (2, 2))"
+    apply (simp only: trapezPointsXOrder_def, safe)
+    apply (simp add: leftFromPoint_def)
+    apply (simp) apply (simp only: leftFromPoint_def)
+oops
 typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). isTrapez p}"
-  sorry
+  apply (auto)
+  apply (rule_tac x="Abs_point2d(1,2)" in exI, rule_tac x="Abs_point2d(2,2)" in exI)
+  apply (rule_tac x="Abs_point2d(1,1)" in exI, rule_tac x="Abs_point2d(2,1)" in exI)
+  apply (rule_tac x="Abs_point2d(1,1)" in exI, rule_tac x="Abs_point2d(2,2)" in exI)
+  apply (auto simp add: isTrapez_def trapezPointsXOrder_def leftFromPoint_def)
+  apply (auto simp add: trapezQuad_def rightTurn_def signedArea_def)
+done
 lemma isTrapez1 [simp]: "Rep_trapez T = T' \<longleftrightarrow> 
   (fst(Rep_trapez T) = fst(T') \<and> fst(snd(Rep_trapez T)) = fst(snd(T'))
   \<and> fst(snd(snd(Rep_trapez T))) = fst(snd(snd(T'))) 
@@ -151,15 +166,6 @@ lemma trapezHasOrderetPoints8:"leftFromPoint (fst(bottomT T)) (snd(topT T))"
 
 
 
-lemma trapezTriangleVertex4: "
-  leftTurn (fst(bottomT p)) (snd(bottomT p)) (snd(topT p))
-  \<or> leftTurn (fst(bottomT p)) (snd(bottomT p)) (fst(topT p))"
-  apply (case_tac p, simp add: isTrapez_def, erule conjE, erule disjE) defer
-  apply (metis isTrapezBottomT isTrapezTopT isTrapez_def leftRightTurn rightTurnRotate2
-    trapezTriangleVertex)
-  apply (rule)
-oops
-
 
 (*linke Ecke ist links von der rechten Ecke*)
 lemma leftPRigthFromRightP1 [simp] : "leftFromPoint (leftP T) (rightP T)"
@@ -202,6 +208,7 @@ lemma foo: "c \<noteq> d \<Longrightarrow> leftFromPoint c d \<Longrightarrow> l
   apply (case_tac "lineSeparate c d a b") using lineSeparate_def apply auto[1]
   apply (subgoal_tac "\<not>collinear c b d")
   apply (case_tac "collinear a c d", rule disjI2)
+  apply (case_tac "leftFromPoint d b")
 oops
   
 (*Beweise über die Positionen der Ecken vom Trapez*)
@@ -209,13 +216,13 @@ oops
 lemma trapezVertex: "snd(topT p) \<noteq> fst(bottomT p) \<and> snd(bottomT p) \<noteq> fst(topT p)"
   by (metis leftFromPointDest trapezHasOrderetPoints7 trapezHasOrderetPoints8)
 (*mind. einer der Ecken von topT ist über bottomT*)
-lemma topAboveBottom [intro] :"
+lemma topAboveBottom [intro]:"
   leftTurn (fst (bottomT T)) (snd (bottomT T)) (fst (topT T)) 
   \<or> leftTurn (fst (bottomT T)) (snd (bottomT T)) (snd (topT T))"
   apply (auto simp add: isTrapez_def)
 oops
 (*leftP ist über bottom T oder ist die linke Ecke von bottomT*)
-lemma leftPPos [intro] : "leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fst(bottomT T) = leftP T)"nitpick[timeout=400]
+lemma leftPPos [intro] : "leftTurn (fst(bottomT T)) (snd(bottomT T)) (leftP T) \<or> (fst(bottomT T) = leftP T)"
   apply (simp add: leftP_def bottomT_def del: leftRightTurn leftTurnRotate leftTurnRotate2,
     cases T, simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
 by (metis bottomT_def isTrapezBottomT isTrapezLeftP isTrapez_def leftP_def trapezQuad_def
@@ -241,6 +248,8 @@ using Abs_trapez_inverse by fastforce
 
 definition neighbor :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "neighbor T Tr \<equiv> rightP T = leftP Tr \<and> (topT T = topT Tr \<or> bottomT T = bottomT Tr)"
+lemma neighborRightPSimp[simp]: "neighbor T Tr \<Longrightarrow> leftFromPoint (rightP T) (rightP Tr)"
+  by (simp add: neighbor_def)
 (*zwei Trapeze sind benachbart entland der Strecke PQ, wenn :
   - die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
   - topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)

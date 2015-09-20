@@ -32,6 +32,8 @@ by (metis Rep_point2d_inverse prod.collapse xCoord_def yCoord_def)
 (*Point a left from point B*)
 definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "leftFromPoint a b = (xCoord a < xCoord b)"
+lemma leftFromPointSimp: "xCoord a \<noteq> xCoord b \<Longrightarrow> \<not>leftFromPoint a b \<Longrightarrow> leftFromPoint b a"
+  by(simp add: leftFromPoint_def)
 lemma leftFromPointDest [dest]: "leftFromPoint a b \<Longrightarrow> leftFromPoint b a \<Longrightarrow> False"
   by (simp add: leftFromPoint_def)
 
@@ -154,6 +156,12 @@ lemma pointsEqualArea: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0
   apply (rule_tac x="Abs_point2d((xCoord b) - 1, yCoord b)" in exI)
     apply (simp add: signedArea_def)
 done
+lemma "a \<noteq> b \<Longrightarrow>(\<exists> d c. leftTurn a b c \<and> leftTurn a b d \<and> signedArea a b c < signedArea a b d)"
+  apply (case_tac "xCoord a = xCoord b")
+    apply (rule_tac x="Abs_point2d(xCoord b - 2, yCoord b)" in exI,
+      rule_tac x="Abs_point2d(xCoord b - 1, yCoord b)" in exI)
+    
+oops
 lemma swapBetween1: "a isBetween c b \<Longrightarrow> a isBetween b c" (*[1]*)
   apply (simp add: isBetween_def, safe)
   apply (rule_tac x=d in exI, metis collSwap colliniearRight)
@@ -189,9 +197,16 @@ lemma conflictingLeftTurns2 [dest]: "leftTurn a b c \<Longrightarrow> a isBetwee
   using isBetween_def by auto
 lemma conflictingRightTurns2 [dest]: "rightTurn a b c \<Longrightarrow> a isBetween b c \<Longrightarrow> False" (*[1]*)
   using isBetween_def by auto
+lemma isBetweenTransitiv: "b isBetween a c \<Longrightarrow> d isBetween a b \<Longrightarrow> d isBetween a c"
+  apply (auto simp add: isBetween_def)
+  using colliniearRight apply auto[1]
+  apply (smt zero_less_divide_iff)
+by (smt divide_le_0_iff le_divide_eq_1)
 lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b \<Longrightarrow> a \<noteq> c \<Longrightarrow> b \<noteq> c \<Longrightarrow> (*[2]*)
   a isBetween b c \<or> b isBetween a c \<or> c isBetween a b"
   apply (safe)
+  apply (auto simp add: isBetween_def)
+  apply (simp add: pointsEqualArea)+
 sorry
 
 lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<Longrightarrow> collinear B C D \<Longrightarrow>
@@ -282,19 +297,32 @@ by blast
 
 (*evtl. noch nützlich*)
 (*A point between B and C*)
-definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"
-lemma midPointCollinear[simp]: "midpoint a b c \<Longrightarrow> collinear a b c"
-  by (auto simp add: midpoint_def collinear_def, algebra)
-lemma midPointSym : "midpoint a b c = midpoint a c b" by (auto simp add: midpoint_def)
-lemma midpointNotSame[dest]: "b\<noteq>c \<Longrightarrow> midpoint a b c \<Longrightarrow> midpoint b a c \<Longrightarrow> False"
- by (auto simp add: midpoint_def, smt pointsNotEqual1)
-lemma midpointNotSame1[dest]: "a \<noteq> b \<Longrightarrow> midpoint a a b \<Longrightarrow> False" using midpointNotSame by blast
-
-lemma midpointPointExist: "\<exists> X. midpoint X a b"
+(*definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"*)
+definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" 
+  ("_ midpoint _ _ " [60, 60, 60] 60) where
+  "d midpoint b c \<equiv> (signedArea d b c = 0 \<and> (\<forall> a. signedArea a b c = 2 * signedArea a b d))"
+lemma midPointCollinear[simp]: "a midpoint b c \<Longrightarrow> collinear a b c"
+  by (simp add: colliniearRight midpoint_def)
+lemma midPointSym : "a midpoint b c = a midpoint c b"
   apply (auto simp add: midpoint_def)
-by(metis Abs_point2d_inverse Collect_const UNIV_I mult_2 prod.sel(1) prod.sel(2) real_sum_of_halves
-  xCoord_def yCoord_def)
+by (metis collSwap colliniearRight notCollThenDiffPoints, smt hausner)+
+lemma midpointNotSame1[dest]: "a \<noteq> b \<Longrightarrow> a midpoint a b \<Longrightarrow> False"
+  by (simp add: midpoint_def pointsEqualArea)
+lemma midpointNotSame[dest]: "b\<noteq>c \<Longrightarrow> a midpoint b c \<Longrightarrow> b midpoint a c \<Longrightarrow> False"
+  apply (auto simp add: midpoint_def)
+by (smt midPointSym midpointNotSame1 midpoint_def signedAreaMin)
+
+lemma "(a midpoint b c) = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"
+  apply (auto simp add: midpoint_def)
+oops
+
+lemma midpointPointExist: "\<exists> X. X midpoint a b"
+  apply (case_tac "a=b", smt colliniearRight midpoint_def mult_zero_right notCollThenDiffPoints)
+  apply (auto simp add: midpoint_def)
+  apply (subgoal_tac "\<exists> d. signedArea a b d = 0", simp, erule_tac exE)
+  apply (rule_tac x="d" in exI, auto)
+oops
 
 (*scalar multiplication*)
 definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) where (*[2]*)
@@ -307,6 +335,7 @@ lemma cramersRule: "signedArea P Q R = 0 \<Longrightarrow> T =
   ((signedArea P Q T / signedArea P Q R) *s R)"
 oops
 
+
 lemma CollPointExist: "\<exists> X. collinear A B X" by (rule_tac x=A in exI, auto)
 
 lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBetween a b"
@@ -316,7 +345,7 @@ lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBet
   apply (safe)
   apply (simp add: pointsEqualArea)
   apply (simp add: pointsEqualArea)
-  apply (subgoal_tac "collinear X a b")
+  (*apply (subgoal_tac "collinear X a b")
     apply (case_tac "X = d", simp) using colliniearRight midPointCollinear apply blast
     apply (case_tac "X = a", simp, blast)
     apply (case_tac "X = b", simp)
@@ -325,7 +354,7 @@ lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBet
     apply (case_tac "xCoord a = xCoord b", subgoal_tac "xCoord X = xCoord b")
       apply (case_tac "yCoord a < yCoord b", subgoal_tac "yCoord a < yCoord X \<and> yCoord X < yCoord b")
       apply (case_tac "signedArea d a b > 0")
-      (*selbst hier kein Beweis*)
+      (*selbst hier kein Beweis*)*)
 oops
 
 definition segLength :: "point2d \<Rightarrow> point2d \<Rightarrow> real" where

@@ -93,12 +93,6 @@ lemma rBoxTrapezSConcatEq : "PL \<noteq> [] \<Longrightarrow>
 by (smt UN_iff in_set_conv_nth set_concat)+
 
 
-(*fun rightNeighbour :: "trapez list \<Rightarrow> trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> trapez option" where
-  "rightNeighbour [Tn] T P Q = (if(neighborAlongSeg T Tn (leftPSegment P Q) (rightPSegment P Q))
-    then Some Tn else None)"
-  | "rightNeighbour (Tn#Tm) T P Q=(if(neighborAlongSeg T Tn (leftPSegment P Q) (rightPSegment P Q))
-    then Some Tn else rightNeighbour Tm T P Q)"*)
-
 
 
 
