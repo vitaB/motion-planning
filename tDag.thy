@@ -27,13 +27,12 @@ lemma tDagListNotEmpty[dest] : "tDagList D = [] \<Longrightarrow> False" by (ind
 
 (*wann ist ein Punkt im tDag*)
 definition pointInDag :: "tDag \<Rightarrow> point2d \<Rightarrow> bool" where
-  "pointInDag D A \<equiv> \<exists> i < length (tDagList D). pointInTrapez ((tDagList D)!i) A"
+  "pointInDag D A \<equiv> \<exists> X \<in> set (tDagList D). pointInTrapez X A"
 lemma pointInDagCompl: "pointInTrapez T A \<Longrightarrow> tipInDag T D \<Longrightarrow> pointInDag D A"
   apply (induct D, simp)
-  apply (metis length_Cons less_Suc0 list.size(3) nth_Cons_0 pointInDag_def tDagList.simps(1))
-  apply (auto simp add: pointInDag_def)
-  apply (metis nth_append trans_less_add1)
-by (metis nat_add_left_cancel_less nth_append_length_plus)
+  using pointInDag_def tDagListComplete tipInDag.simps(1) apply blast
+by (auto simp add: pointInDag_def)
+
 
 (*Input Tip welches entfernt wird, tDag welches hinzugefügt wird, tDag-tree in dem ersetzt werden soll
 Output: neues tDag-tree*)

@@ -39,8 +39,8 @@ definition pointInPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> b
 (*polygon is partial or complete in another Polygon*)
 definition polygonInPolygon :: "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
   "pointList Lr\<Longrightarrow> Pr=cyclePath Lr\<Longrightarrow> polygon Pr\<Longrightarrow> pointList Lt\<Longrightarrow>Pt=cyclePath Lt \<Longrightarrow> polygon Pt\<Longrightarrow>
-    polygonInPolygon Pr Pt \<equiv> (\<exists> i < length Pr. pointInPolygon Pt (Pr!i))
-    \<or> (\<exists> j < length Pt. pointInPolygon Pr (Pt!j))"
+    polygonInPolygon Pr Pt \<equiv> (\<exists> i \<in> set Pr. pointInPolygon Pt i)
+    \<or> (\<exists> j \<in> set Pt. pointInPolygon Pr j)"
 
 lemma polygonInPolygonSym : "pointList Lr \<Longrightarrow> Pr = cyclePath Lr \<Longrightarrow> polygon Pr \<Longrightarrow> pointList Lt \<Longrightarrow>
   Pt = cyclePath Lt \<Longrightarrow> polygon Pt \<Longrightarrow> polygonInPolygon Pr Pt = polygonInPolygon Pt Pr"
