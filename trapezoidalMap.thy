@@ -276,7 +276,7 @@ by (simp add: vertexInBuildTrapezoidalMap)
 
 
 (*alte Definition*)
-(*fun rUpNeighb :: "trapez list \<Rightarrow> trapez \<Rightarrow> trapez" where
+fun rUpNeighb :: "trapez list \<Rightarrow> trapez \<Rightarrow> trapez" where
   "rUpNeighb [] T = T"
   | "rUpNeighb (Tr#TN) T = (if(neighbor T Tr \<and> topT T = topT Tr)
     then (Tr) else (rUpNeighb TN T))"
@@ -318,26 +318,32 @@ by (metis isTramMap_def rBtNeighbSimp1 tDagList.simps(2) tipInDag.simps(2))
 
 
 
-(*definition segmentList :: "point2d list \<Rightarrow> bool" where
-  "segmentList P \<equiv> \<forall> i j. i < j \<longrightarrow> xCoord (P!i) < xCoord (P!j)"
-definition pointOnSegList :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
-  "pointOnSegList P A \<equiv> \<exists> i j. i < length P \<and> j < length P \<and> 
-  xCoord (P!i) \<le> xCoord A \<and> xCoord A < xCoord (P!j)"
-fun nextPoint :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d" where
-  "nextPoint [] A = A"
-  | "nextPoint (P#XS) A = (if (xCoord P > xCoord A)
-    then (P)
-    else (nextPoint XS A))"
-lemma "pointOnSegList P A \<Longrightarrow> xCoord (nextPoint P A) < xCoord A"
-  apply (cases P)
-  apply (simp add: pointOnSegList_def)
-  apply (auto simp add: pointOnSegList_def)
-fun foo :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d list" where
-  "foo P A Q = (if(xCoord A < xCoord Q)
-  then(A # (foo P (nextPoint P A) Q))
-  else([]))"
-oops*)
+definition pointOnList :: "real list \<Rightarrow> real \<Rightarrow> bool" where
+  "pointOnList L P \<equiv> \<exists>x\<in>set L. P < x"
+fun nextPoint :: "real list \<Rightarrow> real \<Rightarrow> real" where
+  "nextPoint (X#Ls) P = (if (X > P)
+    then (X)
+    else (nextPoint Ls P))"
 
+lemma foo: "pointOnList P A \<Longrightarrow> A < (nextPoint P A)"
+  apply (induct P A rule: nextPoint.induct)
+by (auto simp add: pointOnList_def)+
+
+lemma bla: "pointOnList P A \<Longrightarrow> is_measure (\<lambda> (L,P,Q). length (filter (\<lambda>x. P \<le> x \<and> x \<le> Q) L))"
+sorry
+function listBetween :: "real list \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real list" where
+  "pointOnList L P \<Longrightarrow> pointOnList L Q \<Longrightarrow> listBetween L P Q = (if(P \<le> Q)
+  then(P # (listBetween L (nextPoint L P) Q))
+  else([]))"
+  apply (auto)
+sorry
+termination listBetween
+  (*apply (relation "measure (\<lambda> (L,P,Q). length [ A \<leftarrow> L. P < A])")*)
+  apply (relation "measure (\<lambda> (L,P,Q). length (filter (\<lambda>x. P \<le> x \<and> x \<le> Q) L))")
+  apply clarsimp
+  apply (simp)
+sorry
+oops
 
 (*lemma tramMap_measure_size [measure_function]:"isTramMap D \<and> pointInDag D Q \<Longrightarrow>
   leftFromPoint (rightP T) ()"*)
@@ -352,13 +358,14 @@ function followSegment :: "tDag \<Rightarrow> trapez \<Rightarrow> point2d \<Rig
   else([]))) else ([]))"
 by pat_completeness auto
 termination followSegment
- apply (auto)
- apply (subgoal_tac "leftFromPoint ab b")
- apply (relation "measure (\<lambda>(a,aa,ab,b). xCoord b - xCoord (rightP aa))")
+ (*apply (subgoal_tac "leftFromPoint ab b")*)
+ apply (relation "measure (size o (xCoord o rightP o fst o snd) )")
+ apply (simp)
+ apply (relation "measure (\<lambda> (L,P,Q). length [ A . A <- L, P < A])"")
  (*beweise das das nächste Trapez rechts von dem linkem Trapez
-  bzw. dass der Abstand zwischen rightP T und Q immer kleiner wird*)
-(*dafür müssen aber entweder in tDag noch annahmen stecken oder es muss eine condition für followS geben*)
-(*functions with conditional patterns are not supported by the code generator.*)
+  bzw. dass der Abstand zwischen rightP T und Q immer kleiner wird.
+  Beweis mit Abstand für reale Zahlen garnicht möglich?
+  Abstand kan beliebig klein werden und Q nicht erreichen*)
 sorry*)
 
 

@@ -179,7 +179,7 @@ lemma trapezNeighbour4 : "rightP T = leftP Ts \<Longrightarrow>
   leftFromPoint (leftP T) (leftP Ts)"
   by (metis leftPRigthFromRightP1)
 
-(*jeder Punkt der auf der xCoordinate von rightP steht und von topT und bottomT eingegrenzt wird*)
+(*(*jeder Punkt der auf der xCoordinate von rightP steht und von topT und bottomT eingegrenzt wird*)
 definition pointOnLeftT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where
   "pointOnLeftT T p \<equiv> rightTurn (fst(topT T)) (snd(topT T)) p
     \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (leftP T) = xCoord p"
@@ -188,7 +188,7 @@ definition pointOnRightT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" wh
     \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (rightP T) = xCoord p"
 lemma pointNotOnLeftRightT[dest]: "pointOnLeftT T p \<Longrightarrow> pointOnRightT T p \<Longrightarrow> False"
   apply (simp add: pointOnLeftT_def pointOnRightT_def isTrapez_def trapezPointsXOrder_def)
-by (metis leftFromPoint_def leftPRigthFromRightP1 less_irrefl)
+by (metis leftFromPoint_def leftPRigthFromRightP1 less_irrefl)*)
 
 
 (*topT und bottomT sind segmente*)
