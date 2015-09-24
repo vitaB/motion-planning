@@ -250,6 +250,14 @@ definition neighbor :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "neighbor T Tr \<equiv> rightP T = leftP Tr \<and> (topT T = topT Tr \<or> bottomT T = bottomT Tr)"
 lemma neighborRightPSimp[simp]: "neighbor T Tr \<Longrightarrow> leftFromPoint (rightP T) (rightP Tr)"
   by (simp add: neighbor_def)
+lemma neighborSam[dest]: "neighbor T T \<Longrightarrow> False"
+  apply (simp add: neighbor_def, cases T, simp add: isTrapez_def)
+  apply (simp add: trapezPointsXOrder_def)
+by (metis leftFromPointDest leftPRigthFromRightP1)
+lemma neighborNotSym[dest]: "neighbor T Tr \<Longrightarrow> neighbor Tr T \<Longrightarrow> False"
+  apply (simp add: neighbor_def, cases T, simp add: isTrapez_def)
+  apply (simp add: trapezPointsXOrder_def)
+by (metis leftFromPointDest leftPRigthFromRightP1)
 (*zwei Trapeze sind benachbart entland der Strecke PQ, wenn :
   - die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
   - topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
@@ -280,6 +288,30 @@ done
   "trapezSegmentCrossing T P Q \<equiv> crossing (fst (topT T)) (snd (topT T)) P Q
     \<or> crossing (fst (bottomT T)) (snd (bottomT T)) P Q"*)
 
+
+
+(*********rBox. 4 Eckige Box um pointListe herum. First Trapez*)
+(*Definition wann ist R eine rechteckige Box um PL herum*)
+(*lassen sich die 3 pointInTrapez definitionen vereinheitlichen?*)
+definition pointInRBox :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
+  "pointInRBox R P \<equiv> leftFromPoint P (rightP R) \<and> (leftFromPoint (leftP R) P)
+  \<and> leftTurn (fst(bottomT R)) (snd(bottomT R)) P \<and> (rightTurn (fst(topT R)) (snd(topT R)) P)"
+definition rBoxTrapezS :: "point2d list \<Rightarrow> trapez \<Rightarrow> bool" where
+  "rBoxTrapezS PL R \<equiv> (\<forall> i < length PL. pointInRBox R (PL!i))"
+lemma rBoxTrapezSSimp[simp]: "rBoxTrapezS [a] R = pointInRBox R a"
+  by (auto simp add: rBoxTrapezS_def)
+lemma rBoxTrapezSConcat: "rBoxTrapezS (concat PL) R \<Longrightarrow> i < length PL \<Longrightarrow> rBoxTrapezS (PL!i) R"
+  apply (subgoal_tac "\<forall> a \<in> set (concat PL). pointInRBox R a")
+  apply (auto simp add: rBoxTrapezS_def)
+  apply (erule_tac x=i in allE, safe)
+  apply (meson nth_mem)+
+by (metis (full_types) UN_I in_set_conv_nth set_concat)
+lemma rBoxTrapezSConcatEq : "PL \<noteq> [] \<Longrightarrow>
+  rBoxTrapezS (concat PL) R = (\<forall> i < length PL. rBoxTrapezS (PL!i) R)"
+  apply (auto simp add: rBoxTrapezSConcat)
+  apply (subgoal_tac "(\<forall> a \<in> set (concat PL). pointInRBox R a)")
+  apply (auto simp add: rBoxTrapezS_def)
+by (smt UN_iff in_set_conv_nth set_concat)+
 
 
 

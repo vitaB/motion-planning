@@ -68,31 +68,6 @@ lemma replaceInDWithD [simp] : "tipInDag a D \<Longrightarrow> tipInDag a (repla
 
 
 
-(*********rBox. 4 Eckige Box um pointListe herum. First Trapez*)
-(*Definition wann ist R eine rechteckige Box um PL herum*)
-(*lassen sich die 3 pointInTrapez definitionen vereinheitlichen?*)
-definition pointInRBox :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where 
-  "pointInRBox R P \<equiv> leftFromPoint P (rightP R) \<and> (leftFromPoint (leftP R) P)
-  \<and> leftTurn (fst(bottomT R)) (snd(bottomT R)) P \<and> (rightTurn (fst(topT R)) (snd(topT R)) P)"
-definition rBoxTrapezS :: "point2d list \<Rightarrow> trapez \<Rightarrow> bool" where
-  "rBoxTrapezS PL R \<equiv> (\<forall> i < length PL. pointInRBox R (PL!i))"
-lemma rBoxTrapezSSimp[simp]: "rBoxTrapezS [a] R = pointInRBox R a"
-  by (auto simp add: rBoxTrapezS_def)
-lemma rBoxTrapezSConcat: "rBoxTrapezS (concat PL) R \<Longrightarrow> i < length PL \<Longrightarrow> rBoxTrapezS (PL!i) R"
-  apply (subgoal_tac "\<forall> a \<in> set (concat PL). pointInRBox R a")
-  apply (auto simp add: rBoxTrapezS_def)
-  apply (erule_tac x=i in allE, safe)
-  apply (meson nth_mem)+
-by (metis (full_types) UN_I in_set_conv_nth set_concat)
-lemma rBoxTrapezSConcatEq : "PL \<noteq> [] \<Longrightarrow>
-  rBoxTrapezS (concat PL) R = (\<forall> i < length PL. rBoxTrapezS (PL!i) R)"
-  apply (auto simp add: rBoxTrapezSConcat)
-  apply (subgoal_tac "(\<forall> a \<in> set (concat PL). pointInRBox R a)")
-  apply (auto simp add: rBoxTrapezS_def)
-by (smt UN_iff in_set_conv_nth set_concat)+
-
-
-
 
 
 
