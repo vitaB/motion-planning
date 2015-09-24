@@ -18,7 +18,7 @@ lemma pointSameCoord [simp]: "Abs_point2d(a, b) = Abs_point2d(a', c) \<longleftr
 
 (*points equal*)
 definition pointsEqual :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "pointsEqual r p = (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
+  "pointsEqual r p \<equiv> (xCoord r = xCoord p \<and> yCoord r = yCoord p)"
 lemma pointsNotEqual : "\<not>pointsEqual r p = (xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p)"
   by (simp add: pointsEqual_def)
 lemma pointsNotEqual1: "(xCoord r \<noteq> xCoord p \<or> yCoord r \<noteq> yCoord p) \<longleftrightarrow> r \<noteq> p"
@@ -31,7 +31,7 @@ by (metis Rep_point2d_inverse prod.collapse xCoord_def yCoord_def)
 
 (*Point a left from point B*)
 definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "leftFromPoint a b = (xCoord a < xCoord b)"
+  "leftFromPoint a b \<equiv> (xCoord a < xCoord b)"
 lemma leftFromPointSimp: "xCoord a \<noteq> xCoord b \<Longrightarrow> \<not>leftFromPoint a b \<Longrightarrow> leftFromPoint b a"
   by(simp add: leftFromPoint_def)
 lemma leftFromPointDest [dest]: "leftFromPoint a b \<Longrightarrow> leftFromPoint b a \<Longrightarrow> False"
