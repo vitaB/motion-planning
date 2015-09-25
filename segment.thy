@@ -7,7 +7,7 @@ definition segment :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment a b \<equiv> \<not> pointsEqual a b"
 lemma [simp]: "xCoord A \<noteq> xCoord B \<Longrightarrow> segment A B" by (auto simp add: segment_def)
 lemma [simp]: "yCoord A \<noteq> yCoord B \<Longrightarrow> segment A B" by (auto simp add: segment_def)
-lemma [simp]: "leftFromPoint A B \<Longrightarrow> segment A B" by (simp add: leftFromPoint_def)
+lemma [simp]: "leftFrom A B \<Longrightarrow> segment A B" by (simp add: leftFrom_def)
 lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
 definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
@@ -15,10 +15,10 @@ definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d 
 
 (*left corner of the segment*)
 definition leftPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
-  "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<equiv> (if (leftFromPoint A B) then A else B)"
+  "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<equiv> (if (leftFrom A B) then A else B)"
 (*right corner of the segment*)
 definition rightPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
-  "xCoord A \<noteq> xCoord B \<Longrightarrow> rightPSegment A B \<equiv> (if (leftFromPoint A B) then B else A)"
+  "xCoord A \<noteq> xCoord B \<Longrightarrow> rightPSegment A B \<equiv> (if (leftFrom A B) then B else A)"
 lemma leftPNotEqualRightP : "xCoord A \<noteq> xCoord B \<Longrightarrow> leftPSegment A B \<noteq> rightPSegment A B"
   by (auto simp add: rightPSegment_def leftPSegment_def)
 lemma leftPRightPSimp[simp]: "xCoord p \<noteq> xCoord q \<Longrightarrow> p = leftPSegment p q \<Longrightarrow>
@@ -27,10 +27,10 @@ lemma leftPRightPSimp[simp]: "xCoord p \<noteq> xCoord q \<Longrightarrow> p = l
 lemma leftPRightPSimp1[simp]: "xCoord p \<noteq> xCoord q \<Longrightarrow> q = rightPSegment p q \<Longrightarrow>
   p = leftPSegment p q"
   by (auto simp add: leftPSegment_def rightPSegment_def)
-lemma leftPRightPSimp2[simp]: "leftFromPoint P Q \<Longrightarrow> P = leftPSegment P Q"
-  by (auto simp add: leftFromPoint_def leftPSegment_def)
-lemma leftPRightPSimp3[simp]: "leftFromPoint P Q \<Longrightarrow> Q = rightPSegment P Q"
-  by (auto simp add: leftFromPoint_def)
+lemma leftPRightPSimp2[simp]: "leftFrom P Q \<Longrightarrow> P = leftPSegment P Q"
+  by (auto simp add: leftFrom_def leftPSegment_def)
+lemma leftPRightPSimp3[simp]: "leftFrom P Q \<Longrightarrow> Q = rightPSegment P Q"
+  by (auto simp add: leftFrom_def)
 
 (*Point p is on segment AB*)
 definition pointOnSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where

@@ -30,12 +30,12 @@ by (metis Rep_point2d_inverse prod.collapse xCoord_def yCoord_def)
 
 
 (*Point a left from point B*)
-definition leftFromPoint :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "leftFromPoint a b \<equiv> (xCoord a < xCoord b)"
-lemma leftFromPointSimp: "xCoord a \<noteq> xCoord b \<Longrightarrow> \<not>leftFromPoint a b \<Longrightarrow> leftFromPoint b a"
-  by(simp add: leftFromPoint_def)
-lemma leftFromPointDest [dest]: "leftFromPoint a b \<Longrightarrow> leftFromPoint b a \<Longrightarrow> False"
-  by (simp add: leftFromPoint_def)
+definition leftFrom :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "leftFrom a b \<equiv> (xCoord a < xCoord b)"
+lemma leftFromSimp: "xCoord a \<noteq> xCoord b \<Longrightarrow> \<not>leftFrom a b \<Longrightarrow> leftFrom b a"
+  by(simp add: leftFrom_def)
+lemma leftFromDest [dest]: "leftFrom a b \<Longrightarrow> leftFrom b a \<Longrightarrow> False"
+  by (simp add: leftFrom_def)
 
 (*signed area of a triangle; with the convention being that
 - if the points are ordered anti-clockwise, the area is positive
