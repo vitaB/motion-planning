@@ -284,9 +284,9 @@ lemma InnerToPointInTrapez[simp]: "pointInTrapezInner T P \<Longrightarrow> poin
   using rightTurn_def apply auto[1] using rightTurn_def apply auto[1]
 done
 
-(*definition trapezSegmentCrossing :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "trapezSegmentCrossing T P Q \<equiv> crossing (fst (topT T)) (snd (topT T)) P Q
-    \<or> crossing (fst (bottomT T)) (snd (bottomT T)) P Q"*)
+(*definition trapezSegmentIntersect :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "trapezSegmentIntersect T P Q \<equiv> intersect (fst (topT T)) (snd (topT T)) P Q
+    \<or> intersect (fst (bottomT T)) (snd (bottomT T)) P Q \<or> "*)
 
 
 
@@ -297,15 +297,12 @@ definition pointInRBox :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" wher
   "pointInRBox R P \<equiv> leftFrom P (rightP R) \<and> (leftFrom (leftP R) P)
   \<and> leftTurn (fst(bottomT R)) (snd(bottomT R)) P \<and> (rightTurn (fst(topT R)) (snd(topT R)) P)"
 definition rBoxTrapezS :: "point2d list \<Rightarrow> trapez \<Rightarrow> bool" where
-  "rBoxTrapezS PL R \<equiv> (\<forall> i < length PL. pointInRBox R (PL!i))"
+  "rBoxTrapezS PL R \<equiv> (\<forall> a \<in> set PL. pointInRBox R a)"
 lemma rBoxTrapezSSimp[simp]: "rBoxTrapezS [a] R = pointInRBox R a"
   by (auto simp add: rBoxTrapezS_def)
 lemma rBoxTrapezSConcat: "rBoxTrapezS (concat PL) R \<Longrightarrow> i < length PL \<Longrightarrow> rBoxTrapezS (PL!i) R"
   apply (subgoal_tac "\<forall> a \<in> set (concat PL). pointInRBox R a")
-  apply (auto simp add: rBoxTrapezS_def)
-  apply (erule_tac x=i in allE, safe)
-  apply (meson nth_mem)+
-by (metis (full_types) UN_I in_set_conv_nth set_concat)
+by (auto simp add: rBoxTrapezS_def)
 lemma rBoxTrapezSConcatEq : "PL \<noteq> [] \<Longrightarrow>
   rBoxTrapezS (concat PL) R = (\<forall> i < length PL. rBoxTrapezS (PL!i) R)"
   apply (auto simp add: rBoxTrapezSConcat)

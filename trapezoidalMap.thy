@@ -93,6 +93,14 @@ definition newDagSimp :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<R
       )))"
 lemma newDagSimpNotSame[simp]: "newDagSimp T P Q \<noteq> Tip T"
   by (simp add: newDagSimp_def)
+lemma newDagSimpTrapez:"\<forall> a \<in> set (tDagList (newDagSimp R p q)). isTrapez (Rep_trapez a)"
+  apply (auto simp add: newDagSimp_def newDagSimpQ_def newDagSimpA_def)
+oops
+lemma newDagSimpRBoxTrapez: "leftFrom p q \<Longrightarrow> rightP R \<noteq> q \<Longrightarrow> p \<noteq> leftP R \<Longrightarrow> 
+  newDagSimp R p q = Node(Tip (Abs_trapez (topT R,bottomT R, leftP R, p)))(xNode p)
+  (Node(Node(Tip (Abs_trapez(topT R,(p,q),p,q)))(yNode (p,q))(Tip (Abs_trapez((p,q),bottomT R, p, q))))
+  (xNode q)(Tip (Abs_trapez (topT R,bottomT R, q, rightP R))))"
+by (auto simp add: newDagSimp_def newDagSimpQ_def newDagSimpA_def)
 
 (*ersetze mittlere Trapeze, d.h. P liegt in T0, Q liegt in Tn und Trapez Ti(0<i<n) soll ersetzt werden*)
 definition newDagM :: "trapez \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> tDag" where
@@ -149,7 +157,6 @@ definition newDag :: "tDag \<Rightarrow> trapez \<Rightarrow> trapez list \<Righ
     ))"
 lemma newDagNotSame[simp]: "newDag D T TM P Q \<noteq> Tip T"
   by (simp add: newDag_def)
-
 
 
 fun rUpNeighb :: "trapez list \<Rightarrow> trapez \<Rightarrow> trapez" where
@@ -274,6 +281,11 @@ lemma addSegmentsToRBoxNotSame [simp]:"leftFrom p q \<Longrightarrow> rBoxTrapez
   addSegmentToTrapezoidalMap (Tip R) p q \<noteq> Tip R"
   apply (simp add: addSegmentToTrapezoidalMap_def)
 done
+lemma addSegmentsToRBox: "leftFrom p q \<Longrightarrow> rBoxTrapezS [p,q] R \<Longrightarrow>
+  addSegmentToTrapezoidalMap (Tip R) p q = Node(Tip (Abs_trapez (topT R,bottomT R, leftP R, p)))(xNode p)
+  (Node(Node(Tip (Abs_trapez(topT R,(p,q),p,q)))(yNode (p,q))(Tip (Abs_trapez((p,q),bottomT R, p, q))))
+  (xNode q)(Tip (Abs_trapez (topT R,bottomT R, q, rightP R))))"
+  apply (simp add: addSegmentToTrapezoidalMap_def newDag_def newDagSimp_def)
   
 lemma trapMapAfterAddSegment: "leftFrom P Q \<Longrightarrow> pointInDag T P \<Longrightarrow> pointInDag T Q \<Longrightarrow>
   T = replaceDag D(intersectedTrapez D P Q)(intersectedTrapez D P Q) P Q \<Longrightarrow>
@@ -350,8 +362,11 @@ lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P
     subgoal_tac "q = rightPSegment p q") defer
     apply (simp, simp) defer
   apply (simp add: addSegmentToTrapezoidalMap_def)
-  apply (subgoal_tac "replaceDag (Tip R) (intersectedTrapez (Tip R) p q) (intersectedTrapez (Tip R) p q) p q \<noteq> Tip R")
+  apply (subgoal_tac "replaceDag (Tip R) (intersectedTrapez (Tip R) p q) (intersectedTrapez (Tip R) p q) p q \<noteq> Tip R") defer
+apply (metis list.distinct(1) list.set_cases list.set_intros(1) list.set_intros(2) rBoxTrapezS_def replaceRBoxNotSame set_ConsD) defer
   apply (simp)
+  apply (thin_tac "replaceDag (Tip R) (intersectedTrapez (Tip R) p q) (intersectedTrapez (Tip R) p q) p q \<noteq> Tip R")
+  
 oops
 (*keine Ecke aus dem Polygon ist im Trapez*)
 lemma vertexInSimpTrapezoidalMap: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow>

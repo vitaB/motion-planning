@@ -162,6 +162,11 @@ lemma "segment a b \<Longrightarrow> segment c d \<Longrightarrow> collinear a b
   apply (case_tac "collinear a b c")
 oops
 
+definition notIntersectAdj :: "[point2d,point2d,point2d,point2d] \<Rightarrow> bool" where
+  "notIntersectAdj A B P R \<equiv> (A = P \<longrightarrow> \<not>collinear B P R) \<and> (A = R \<longrightarrow> \<not>collinear B P R)
+  \<and> (B = P \<longrightarrow> \<not>collinear A P R) \<and> (B = R \<longrightarrow> \<not>collinear A P R)
+  \<and> (A \<noteq> P \<and> A \<noteq> R \<and> B \<noteq> P \<and> B \<noteq> R \<longrightarrow> \<not>intersect A B P R)"
+
 (*evtl. noch nützrlich*)
 (*lemma pointOnSegmentEQ : "segment a c \<Longrightarrow> pointOnSegment b a c = (collinear a b c \<and>
   (\<exists> d. signedArea a c d \<noteq> 0) \<and> (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
