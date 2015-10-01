@@ -12,6 +12,16 @@ and has leftChild and rightChild pointers to nodes.*)
 and belowChild depending on whether the child item is above or below the segment stored at the y-node.*)
 datatype tDag = Tip "trapez" | Node "tDag" kNode "tDag"
 
+fun xDagList :: "tDag \<Rightarrow> point2d list" where
+  "xDagList (Tip a) = []"
+  | "xDagList (Node Tl (xNode x) Tr) = xDagList Tl @ [x] @ xDagList Tr"
+  | "xDagList (Node Tl (yNode x) Tr) = xDagList Tl @ xDagList Tr"
+
+fun yDagList :: "tDag \<Rightarrow> (point2d\<times>point2d) list" where
+  "yDagList (Tip a) = []"
+  | "yDagList (Node Tl (xNode x) Tr) = yDagList Tl @ yDagList Tr"
+  | "yDagList (Node Tl (yNode x) Tr) = yDagList Tl @ [x] @ yDagList Tr"
+
 (*Wandle DAG in eine Trapez-Liste um*)
 fun tDagList :: "tDag \<Rightarrow> trapez list" where
   "tDagList (Tip a) = [a]"

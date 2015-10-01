@@ -23,7 +23,7 @@ lemma polygonListSimp2 [simp]: "pointLists [A] \<Longrightarrow> polygon (cycleP
   by (auto simp add: polygonList_def)
   
 
-(*count how many times a track intersects the polygon*)
+(*(*count how many times a track intersects the polygon*)
 fun countSegmentCrossPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> nat" where
   "countSegmentCrossPolygon [] S E = 0"
   | "countSegmentCrossPolygon [P] S E = 0"
@@ -103,7 +103,7 @@ lemma polygonDisjoinPathsIntersect [simp]: "pointLists PL \<Longrightarrow> poly
   apply (erule_tac x=i in allE, erule_tac x=j in allE, simp add: polygonDisjoint_def)
 by (cut_tac Ll="PL ! i" and P="cyclePath (PL ! i)" and Lr="PL ! j" and R="cyclePath (PL ! j)"
     in polygonDisjoint_def, simp+)
-
+*)
   
   
 
@@ -216,7 +216,7 @@ lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \
   by (simp add: polygon_def cPolygonIsIntersectionFree)
 
 
-(*Punkt inside convex Polygon.*)
+(*(*Punkt inside convex Polygon.*)
 (*Testweise. überprüfe ob Punkt für alle segmente des Polygons rechts oder links gerichtet ist*)
 (*wenn Punkt auf Kante liegt, zählt es nicht.*)
 definition pointInsideCPolygonACl :: "point2d list \<Rightarrow> point2d \<Rightarrow> bool" where
@@ -282,7 +282,7 @@ sorry
 (*wenn segment inside convex Polygon, dann schneidet das segment das Polygon nicht*)
 lemma "segment A B \<Longrightarrow> pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<Longrightarrow>
   segmentInsideCPolygon P A B \<Longrightarrow> \<not>lineCyclePathInters P A B"
-oops
+oops*)
 
 
 

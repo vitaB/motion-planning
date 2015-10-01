@@ -6,16 +6,21 @@ begin
 definition topT1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> (point2d\<times>point2d)"
   where  "topT1 T \<equiv> fst T"
 lemma topT1[simp] :"topT1 ((a,b),(c,d),e,f) = (a,b)" by (simp add: topT1_def)
+lemma topT1Simp[simp] : "topT1 (a, b, c , d) = a" by (simp add: topT1_def)
 definition bottomT1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> (point2d\<times>point2d)"
   where "bottomT1 T \<equiv> fst(snd T)"
 lemma bottomT1[simp] :"bottomT1 ((a,b),(c,d),e,f) = (c,d)" by (simp add: bottomT1_def)
+lemma bottomT1Simp[simp] : "bottomT1 (a, b, c , d) = b" by (simp add: bottomT1_def)
 definition leftP1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> point2d" where
   "leftP1 T \<equiv> fst(snd(snd T))"
 lemma leftP1[simp] :"leftP1 ((a,b),(c,d),e,f) = e" by (simp add: leftP1_def)
+lemma leftP1Simp[simp] : "leftP1 (a, b, c ,d) = c" by (simp add: leftP1_def)
 definition rightP1 :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> point2d" where
   "rightP1 T \<equiv> snd(snd(snd T))"
 lemma rightP1[simp] :"rightP1 ((a,b),(c,d),e,f) = f" by (simp add: rightP1_def)
+lemma rightP1Simp[simp] : "rightP1 (a, b, c , d) = d" by (simp add: rightP1_def)
 
+(*Anordnung der Trapez-Punkte auf der x-Koordinate*)
 definition trapezPointsXOrder ::"(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> bool"where
   "trapezPointsXOrder p \<equiv> leftFrom (leftP1 p) (rightP1 p) (*e links von f*)
   \<and> leftFrom (fst(topT1 p)) (snd(topT1 p)) (*a ist links von b*)
@@ -55,6 +60,7 @@ lemma trapezTriangleVertex1: "trapezQuad p \<Longrightarrow>
   \<and> leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (fst(topT1 p))"
 oops
 
+(*eine der vertikalen Seiten des Trapezes ist ein Punkt*)
 definition trapezTriangle :: "(point2d\<times>point2d)\<times>(point2d\<times>point2d)\<times>point2d\<times>point2d \<Rightarrow> bool" where
    "trapezTriangle p \<equiv> (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (fst(topT1 p)) (*a ist über cd*)
     \<and> (leftTurn (fst(bottomT1 p)) (snd(bottomT1 p)) (leftP1 p) \<or> fst(bottomT1 p) = leftP1 p) (*e ist über cd*)
@@ -94,14 +100,6 @@ lemma "trapezPointsXOrder
     apply (simp add: leftFrom_def)
     apply (simp) apply (simp only: leftFrom_def)
 oops
-typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). isTrapez p}"
-  apply (auto)
-  apply (rule_tac x="Abs_point2d(1,2)" in exI, rule_tac x="Abs_point2d(2,2)" in exI)
-  apply (rule_tac x="Abs_point2d(1,1)" in exI, rule_tac x="Abs_point2d(2,1)" in exI)
-  apply (rule_tac x="Abs_point2d(1,1)" in exI, rule_tac x="Abs_point2d(2,2)" in exI)
-  apply (auto simp add: isTrapez_def trapezPointsXOrder_def leftFrom_def)
-  apply (auto simp add: trapezQuad_def rightTurn_def signedArea_def)
-done
 lemma isTrapez1 [simp]: "Rep_trapez T = T' \<longleftrightarrow> 
   (fst(Rep_trapez T) = fst(T') \<and> fst(snd(Rep_trapez T)) = fst(snd(T'))
   \<and> fst(snd(snd(Rep_trapez T))) = fst(snd(snd(T'))) 
@@ -310,6 +308,33 @@ lemma rBoxTrapezSConcatEq : "PL \<noteq> [] \<Longrightarrow>
   apply (auto simp add: rBoxTrapezS_def)
 by (smt UN_iff in_set_conv_nth set_concat)+
 
+
+lemma newTrapez[simp]: "pointInRBox oT P \<Longrightarrow> isTrapez (topT oT, bottomT oT, leftP oT, P)"
+  apply (cases oT, simp add: isTrapez_def, rule conjI)
+  using isTrapez_def apply auto[1]
+  apply (simp add: trapezPointsXOrder_def pointInRBox_def)
+  using leftFrom_def apply auto[1]
+  apply (simp add: pointInRBox_def leftFrom_def  trapezPointsXOrder_def)
+  apply (subgoal_tac "isTrapez y", erule conjE)
+  apply (erule disjE, rule disjI1)
+  apply (simp add: pointInRBox_def trapezQuad_def)
+  apply (subst (asm) trapezTriangle_def, simp)
+  apply (erule disjE, erule conjE, simp)+
+  apply (erule conjE, erule disjE)+ apply (erule conjE, simp)+
+sorry
+lemma newTrapez1[simp]: "pointInRBox oT P \<Longrightarrow> isTrapez (topT oT, bottomT oT, P, rightP oT)"
+sorry
+lemma newTrapez1[simp]: "pointInRBox oT P \<Longrightarrow> isTrapez ((P,Q), bottomT oT, P, rightP oT)"
+sorry
+  (*apply (auto simp add: pointInRBox_def)
+  apply (simp add: trapezTriangle_def, safe)*)
+    
+  
+  
+    (*apply (subgoal_tac "isTrapez (topT oT, bottomT oT, leftP oT, P)")
+    apply (subgoal_tac "isTrapez (topT oT, (P, Q), P, Q)")
+    apply (subgoal_tac "isTrapez ((P, Q), bottomT oT, P, Q)")
+    apply (subgoal_tac "isTrapez (topT oT, bottomT oT, Q, rightP oT)")*)
 
 
 (*definition isTrapezoidal :: "trapez \<times> (trapez \<times> trapez) \<times> (trapez \<times> trapez) \<Rightarrow> bool" where

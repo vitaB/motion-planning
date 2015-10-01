@@ -212,11 +212,9 @@ function followSegment :: "tDag \<Rightarrow> trapez \<Rightarrow> point2d \<Rig
   (if (isTramMap D \<and> pointInDag D Q \<and> leftFrom P Q) then (
     (if (xCoord (rightP T) < xCoord Q) then
       (if (leftTurn P Q (rightP T))
-        then (rUpNeighb (tDagList D) T # followSegment D (rBtNeighb (tDagList D) T) P Q)
-      else (rBtNeighb (tDagList D) T # followSegment D (rUpNeighb (tDagList D) T) P Q))
-      else((if (leftTurn P Q (rightP T))
-        then ([rUpNeighb (tDagList D) T])
-      else ([rBtNeighb (tDagList D) T])))))
+        then (T # followSegment D (rBtNeighb (tDagList D) T) P Q)
+        else (T # followSegment D (rUpNeighb (tDagList D) T) P Q))
+    else([T])))
    else ([]))"
 by pat_completeness auto
 termination followSegment
@@ -286,7 +284,8 @@ lemma addSegmentsToRBox: "leftFrom p q \<Longrightarrow> rBoxTrapezS [p,q] R \<L
   (Node(Node(Tip (Abs_trapez(topT R,(p,q),p,q)))(yNode (p,q))(Tip (Abs_trapez((p,q),bottomT R, p, q))))
   (xNode q)(Tip (Abs_trapez (topT R,bottomT R, q, rightP R))))"
   apply (simp add: addSegmentToTrapezoidalMap_def newDag_def newDagSimp_def)
-  
+oops
+
 lemma trapMapAfterAddSegment: "leftFrom P Q \<Longrightarrow> pointInDag T P \<Longrightarrow> pointInDag T Q \<Longrightarrow>
   T = replaceDag D(intersectedTrapez D P Q)(intersectedTrapez D P Q) P Q \<Longrightarrow>
   \<forall> a. pointInDag T a \<longrightarrow> pointInTrapez (queryTrapezoidMap T a) a"
@@ -346,7 +345,7 @@ oops
 (*jede Ecke des Polygons ist entweder eine ecke eines Trapezes oder garnicht im Trapez*)
 lemma "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<Longrightarrow> uniqueXCoord L \<Longrightarrow> rBoxTrapezS P R \<Longrightarrow>
   T \<in> set (tDagList (addSegmentsToTrapezoidalMap (Tip R) P)) \<Longrightarrow> a \<in> set P \<Longrightarrow>
-  pointInTrapez T A \<longrightarrow> leftP T = a \<or> rightP T = a"
+  pointInTrapez T a \<longrightarrow> leftP T = a \<or> rightP T = a"
   apply (simp)
   apply (induction "Tip R" P rule: addSegmentsToTrapezoidalMap.induct)
   apply (simp add: cyclePath_def) using cyclePath_def apply auto[1]
@@ -425,6 +424,47 @@ lemma vertexInTrapez: "pointLists PL \<Longrightarrow> polygonList PL \<Longrigh
   \<not>pointInTrapezInner ((tDagList D)!i) ((concat PL)!k) \<or> leftP ((tDagList D)!i) = (concat PL)!k
   \<or> rightP ((tDagList D)!i) = (concat PL)!k"
 by (simp add: vertexInBuildTrapezoidalMap)
+
+
+
+
+
+
+
+definition NoIntersectedSegments :: "(point2d\<times>point2d) list \<Rightarrow> bool" where
+  "NoIntersectedSegments PL \<equiv> (\<forall> A. segment (fst A) (snd A)) \<and> (\<forall> A B. A = B
+  \<or> \<not>intersect (fst A) (snd A) (fst B) (snd B))"
+
+definition pointsInTramMap :: "tDag \<Rightarrow> bool" where
+   "pointsInTramMap D \<equiv> \<forall> a. pointInDag D a \<longrightarrow> pointInTrapez (queryTrapezoidMap D a) a"
+definition vertexInTramMap :: "tDag \<Rightarrow> bool" where
+  "vertexInTramMap D \<equiv> \<forall> T P. T \<in> set (tDagList D) \<and> P \<in> set (xDagList D) \<longrightarrow>
+  pointInTrapez T P \<longrightarrow> leftP T = P \<or> rightP T = P"
+definition unicXInTramMap :: "tDag \<Rightarrow> bool" where
+  "unicXInTramMap D \<equiv> uniqueXCoord (xDagList D)"
+(*definition NoIntersectInTramMap :: "tDag \<Rightarrow> bool" where
+  "NoIntersectInTramMap D \<equiv> "*)
+
+definition isTramMap1 :: "tDag \<Rightarrow> bool" where
+  "isTramMap1 D \<equiv> pointsInTramMap D \<and> vertexInTramMap D \<and> unicXInTramMap D"
+
+lemma "pointInDag D Q \<Longrightarrow> pointInDag D P \<Longrightarrow> leftFrom P Q \<Longrightarrow> vertexInTramMap D \<Longrightarrow>
+  vertexInTramMap (replaceTip T (newDag D T [T] P Q) D)"
+  apply (induct T "newDag D T [T] P Q" D rule: replaceTip.induct)
+  apply (simp add: vertexInTramMap_def, safe, simp)
+  apply (simp add: newDag_def newDagSimp_def)
+  apply (case_tac "leftP oT \<noteq> P \<and> rightP oT \<noteq> Q", simp add: newDagSimpQ_def newDagSimpA_def)
+    using leftFrom_def pointInTrapez_def apply auto[1]
+oops
+    
+lemma "pointInDag D Q \<Longrightarrow> pointInDag D P \<Longrightarrow> leftFrom P Q \<Longrightarrow> vertexInTramMap D \<Longrightarrow> isTramMap D \<Longrightarrow>
+  vertexInTramMap(addSegmentToTrapezoidalMap D P Q)"
+  apply (simp add: addSegmentToTrapezoidalMap_def)
+  apply (simp add: intersectedTrapez_def del: followSegment.simps)
+  apply (case_tac "xCoord (rightP ((queryTrapezoidMap D P))) \<ge> xCoord Q")
+    apply (simp)
+    apply (simp add: newDag_def newDagSimp_def newDagSimpQ_def newDagSimpA_def)
+oops
 
 
 
