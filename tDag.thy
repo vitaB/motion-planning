@@ -38,6 +38,8 @@ lemma tDagListNotEmpty[dest] : "tDagList D = [] \<Longrightarrow> False" by (ind
 (*wann ist ein Punkt im tDag*)
 definition pointInDag :: "tDag \<Rightarrow> point2d \<Rightarrow> bool" where
   "pointInDag D A \<equiv> \<exists> X \<in> set (tDagList D). pointInTrapez X A"
+lemma pointInDagSimp[simp]: "isTrapez R \<Longrightarrow> pointInDag (Tip R) p = pointInTrapez R p"
+  by (simp add: pointInDag_def)
 lemma pointInDagCompl: "pointInTrapez T A \<Longrightarrow> tipInDag T D \<Longrightarrow> pointInDag D A"
   apply (induct D, simp)
   using pointInDag_def tDagListComplete tipInDag.simps(1) apply blast
