@@ -176,7 +176,7 @@ lemma collinearListRev: "collinearList xs = collinearList (rev xs)"
   apply(rule_tac x="(length xs - 1) - a" in exI, safe, simp)
   apply(rule_tac x="(length xs - 1) - b" in exI, safe, simp)
   apply(rule_tac x="(length xs - 1) - c" in exI, safe, simp)
-  apply(simp add: rev_nth)+ 
+  apply(simp add: rev_nth)+
 done
 
 (*extend collinearList is still a collinearList*)
@@ -211,15 +211,13 @@ definition crossingFreePList :: "point2d list \<Rightarrow> bool" where
 (*none of the segments from the point list intersect with another segment of the point list
   (except of course the each adjacent edge)*)
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
- "intersectionFreePList P \<equiv> (\<forall>i k. ((k < length P - 1 \<and> i < length P - 1
-  \<and> (P!i) \<noteq> (P!k) \<and> (P ! i) \<noteq> (P ! Suc k) \<and> (P ! Suc i) \<noteq> (P ! k)) \<longrightarrow>
-    \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k))
-  \<and> \<not>collinear (P!0)(P!1)(P!2))"
+ "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1) \<longrightarrow>
+    \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k)"
 lemma intersectionFreePListAdjacentColl: "pointList P \<Longrightarrow> intersectionFreePList P \<Longrightarrow>
-  \<forall> i < length P - 2. \<not>pointOnSegment (P!i) (P!Suc i) (P!Suc(Suc i))"
-  apply (auto simp add: intersectionFreePList_def pointOnSegment_def)
+  \<forall> i < length P - 2. \<not> (P!i) isBetween (P!Suc i) (P!Suc(Suc i))"
+  apply (auto simp add: intersectionFreePList_def)
   apply (subgoal_tac "segment (P ! Suc i) (P ! Suc (Suc i))")
-  apply (auto simp add: pointOnSegment_def)
+  apply (auto)
 oops
 
 (*if in the first place no intersection, then at the second position*)

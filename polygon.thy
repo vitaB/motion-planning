@@ -6,7 +6,12 @@ begin
 definition polygon :: "point2d list \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> polygon P \<equiv> intersectionFreePList P"
 lemma notPolygon: "pointList [A,B,C] \<Longrightarrow> A isBetween C B \<Longrightarrow> polygon (cyclePath [A,B,C]) \<Longrightarrow> False"
-  by(auto simp add: cyclePath_def polygon_def intersectionFreePList_def isBetweenImpliesCollinear)
+  apply (subgoal_tac "segment B C \<and> segment A B")
+  apply(simp add: cyclePath_def polygon_def intersectionFreePList_def isBetweenImpliesCollinear)
+  apply (erule_tac x=1 in allE, erule_tac x=0 in allE, simp)
+  using intersectBetween intersectSym1 apply blast
+by (simp add: isBetweenPointsDistinct segment_def)
+
 
 (*List with polygons*)
 definition polygonList :: "(point2d list) list \<Rightarrow> bool" where
@@ -199,7 +204,8 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
   apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
     apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
-  apply (simp add: cPolygon_def, erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
+sorry
+  (*apply (simp add: cPolygon_def, erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
   apply (simp add: lineSeparate_def, safe, metis conflictingRigthTurns)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectSym1)
     using segment_def apply auto[1]
@@ -208,7 +214,7 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
     length_append_singleton less_diff_conv rightTurnRotate2)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
     apply ((simp add: cyclePathSegments conflictingRigthTurns1)+, blast)
-by (simp add: colliniearRight cyclePathNotCollinear1 numeral_2_eq_2 pointList_def)
+by (simp add: colliniearRight cyclePathNotCollinear1 numeral_2_eq_2 pointList_def)*)
 
 (*each conv. polygon is also a simple polygon*)
 lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>

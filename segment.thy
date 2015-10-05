@@ -11,6 +11,8 @@ lemma [simp]: "leftFrom A B \<Longrightarrow> segment A B" by (simp add: leftFro
 lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
 definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
+lemma betweenSegment[intro]: "p isBetween A B \<longrightarrow> segment A B"
+by (simp add: isBetweenPointsDistinct segment_def)
 
 
 (*left corner of the segment*)
@@ -33,33 +35,16 @@ lemma leftPRightPSimp3[simp]: "leftFrom P Q \<Longrightarrow> Q = rightPSegment 
   by (auto simp add: leftFrom_def)
 
 (*Point p is on segment AB*)
-definition pointOnSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "segment A B \<Longrightarrow> pointOnSegment p A B \<equiv> p isBetween A B \<or> p = A \<or> p = B"
-(*pointOnSegment is symmetrical*)
-lemma pointOnSegmentSelf[simp]: "segment A B \<Longrightarrow> pointOnSegment A A B"
-  by (simp add: pointOnSegment_def)
-lemma pointOnSegmentSelf1[simp]: "segment A B \<Longrightarrow> pointOnSegment B A B"
-  by (simp add: pointOnSegment_def)
-
-lemma pointOnSegmentSym: "segment A B \<Longrightarrow> pointOnSegment p A B = pointOnSegment p B A"
-  using pointOnSegment_def segment_Sym by auto
-
 (*pointOnSegment and signedArea*)
-lemma pointOnSegmentColl: "pointOnSegment p A B \<Longrightarrow> collinear p A B"
-  apply (case_tac "A = B", simp)
-  apply (subgoal_tac "segment A B", simp add: pointOnSegment_def, safe)
-by (auto simp add: isBetweenImpliesCollinear3 segment_def)
 (*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken),
   dann trennt AB die Ecken P und R*)
-lemma pointOnSegment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> pointOnSegment A P R \<Longrightarrow>
+lemma pointOnSegment_noRightTurn : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> A isBetween P R \<Longrightarrow>
   rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
-  apply (auto simp add: pointOnSegment_def)
-by (smt collinearTransitiv conflictingRightTurns2 leftRightTurn leftTurnsImplyBetween notBetween
+  by (smt collinearTransitiv conflictingRightTurns2 leftRightTurn leftTurnsImplyBetween notBetween
   notRightTurn pointsEqualSame rightTurnRotate2 segment_def swapBetween)
-lemma pointOnSegment_noRightTurn1 : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> pointOnSegment B P R \<Longrightarrow>
+lemma pointOnSegment_noRightTurn1 : "segment P R \<Longrightarrow> A \<noteq> P \<Longrightarrow> A \<noteq> R \<Longrightarrow> B isBetween P R \<Longrightarrow>
   rightTurn A B P \<Longrightarrow> rightTurn A B R \<Longrightarrow> False"
-  apply (auto simp add: pointOnSegment_def)
-by (meson isBetweenImpliesCollinear3 leftRightTurn leftTurnRotate2 leftTurnsImplyBetween
+  by (meson isBetweenImpliesCollinear3 leftRightTurn leftTurnRotate2 leftTurnsImplyBetween
   newLeftTurn notBetween3)
 
 
@@ -110,15 +95,15 @@ lemma notSelfCrossing [simp]: "\<not>crossing A B A B" by (simp add: crossing_de
 (*intersection, even if endpoint is on segment*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> crossing A B P R \<or>
-  pointOnSegment P A B \<or> pointOnSegment R A B \<or> pointOnSegment A P R \<or> pointOnSegment B P R"
-lemma intersectSame [simp]: "segment A B \<Longrightarrow> intersect A B A B"
-  by (simp add: intersect_def isBetween_def pointOnSegment_def pointsEqualArea segment_def)
+  P isBetween A B \<or> R isBetween A B \<or> A isBetween P R \<or> B isBetween P R"
+(*lemma intersectSame [simp]: "segment A B \<Longrightarrow> intersect A B A B"
+  by (simp add: intersect_def isBetween_def pointOnSegment_def pointsEqualArea segment_def)*)
 
 lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A B P R"
   apply (simp add: intersect_def)
 done
-lemma intersectSym : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect B A P R"
-  by (metis crossingSym intersect_def pointOnSegmentSym segment_Sym)
+lemma intersectSym[simp]: "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect B A P R"
+  using crossingSym intersect_def segment_def by auto
 lemma intersectSym1 : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect P R A B"
   using crossingSym1 intersect_def by auto
 
@@ -127,8 +112,8 @@ lemma intersectSym1 : "segment A B \<Longrightarrow> segment P R \<Longrightarro
 lemma intersectRightTurn: "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow>
   rightTurn A B P \<and> rightTurn A B R \<Longrightarrow> False"
   apply (simp only: intersect_def, auto)
-  using pointOnSegmentColl rightTurnRotate2 apply blast
-  using pointOnSegmentColl rightTurnRotate2 apply blast
+  using rightTurnRotate2 apply blast
+  using rightTurnRotate2 apply blast
   apply (metis conflictingRigthTurns1 pointOnSegment_noRightTurn rightTurnRotate2)
 by (metis leftRightTurn leftTurnDiffPoints pointOnSegment_noRightTurn1)
   
@@ -139,9 +124,8 @@ lemma intersectRightTurn1 : "segment A B \<Longrightarrow> segment P R \<Longrig
   apply (metis crossingRightTurn crossingSym crossingSym1 rightTurnRotate2)
   apply (metis intersectRightTurn intersect_def rightTurnRotate2 segment_Sym)
   apply (metis intersectRightTurn intersect_def rightTurnRotate2 segment_Sym)
-  using collSwap pointOnSegmentColl apply blast
-by (metis conflictingRightTurns2 leftRightTurn leftTurnDiffPoints pointOnSegmentSym
-  pointOnSegment_def rightTurnRotate2 segment_Sym)
+  using collSwap isBetweenImpliesCollinear apply blast
+by (metis conflictingRightTurns2  swapBetween rightTurnRotate2)
   
 
 (*additional Lemmas for intersect*)
@@ -152,20 +136,45 @@ lemma intersectNotCollinear1: "segment a b \<Longrightarrow> segment c d \<Longr
   \<not>collinear d c b \<Longrightarrow> \<not>collinear a c b  \<Longrightarrow> rightTurn a d b \<Longrightarrow> rightTurn a c b \<Longrightarrow> False"
   apply (simp add: intersect_def, safe)
   using lineSeparate_def apply auto[1]
-  using collRotate pointOnSegmentColl apply blast
-  apply (meson collRotate notRightTurn pointOnSegmentColl)
-  apply (metis colliniearRight conflictingRigthTurns leftRightTurn newLeftTurn1
-    notCollThenDiffPoints notCollThenLfOrRt1 pointOnSegment_def rightTurn_def)
+  using collRotate isBetweenImpliesCollinear apply blast
+  apply (meson collRotate notRightTurn isBetweenImpliesCollinear)
+  apply (metis conflictingRigthTurns leftRightTurn newLeftTurn1 notCollThenLfOrRt1)
 by (smt intersectRightTurn intersect_def leftRightTurn notRightTurn notRightTurn1 segment_Sym)
 lemma "segment a b \<Longrightarrow> segment c d \<Longrightarrow> collinear a b m \<Longrightarrow> collinear c d m \<Longrightarrow> intersect a b c d"
   apply (auto simp add: intersect_def)
   apply (case_tac "collinear a b c")
 oops
 
-definition notIntersectAdj :: "[point2d,point2d,point2d,point2d] \<Rightarrow> bool" where
+lemma intersectBetween: "segment A B \<Longrightarrow> segment B C \<Longrightarrow> A isBetween B C \<Longrightarrow> intersect A B B C"
+  by (simp add: intersect_def)
+
+(*definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+  "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> intersectS A B P R
+    \<and> (A = P \<longrightarrow> pointOnSegment B P R \<or> pointOnSegment R A B)
+    \<and> (B = R \<longrightarrow> pointOnSegment A P R \<or> pointOnSegment P A B)
+    \<and> (A = R \<longrightarrow> pointOnSegment B P R \<or> pointOnSegment P A B)
+    \<and> (B = P \<longrightarrow> pointOnSegment A P R \<or> pointOnSegment R A B)"
+lemma intersectedSame[simp]: "segment A B \<Longrightarrow> intersect A B A B"
+  by (auto simp add: intersect_def)
+lemma intersectedSym: "segment A B \<Longrightarrow> segment P R \<Longrightarrow>
+  intersect A B P R = intersect P R A B"
+  apply (rule iffI, simp add: intersect_def, (erule conjE)+)
+  using intersectSym1 apply blast
+  apply (simp add: intersect_def, (erule conjE)+)
+using intersectSym1 by blast
+lemma intersectedAdjSym1: "segment A B \<Longrightarrow> segment P R \<Longrightarrow>
+  intersect A B P R = intersect B A P R"
+  apply (subgoal_tac "segment B A")
+  apply (rule iffI, simp add: intersect_def, (erule conjE)+)
+  using intersectSym pointOnSegmentSym apply blast
+  apply (simp add: intersect_def, (erule conjE)+)
+  using intersectSym pointOnSegmentSym apply blast
+using segment_Sym by blast*)
+
+(*definition notIntersectAdj :: "[point2d,point2d,point2d,point2d] \<Rightarrow> bool" where
   "notIntersectAdj A B P R \<equiv> (A = P \<longrightarrow> \<not>collinear B P R) \<and> (A = R \<longrightarrow> \<not>collinear B P R)
   \<and> (B = P \<longrightarrow> \<not>collinear A P R) \<and> (B = R \<longrightarrow> \<not>collinear A P R)
-  \<and> (A \<noteq> P \<and> A \<noteq> R \<and> B \<noteq> P \<and> B \<noteq> R \<longrightarrow> \<not>intersect A B P R)"
+  \<and> (A \<noteq> P \<and> A \<noteq> R \<and> B \<noteq> P \<and> B \<noteq> R \<longrightarrow> \<not>intersect A B P R)"*)
 
 (*evtl. noch nützrlich*)
 (*lemma pointOnSegmentEQ : "segment a c \<Longrightarrow> pointOnSegment b a c = (collinear a b c \<and>

@@ -161,14 +161,15 @@ by(metis lineCyclePathInters2)
 (*intersection(CyclePath, CyclePath)*)
 definition cyclePathIntersect ::  "point2d list \<Rightarrow> point2d list \<Rightarrow> bool" where
   "cyclePathIntersect A B \<equiv> \<exists> i < length B - 1. lineCyclePathInters A (B!i) (B!Suc i)"
-lemma cyclePathIntersectSame: "pointList P \<Longrightarrow> A = cyclePath P \<Longrightarrow> cyclePathIntersect A A"
-  apply (simp add: cyclePathIntersect_def, rule_tac x=0 in exI, simp)
+lemma cyclePathNotIntersectSame: "pointList P \<Longrightarrow> A = cyclePath P \<Longrightarrow> intersectionFreePList A \<Longrightarrow>
+  cyclePathIntersect A A \<Longrightarrow> False"
+  apply (auto simp add: cyclePathIntersect_def)
   apply (case_tac "(A, (A!0), (A!Suc 0))" rule: lineCyclePathInters.cases)
   apply (simp add: cyclePath_def)
   using cyclePath_def apply auto[1]
   apply (simp,safe, simp add: pointList_def)
-  apply (simp add: segment_def, subgoal_tac "segment a b", simp)
-by(cut_tac L=P and i=0 in cyclePathAdjacentSame, auto simp add: segment_def)
+  apply (subgoal_tac "segment a b \<and> segment ((a # b # xs) ! i) ((b # xs) ! i)", simp add: intersect_def)
+oops
 
 lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longrightarrow> A = cyclePath P \<Longrightarrow> B = cyclePath Q\<Longrightarrow> 
   cyclePathIntersect A B = cyclePathIntersect B A"
