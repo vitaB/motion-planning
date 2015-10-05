@@ -268,46 +268,4 @@ lemma newTrapez1[simp]: "isTrapez oT \<Longrightarrow> pointInRBox oT P \<Longri
 sorry
 
 
-(*definition isTrapezoidal :: "trapez \<times> (trapez \<times> trapez) \<times> (trapez \<times> trapez) \<Rightarrow> bool" where
-  "isTrapezoidal p \<equiv> neighbor (fst(fst(snd p))) (fst p) \<and> neighbor (snd(fst(snd p))) (fst p)
-  \<and> neighbor (fst p) (fst(snd(snd p))) \<and> neighbor (fst p) (snd(snd(snd p)))
-  \<and> isTrapez (fst p) \<and> isTrapez (fst(fst(snd p))) \<and> isTrapez (snd(fst(snd p)))
-  \<and> isTrapez (fst(snd(snd p))) \<and> isTrapez (snd(snd(snd p)))"
-typedef trapezoidal = "{p::(trapez*(trapez*trapez)*(trapez*trapez)). isTrapezoidal p}"
-  sorry
-
-definition getTrapez :: "trapezoidal \<Rightarrow> trapez" where
-  "getTrapez TM \<equiv> fst(Rep_trapezoidal TM)"
-lemma getTrapez[simp]: 
-  "isTrapezoidal (a,(b,c),(d,e)) \<Longrightarrow> getTrapez (Abs_trapezoidal (a,(b,c),(d,e))) = a"
-  by (simp add: Abs_trapezoidal_inverse getTrapez_def)
-definition upRNeighb :: "trapezoidal \<Rightarrow> trapez" where
-  "upRNeighb TM \<equiv> fst(snd(snd(Rep_trapezoidal TM)))"
-lemma upRNeighb[simp]: 
-  "isTrapezoidal (a,(b,c),(d,e)) \<Longrightarrow> upRNeighb (Abs_trapezoidal (a,(b,c),(d,e))) = d"
-  by (simp add: Abs_trapezoidal_inverse upRNeighb_def)
-definition btRNeighb :: "trapezoidal \<Rightarrow> trapez" where
-  "btRNeighb TM \<equiv> snd(snd(snd(Rep_trapezoidal TM)))"
-lemma btRNeighb[simp]:
-  "isTrapezoidal (a,(b,c),(d,e)) \<Longrightarrow> btRNeighb (Abs_trapezoidal (a,(b,c),(d,e))) = e"
-  by (simp add: Abs_trapezoidal_inverse btRNeighb_def)
-definition upLNeighb :: "trapezoidal \<Rightarrow> trapez" where
-  "upLNeighb TM \<equiv> fst(fst(snd(Rep_trapezoidal TM)))"
-lemma upLNeighb[simp]: 
-  "isTrapezoidal (a,(b,c),(d,e)) \<Longrightarrow> upLNeighb (Abs_trapezoidal (a,(b,c),(d,e))) = b"
-  by (simp add: Abs_trapezoidal_inverse upLNeighb_def)
-definition btLNeighb :: "trapezoidal \<Rightarrow> trapez" where
-  "btLNeighb TM \<equiv> snd(fst(snd(Rep_trapezoidal TM)))"
-lemma btLNeighb[simp]:
-  "isTrapezoidal (a,(b,c),(d,e)) \<Longrightarrow> btLNeighb (Abs_trapezoidal (a,(b,c),(d,e))) = c"
-  by (simp add: Abs_trapezoidal_inverse btLNeighb_def)
-
-lemma trapezoidalVertex[simp] : "leftFrom (leftP (getTrapez TM)) (leftP (upRNeighb TM))"
-  by (metis Rep_trapezoidal getTrapez_def isTrapezoidal_def leftPRigthFromRightP mem_Collect_eq
-    neighbor_def upRNeighb_def)
-lemma trapezoidalVertex1[simp] : "leftFrom (leftP (getTrapez TM)) (leftP (btRNeighb TM))"
-  by (metis Rep_trapezoidal getTrapez_def isTrapezoidal_def leftPRigthFromRightP mem_Collect_eq
-    neighbor_def btRNeighb_def)*)
-  
-
 end

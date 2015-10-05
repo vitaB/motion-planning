@@ -31,12 +31,12 @@ lemma pointListsSimp1 : "pointLists [A] = pointList A" by(simp add: pointLists_d
 lemma pointListsSimp2 [simp]: "i < length PL \<Longrightarrow> pointLists PL \<Longrightarrow> pointList (PL!i)"
   by (auto simp add: pointLists_def)
 
-(*is a segment in the pointList?*)
+(*(*is segment in pointList?*)
 definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> segInPointList L S \<equiv> \<exists> i < length L - 1. L!i = fst S \<and> L!i = snd S"
-(*is a segment in the pointList-List?*)
+(*is segment in pointList-List?*)
 definition segInPointLists :: "(point2d list) list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
-  "pointLists PL \<Longrightarrow> segInPointLists PL S \<equiv> \<exists> i < length PL. segInPointList (PL!i) S"
+  "pointLists PL \<Longrightarrow> segInPointLists PL S \<equiv> \<exists> i < length PL. segInPointList (PL!i) S"*)
 
 (*none of the corners can be repeated*)
 lemma distVertex : "pointList L \<Longrightarrow> i < size L \<Longrightarrow> k < size L \<Longrightarrow> k \<noteq> i
@@ -213,12 +213,6 @@ definition crossingFreePList :: "point2d list \<Rightarrow> bool" where
 definition intersectionFreePList :: "point2d list \<Rightarrow> bool" where
  "intersectionFreePList P \<equiv> \<forall>i k. (k < length P - 1 \<and> i < length P - 1) \<longrightarrow>
     \<not>intersect (P ! i) (P ! Suc i) (P ! k) (P ! Suc k)"
-lemma intersectionFreePListAdjacentColl: "pointList P \<Longrightarrow> intersectionFreePList P \<Longrightarrow>
-  \<forall> i < length P - 2. \<not> (P!i) isBetween (P!Suc i) (P!Suc(Suc i))"
-  apply (auto simp add: intersectionFreePList_def)
-  apply (subgoal_tac "segment (P ! Suc i) (P ! Suc (Suc i))")
-  apply (auto)
-oops
 
 (*if in the first place no intersection, then at the second position*)
 lemma sizeOfList: "\<not> intersect a b A B \<Longrightarrow> intersect ((a#b# L) ! k) ((a#b# L) ! Suc k) A B \<Longrightarrow> k\<ge>1"
@@ -267,39 +261,19 @@ theorem listIntersection: "segment A B \<Longrightarrow> length L \<ge> 1 \<Long
   apply (metis  listIntersection1, simp, simp)
 by (metis One_nat_def hd_conv_nth list.size(3) not_one_le_zero, simp, metis One_nat_def Suc_1)
 
+lemma intersectionFreePListAdjacentColl: "pointList P \<Longrightarrow> intersectionFreePList P \<Longrightarrow>
+   i < length P - 2 \<Longrightarrow> \<not> (P!i) isBetween (P!Suc i) (P!Suc(Suc i))"
+  apply (auto simp add: intersectionFreePList_def)
+  apply (subgoal_tac "segment (P ! Suc i) (P ! Suc (Suc i))")
+  apply (simp add: Suc_diff_Suc intersectBetween less_SucI nat_diff_split not_less_eq
+    numeral_2_eq_2 pointsSegments)
+  apply (smt One_nat_def Suc_diff_Suc Suc_eq_plus1 Suc_less_eq diff_Suc_1 intersect_def le0
+    less_SucI list.size(3) nat.distinct(1) pointsSegments)
+by (simp add: isBetweenPointsDistinct segment_def)
 
 
 
 
 (*alte Definition*)
 
-(*lemma intersectNext5: "length L \<ge> 1 \<Longrightarrow> \<not> intersect b (hd L) A B \<Longrightarrow>
-  intersect ((b # L) ! numeral k) ((b # L) ! (numeral k + 1)) A B = intersect (L ! (numeral k - 1)) (L ! Suc (numeral k - 1)) A B"
-  apply (rule iffI)
-  apply (metis Suc_eq_plus1 Suc_numeral diff_Suc_1 nth_Cons_numeral numeral_eq_Suc)
-by (metis Suc_eq_plus1_left add.commute add_diff_cancel_left' nth_Cons' numeral_eq_Suc old.nat.distinct(2))*)
-(*lemma listIntersectNth1 [simp]: "\<not> intersect a b A B \<Longrightarrow> intersect ((a # b # L) ! i) ((a # b # L) ! Suc i) A B =
-  intersect ((b # L) ! (i - 1)) ((b # L) ! (Suc i - 1)) A B"
-  apply (auto, subgoal_tac " i \<ge> 1", simp, metis Suc_eq_plus1 nth_Cons_Suc sizeOfList1)
-  apply (subgoal_tac " i \<ge> 1", simp)
-*)
-(*
-lemma pointsSegmentsAppend1: "pointList L \<Longrightarrow> \<forall>i<length L - 1. segment (L ! i) (L ! Suc i) \<and> segment (last L) a \<Longrightarrow>
-  k < (length (L @ [a]) - 1) \<Longrightarrow> segment ((L @ [a]) ! k) ((L @ [a]) ! Suc k)"
-  apply(auto)
-  apply(erule_tac x="k - 1" in allE) 
-  apply(erule impE)
-  apply(simp add: Groups.ordered_ab_group_add_class.diff_strict_right_mono)
-  apply (metis Suc_leI Suc_lessI add_2_eq_Suc' diff_0_eq_0 diff_less_mono le_numeral_Suc monoid_add_class.add.left_neutral neq0_conv not_less old.nat.distinct(2) pointList_def pred_numeral_simps(3))
-  apply (auto)
-  apply (metis One_nat_def Suc_leI Suc_lessI add_Suc_right diff_Suc_Suc diff_less_mono diff_zero last_conv_nth le0 length_0_conv monoid_add_class.add.right_neutral nth_append nth_append_length pointsSegments zero_less_Suc)
-done
-theorem pointsSegmentsAppend : "pointList L \<Longrightarrow> (\<forall> i::nat. i < (size (L @ [a]) - 1) \<longrightarrow> segment ((L @ [a])!i) ((L @ [a])!(i+1)))
-  = ((\<forall> k::nat. k < (size L - 1) \<longrightarrow> segment (L!k) (L !(k+1))) \<and> segment (last L) a)"
-  apply (auto simp add: pointsSegmentsAppend1)
-  apply (erule_tac x="i+1" in allE)
-  apply (metis One_nat_def add_Suc_right le0 monoid_add_class.add.right_neutral pointsSegments)
-  apply (erule_tac x="length L - 1" in allE)
-  apply (metis One_nat_def Suc_pred diff_less eq_numeral_simps(4) last_conv_nth le_0_eq length_greater_0_conv list.size(3) nth_append nth_append_length pointList_def zero_less_Suc)
-done*)
 end

@@ -127,10 +127,11 @@ lemma lineCyclePathIntersSimp2 [simp]: "\<not>lineCyclePathInters [a,b] A B \<Lo
     lineCyclePathInters (a#b#L) A B = lineCyclePathInters (b#L) A B"
   by (simp)
 lemma lineCyclePathIntersSimp6 : " \<not>lineCyclePathInters (b # xs) P R
-  \<Longrightarrow> \<exists> i < length (a # b # xs) - 1. intersect P R ((a # b # xs) ! i) ((a # b # xs) ! Suc i) \<Longrightarrow> intersect P R a b"
-  apply (induct "(b # xs)" P R rule: lineCyclePathInters.induct, auto)
-  apply (subgoal_tac "i=0", simp)
-  apply (rule ccontr, simp)
+  \<Longrightarrow> \<exists> i < length (a # b # xs) - 1. intersect P R ((a # b # xs) ! i) ((a # b # xs) ! Suc i) \<Longrightarrow>
+  intersect P R a b"
+  apply (induct "(b # xs)" P R rule: lineCyclePathInters.induct)
+  apply (auto)
+  apply (case_tac "i > 0", auto)
 oops
 lemma lineCyclePathIntersSimp3 : "i < length (a # b # xs) - 1 \<Longrightarrow> \<not>lineCyclePathInters (b # xs) P R
   \<Longrightarrow> intersect P R ((a # b # xs) ! i) ((a # b # xs) ! Suc i) \<Longrightarrow> intersect P R a b"
@@ -146,7 +147,6 @@ lemma lineCyclePathInters1: "lineCyclePathInters L A B \<Longrightarrow>
   (\<exists> i. i<length L - 1 \<and> intersect (L!i) (L ! Suc i) A B)"
   apply (induct L A B rule:lineCyclePathInters.induct, simp, simp)
 by (auto, rule_tac x="i + 1" in exI, simp)
-(*TODO: hier fehlt noch ein Beweis*)
 lemma lineCyclePathInters2: "(\<exists> i. i < length L - 1 \<and> intersect (L ! i) (L ! Suc i) A B) \<Longrightarrow>
   segment A B \<Longrightarrow> lineCyclePathInters L A B"
   apply (induction rule: lineCyclePathInters.induct, auto)

@@ -12,7 +12,7 @@ definition xCoord :: "point2d \<Rightarrow> real" where "xCoord P \<equiv> fst(R
 definition yCoord :: "point2d \<Rightarrow> real" where "yCoord P \<equiv> snd(Rep_point2d P)"(*[1]*)
 lemma xCoord[simp]: "xCoord (Abs_point2d (a, b)) = a" by (simp add: xCoord_def Abs_point2d_inverse)
 lemma yCoord[simp]: "yCoord (Abs_point2d (a, b)) = b" by (simp add: yCoord_def Abs_point2d_inverse)
-lemma pointSameCoord [simp]: "Abs_point2d(a, b) = Abs_point2d(a', c) \<longleftrightarrow> a = a' \<and> b = c"
+lemma pointSameCoord [simp]: "Abs_point2d(a, b) = Abs_point2d(a', c) = (a = a' \<and> b = c)"
   by (metis (full_types) Abs_point2d_inject fst_conv mem_Collect_eq snd_conv)
 
 
@@ -117,13 +117,24 @@ lemma rightTurnDiv: "rightTurn a b c \<Longrightarrow> rightTurn d b e \<Longrig
   by (simp add: rightTurn_def zero_less_divide_iff)
   
   
-
 lemma interiority: "leftTurn t q r \<Longrightarrow> leftTurn p t r \<Longrightarrow> leftTurn p q t \<Longrightarrow> leftTurn p q r" (*[2]*)
   by (smt hausner leftRightTurn rightTurn_def)
+
+(*scalar multiplication*)
+definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) where (*[2]*)
+  "a *s P \<equiv> (\<lambda>(p1,p2). Abs_point2d (a*p1,a*p2)) (Rep_point2d P)"
+definition pointPlus :: "[point2d, point2d] \<Rightarrow> point2d" (infixl "+p" 60) where 
+  "P +p Q \<equiv> Abs_point2d ((xCoord P) + (xCoord Q), (yCoord P) + (yCoord Q))"
+lemma pointPlusSym[simp]: "(P +p Q) = (Q +p P)" by (auto simp add: pointPlus_def)
+lemma cramersRule: "signedArea P Q R = 0 \<Longrightarrow> T =
+  ((signedArea T Q R / signedArea P Q R) *s P) +p
+  ((signedArea P T R / signedArea P Q R) *s Q) +p
+  ((signedArea P Q T / signedArea P Q R) *s R)"
+sorry
 (*nur mit cramersRule beweisbar?*)
 lemma transitivity: "leftTurn t s p \<Longrightarrow> leftTurn t s q \<Longrightarrow> leftTurn t s r \<Longrightarrow> leftTurn t p q (*[2]*)
   \<Longrightarrow> leftTurn t q r \<Longrightarrow> leftTurn t p r"
-sorry
+  by (metis (mono_tags, lifting) areaDoublePoint2 cramersRule divide_eq_0_iff)
 
 (*lemmas for collinear und signedArea*)
 lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*) by (auto)
@@ -156,12 +167,6 @@ lemma pointsEqualArea: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0
   apply (rule_tac x="Abs_point2d((xCoord b) - 1, yCoord b)" in exI)
     apply (simp add: signedArea_def)
 done
-lemma "a \<noteq> b \<Longrightarrow>(\<exists> d c. leftTurn a b c \<and> leftTurn a b d \<and> signedArea a b c < signedArea a b d)"
-  apply (case_tac "xCoord a = xCoord b")
-    apply (rule_tac x="Abs_point2d(xCoord b - 2, yCoord b)" in exI,
-      rule_tac x="Abs_point2d(xCoord b - 1, yCoord b)" in exI)
-    
-oops
 lemma swapBetween1: "a isBetween c b \<Longrightarrow> a isBetween b c" (*[1]*)
   apply (simp add: isBetween_def, safe)
   apply (rule_tac x=d in exI, metis collSwap colliniearRight)
@@ -207,7 +212,7 @@ lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b
   apply (safe)
   apply (auto simp add: isBetween_def)
   apply (simp add: pointsEqualArea)+
-sorry
+by (metis (mono_tags, hide_lams) colliniearRight cramersRule divide_zero)+
 
 lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<Longrightarrow> collinear B C D \<Longrightarrow>
   C isBetween B D" (*[2]*)
@@ -296,7 +301,14 @@ by blast
 
 
 (*evtl. noch nützlich*)
-(*A point between B and C*)
+
+(*lemma "a \<noteq> b \<Longrightarrow> \<exists> d c. leftTurn a b c \<and> leftTurn a b d \<and> signedArea a b c < signedArea a b d"
+  apply (case_tac "xCoord a = xCoord b")
+    apply (rule_tac x="Abs_point2d(xCoord b - 2, yCoord b)" in exI,
+      rule_tac x="Abs_point2d(xCoord b - 1, yCoord b)" in exI)  
+oops*)
+
+(*(*A point between B and C*)
 (*definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 "midpoint a b c = (2 * yCoord a = yCoord b + yCoord c \<and> 2 * xCoord a = xCoord b + xCoord c)"*)
 definition midpoint :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" 
@@ -322,23 +334,13 @@ lemma midpointPointExist: "\<exists> X. X midpoint a b"
   apply (auto simp add: midpoint_def)
   apply (subgoal_tac "\<exists> d. signedArea a b d = 0", simp, erule_tac exE)
   apply (rule_tac x="d" in exI, auto)
-oops
+oops*)
 
-(*scalar multiplication*)
-definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) where (*[2]*)
-  "a *s P \<equiv> (\<lambda>(p1,p2). Abs_point2d (a*p1,a*p2)) (Rep_point2d P)"
-definition pointPlus :: "[point2d, point2d] \<Rightarrow> point2d" (infixl "+p" 60) where 
-  "P +p Q \<equiv> Abs_point2d ((xCoord P) + (xCoord Q), (yCoord P) + (yCoord Q))"
-lemma cramersRule: "signedArea P Q R = 0 \<Longrightarrow> T =
-  ((signedArea T Q R / signedArea P Q R) *s P) +p
-  ((signedArea P T R / signedArea P Q R) *s Q) +p
-  ((signedArea P Q T / signedArea P Q R) *s R)"
-oops
 
 
 lemma CollPointExist: "\<exists> X. collinear A B X" by (rule_tac x=A in exI, auto)
 
-lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBetween a b"
+(*lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBetween a b"
   apply (cut_tac a=a and b=b in midpointPointExist)
   apply (auto simp add: isBetween_def)
   apply (rule_tac x=X in exI)
@@ -355,9 +357,9 @@ lemma isBeetweenPointExist: "a \<noteq> b \<Longrightarrow> \<exists> X. X isBet
       apply (case_tac "yCoord a < yCoord b", subgoal_tac "yCoord a < yCoord X \<and> yCoord X < yCoord b")
       apply (case_tac "signedArea d a b > 0")
       (*selbst hier kein Beweis*)*)
-oops
+oops*)
 
-definition segLength :: "point2d \<Rightarrow> point2d \<Rightarrow> real" where
+(*definition segLength :: "point2d \<Rightarrow> point2d \<Rightarrow> real" where
   "segLength A B \<equiv> sqrt ((xCoord A - xCoord B)*(xCoord A - xCoord B) +
   (yCoord A - yCoord B)*(yCoord A - yCoord B))"
 lemma segLengthSym: "segLength A B = segLength B A"
@@ -370,6 +372,6 @@ lemma quadAreaSym: "quadArea A B C D = quadArea B C D A"
 lemma quadAreaSym1: "quadArea A B C D = quadArea C D A B"
   by (metis quadAreaSym)
 lemma quadAreaSym2: "quadArea A B C D = quadArea D A B C"
-  by (auto simp add: quadArea_def signedArea_def, algebra)
+  by (auto simp add: quadArea_def signedArea_def, algebra)*)
 
 end
