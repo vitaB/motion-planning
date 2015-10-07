@@ -51,7 +51,14 @@ by (auto simp add: segment_Same_def distVertex segment_def nth_eq_iff_index_eq p
 
 (*there is no point in the point list, with the same xCoordinate*)
 definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
-  "uniqueXCoord L \<equiv> \<forall> a b. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
+  "uniqueXCoord L \<equiv> \<forall> a < length L. \<forall> b < length L. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
+lemma uniqueXCoordEmtyp[simp]: "uniqueXCoord []" by(simp add: uniqueXCoord_def)
+lemma uniqueXCoordOne[simp]: "uniqueXCoord [x]" by(simp add: uniqueXCoord_def)
+lemma uniqueXCoordAppend[intro]: "uniqueXCoord (D @ X) \<longrightarrow> uniqueXCoord X"
+  apply (induct X)
+  apply (auto simp add: uniqueXCoord_def)
+  apply (erule_tac x="length D" in allE)
+sorry
 lemma uniqueXCoordPointList: "3 \<le> length L \<Longrightarrow> uniqueXCoord L \<Longrightarrow> pointList (L)"
   by (simp add: uniqueXCoord_def pointList_def, metis distinct_conv_nth)
 
