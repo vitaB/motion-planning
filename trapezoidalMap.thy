@@ -197,8 +197,7 @@ lemma rUpNeighbInDag1[simp]: "tipInDag (rUpNeighb (tDagList D) (queryTrapezoidMa
   apply (induct "tDagList D" "queryTrapezoidMap D P" rule: rUpNeighb.induct)
   apply (subgoal_tac "tipInDag (queryTrapezoidMap D P) D", simp)
   apply (auto)
-apply (auto simp add: tDagListComplete)
-using queryTrapezoidMapInDag rUpNeighbInDag by blast
+by (auto simp add: tDagListComplete)
 
 fun rBtNeighb :: "trapez list \<Rightarrow> trapez \<Rightarrow> trapez" where
   "rBtNeighb [] T = T"
@@ -222,8 +221,7 @@ lemma rBtNeighbInDag1[simp]: "tipInDag (rBtNeighb (tDagList D) (queryTrapezoidMa
   apply (induct "tDagList D" "queryTrapezoidMap D P" rule: rBtNeighb.induct)
   apply (subgoal_tac "tipInDag (queryTrapezoidMap D P) D", simp)
   apply (auto)
-apply (auto simp add: tDagListComplete)
-using queryTrapezoidMapInDag rBtNeighbInDag by blast
+by (auto simp add: tDagListComplete)
 
 (*Definition für trapMap*)
 definition vertexInTramMap :: "tDag \<Rightarrow> bool" where
@@ -321,8 +319,7 @@ lemma intersectedTrapezSimp[simp]: "leftFrom p q \<Longrightarrow> rBoxTrapezS [
   apply (simp only: intersectedTrapez_def)
   apply (subgoal_tac "queryTrapezoidMap (Tip R) p = R")
   apply (erule ssubst)
-  apply (subgoal_tac "xCoord (rightP R) \<ge> xCoord q")
-  apply (auto simp add: isTramMapRBox)
+  apply (subgoal_tac "xCoord (rightP R) \<ge> xCoord q", auto)
   using isTramMapRBox isTramMap_def rBoxTrapezS_def apply blast
   using pointInDag_def pointInRBox  apply auto[1]
   using pointInRBox pointInTrapez_def apply auto[1]
@@ -334,7 +331,7 @@ lemma intersectedTrapezSimp1[simp]: "isTrapez R \<Longrightarrow> leftFrom p q \
   apply (erule ssubst)
   apply (subgoal_tac "xCoord (rightP R) \<ge> xCoord q")
   apply (smt followSegment.simps isTramMapRBox isTramMap_def)
-by (auto simp add: isTramMapRBox pointInTrapez_def)
+by (auto simp add: pointInTrapez_def)
 
 (*das erste Trapez enthält die linke Ecke*)
 lemma intersectedHD[simp]: "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
@@ -437,6 +434,16 @@ oops
 definition segmentCompWithDag :: "tDag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<equiv> pointInDag D P \<and> pointInDag D Q
   \<and> uniqueXCoord (xDagList D @ [P,Q]) \<and> (\<forall> A \<in> set (yDagList D). \<not>intersect (fst A) (snd A) P Q)"
+lemma segmentAndDagUnicX[simp]:"isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
+  uniqueXCoord (xDagList D @ [P, Q])"
+  by (simp add: isTramMap_def segmentCompWithDag_def)
+lemma segmentAndDagUnicX1[simp]:"isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
+  uniqueXCoord (xDagList D @ [P])"
+  using segmentAndDagUnicX uniqueXCoordAppend1 by blast
+lemma segmentAndDagUnicX2[simp]:"isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
+  uniqueXCoord (xDagList D @ [Q])"
+  using segmentAndDagUnicX uniqueXCoordAppend2 by blast
+
 
 lemma addSegmentTrapezList: "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
   segmentCompWithDag D P Q \<Longrightarrow> trapezList (tDagList (addSegmentToTrapezoidalMap D P Q))"
@@ -449,25 +456,63 @@ lemma unicXSimpA [simp]: "segmentCompWithDag (Tip x) P Q \<Longrightarrow>
 lemma unicXSimp[simp]: "isTrapez x \<Longrightarrow> segmentCompWithDag (Tip x) P Q \<Longrightarrow>
   uniqueXCoord (xDagList (newDagSimp x P Q))"
   by (simp add: newDagSimp_def segmentCompWithDag_def newDagSimpA_def newDagSimpQ_def)
-lemma unicXSimp1[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> x \<in> set (tDagList D) \<Longrightarrow>
+lemma unicXSimp1[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
   uniqueXCoord (xDagList (newDagSimp x P Q))"
   apply (auto simp add: newDagSimp_def segmentCompWithDag_def newDagSimpA_def newDagSimpQ_def)
 using uniqueXCoordAppend by blast
+lemma uniqueXInNewDagSimp[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
+  uniqueXCoord (xDagList D @ xDagList (newDagSimp T P Q))"
+  by(auto simp add: newDagSimp_def newDagSimpQ_def newDagSimpA_def isTramMap_def)
 
 (***unicX für newDag*********)
-lemma unicXFirst[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> a \<in> set (tDagList D) \<Longrightarrow>
+lemma unicXFirst[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
   uniqueXCoord (xDagList (newDagFirst a TM P Q))"
 by (auto simp add: newDagFirst_def newDagFirstY_def)
-lemma unicXLast[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> a \<in> set (tDagList D) \<Longrightarrow>
+lemma unicXLast[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
   uniqueXCoord (xDagList (newDagLast a TM P Q))"
 by (auto simp add: newDagLast_def newDagLastY_def)
-lemma unicXnewDag: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> a \<in> set (tDagList D) \<Longrightarrow>
+lemma unicXnewDag[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
   uniqueXCoord (xDagList (newDag D a TM P Q))"
 by (auto simp add: newDag_def newDagM_def)
+lemma uniqueXInNewDagFirst[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
+    uniqueXCoord (xDagList D @ xDagList (newDagFirst a TM P Q))"
+   by (auto simp add: newDagFirst_def newDagFirstY_def isTramMap_def)
+lemma uniqueXInNewDagLast[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
+    uniqueXCoord (xDagList D @ xDagList (newDagLast a TM P Q))"
+    by (auto simp add: newDagLast_def newDagLastY_def isTramMap_def)
+lemma uniqueXInNewDagM[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
+    uniqueXCoord (xDagList D @ xDagList (newDagM a TM P Q))"
+    by (auto simp add: newDagM_def isTramMap_def)                                           
+lemma uniqueXInNewDag[simp]: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> 
+  uniqueXCoord (xDagList D @ xDagList (newDag D T TM P Q))"
+  by (auto simp add: newDag_def)
+
+
+
+lemma "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> 
+  uniqueXCoord (xDagList (replaceTip T (newDag D T TM P Q) D))"
+  apply (subgoal_tac "\<forall> a \<in> set(xDagList(replaceTip T (newDag D T TM P Q) D)). a \<in> set(xDagList D)
+    \<or> a \<in> set( xDagList (newDag D T TM P Q))\<longrightarrow> 
+    uniqueXCoord (xDagList (replaceTip T (newDag D T TM P Q) D))", auto) defer
+  
+  
+
+  apply (case_tac "(T, newDag D T TM P Q, D)" rule: replaceTip.cases)
+  apply (simp) using unicXnewDag apply auto[1]
+  apply (simp) using unicXnewDag apply auto[1]
+  
+
+  apply (induct T "newDag D T TM P Q" D rule: replaceTip.induct)
+  apply (simp) using unicXnewDag apply auto[1]
+  apply (simp)
 
 lemma "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow>
   segmentCompWithDag D P Q \<Longrightarrow> \<forall> a \<in> set (TM::(trapez list)). tipInDag a D \<Longrightarrow> 
   uniqueXCoord (xDagList (replaceDag D TM TM P Q))"
+  apply (auto simp add: uniqueXCoord_def)
+  apply (induct "replaceDag D TM TM P Q" rule: xDagList.induct) defer
+  apply (simp)
+
   apply (induct D TM TM P Q rule: replaceDag.induct) defer
   apply (simp)
 

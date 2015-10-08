@@ -59,6 +59,16 @@ lemma uniqueXCoordAppend[intro]: "uniqueXCoord (D @ X) \<longrightarrow> uniqueX
   apply (auto simp add: uniqueXCoord_def)
   apply (erule_tac x="length D" in allE)
 sorry
+lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a \<in> set D \<Longrightarrow> uniqueXCoord L"
+  apply (induct D, auto)
+  apply (simp add: uniqueXCoord_def)
+sorry
+lemma uniqueXCoordAppend1[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [P])"
+  apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [P]" in uniqueXSub, auto)
+by (metis add.right_neutral less_antisym nth_Cons_0 nth_append nth_append_length_plus nth_mem)
+lemma uniqueXCoordAppend2[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [Q])"
+    apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [Q]" in uniqueXSub, auto)
+by (metis add.right_neutral less_antisym nth_Cons_0 nth_append nth_append_length_plus nth_mem)
 lemma uniqueXCoordPointList: "3 \<le> length L \<Longrightarrow> uniqueXCoord L \<Longrightarrow> pointList (L)"
   by (simp add: uniqueXCoord_def pointList_def, metis distinct_conv_nth)
 
