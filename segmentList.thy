@@ -59,16 +59,25 @@ lemma uniqueXCoordAppend[intro]: "uniqueXCoord (D @ X) \<longrightarrow> uniqueX
   apply (auto simp add: uniqueXCoord_def)
   apply (erule_tac x="length D" in allE)
 sorry
-lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a \<in> set D \<Longrightarrow> uniqueXCoord L"
+lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a \<in> set D \<Longrightarrow> distinct L \<Longrightarrow> uniqueXCoord L"
   apply (induct D, auto)
   apply (simp add: uniqueXCoord_def)
 sorry
 lemma uniqueXCoordAppend1[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [P])"
   apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [P]" in uniqueXSub, auto)
-by (metis add.right_neutral less_antisym nth_Cons_0 nth_append nth_append_length_plus nth_mem)
+  apply (metis less_antisym nth_append nth_append_length nth_mem)
+  apply (rule ccontr)
+sorry
 lemma uniqueXCoordAppend2[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [Q])"
     apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [Q]" in uniqueXSub, auto)
-by (metis add.right_neutral less_antisym nth_Cons_0 nth_append nth_append_length_plus nth_mem)
+    apply (metis less_antisym nth_append nth_append_length nth_mem)
+sorry
+lemma uniqueXCoordPermutation[intro]: "uniqueXCoord (A @ B) \<Longrightarrow> distinct TM \<Longrightarrow>
+  \<forall>a \<in> set (TM). a \<in> set (A @ B) \<Longrightarrow> uniqueXCoord(TM)"
+  apply (induct A, auto)
+  using nth_mem uniqueXSub apply blast
+by (smt Un_iff insert_iff list.set(2) nth_mem set_append uniqueXSub)
+
 lemma uniqueXCoordPointList: "3 \<le> length L \<Longrightarrow> uniqueXCoord L \<Longrightarrow> pointList (L)"
   by (simp add: uniqueXCoord_def pointList_def, metis distinct_conv_nth)
 
