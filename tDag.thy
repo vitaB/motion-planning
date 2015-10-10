@@ -16,21 +16,59 @@ fun xDagList :: "tDag \<Rightarrow> point2d list" where
   "xDagList (Tip a) = []"
   | "xDagList (Node Tl (xNode x) Tr) = xDagList Tl @ [x] @ xDagList Tr"
   | "xDagList (Node Tl (yNode x) Tr) = xDagList Tl @ xDagList Tr"
-
+lemma xDagListAppendLt[intro]:"a \<in> set (xDagList Tl) \<Longrightarrow> a \<in> set (xDagList (Node Tl x Tr))"
+  apply (induct Tl rule: xDagList.induct, simp)
+by (smt append_Cons append_assoc in_set_conv_decomp kNode.exhaust xDagList.simps(2)
+    xDagList.simps(3))+
+lemma xDagListAppendRt[intro]:"a \<in> set (xDagList Tr) \<Longrightarrow> a \<in> set (xDagList (Node Tl x Tr))"
+  apply (induct Tr rule: xDagList.induct, simp)
+by (smt append_Cons append_assoc in_set_conv_decomp kNode.exhaust xDagList.simps(2)
+    xDagList.simps(3))+
+lemma xDagListElem[intro]: "a \<in> set (xDagList (Node Tl x Tr)) \<Longrightarrow> a \<in> set (xDagList Tl)
+  \<or> xNode a = x  \<or> a \<in> set (xDagList Tr)"
+  by (case_tac "(Node Tl x Tr)" rule: xDagList.cases, auto)
+  
 fun yDagList :: "tDag \<Rightarrow> (point2d\<times>point2d) list" where
   "yDagList (Tip a) = []"
   | "yDagList (Node Tl (xNode x) Tr) = yDagList Tl @ yDagList Tr"
   | "yDagList (Node Tl (yNode x) Tr) = yDagList Tl @ [x] @ yDagList Tr"
+lemma yDagListAppendLt[intro]:"a \<in> set (yDagList Tl) \<Longrightarrow> a \<in> set (yDagList (Node Tl x Tr))"
+  apply (induct Tl rule: yDagList.induct, simp)
+by (smt append_Cons append_assoc in_set_conv_decomp kNode.exhaust yDagList.simps(2)
+    yDagList.simps(3))+
+lemma yDagListAppendRt[intro]:"a \<in> set (yDagList Tr) \<Longrightarrow> a \<in> set (yDagList (Node Tl x Tr))"
+  apply (induct Tr rule: yDagList.induct, simp)
+by (smt append_Cons append_assoc in_set_conv_decomp kNode.exhaust yDagList.simps(2)
+    yDagList.simps(3))+
+lemma yDagListElem[intro]: "a \<in> set (yDagList (Node Tl x Tr)) \<Longrightarrow> a \<in> set (yDagList Tl)
+  \<or> yNode a = x  \<or> a \<in> set (yDagList Tr)"
+  by (case_tac "(Node Tl x Tr)" rule: yDagList.cases, auto)
 
 (*Wandle DAG in eine Trapez-Liste um*)
 fun tDagList :: "tDag \<Rightarrow> trapez list" where
   "tDagList (Tip a) = [a]"
   | "tDagList (Node Tl x Tr) = ((tDagList Tl)@(tDagList Tr))"
+lemma tDagListAppendLt[intro]:"a \<in> set (tDagList Tl) \<Longrightarrow> a \<in> set (tDagList (Node Tl x Tr))"
+  apply (induct Tl rule: tDagList.induct, simp)
+by (smt append_Cons append_assoc in_set_conv_decomp kNode.exhaust tDagList.simps(2))+
+lemma tDagListAppendRt[intro]:"a \<in> set (tDagList Tr) \<Longrightarrow> a \<in> set (tDagList (Node Tl x Tr))"
+  apply (induct Tr rule: tDagList.induct, simp)
+by (smt append_Cons append_assoc in_set_conv_decomp kNode.exhaust tDagList.simps(2))+
+lemma tDagListElem[intro]: "a \<in> set (tDagList (Node Tl x Tr)) \<Longrightarrow> a \<in> set (tDagList Tl)
+  \<or> a \<in> set (tDagList Tr)"
+  by (case_tac "(Node Tl x Tr)" rule: tDagList.cases, auto)
 
 (*wann ist ein Trapez im Baum*)
 primrec tipInDag :: "trapez \<Rightarrow> tDag \<Rightarrow> bool" where
   "tipInDag T (Tip D) = (if (T = D) then True else False)"
   | "tipInDag T (Node Tl x Tr) = (tipInDag T Tl \<or> tipInDag T Tr)"
+lemma tipInDagAppendRt[intro]:"tipInDag a Tr \<Longrightarrow> tipInDag a (Node Tl x Tr)"
+  by(induct Tr, auto)
+lemma tipInDagAppendLt[intro]:"tipInDag a Tl \<Longrightarrow> tipInDag a (Node Tl x Tr)"
+  by(induct Tl, auto)
+lemma tipInDagElem[intro]: "tipInDag a (Node Tl x Tr) \<Longrightarrow> tipInDag a Tl \<or> tipInDag a Tr"
+  by (case_tac "(Node Tl x Tr)", auto)
+
 
 lemma tDagListComplete: "tipInDag T D \<longleftrightarrow> T \<in> set (tDagList D)" by (induction D, auto)
 lemma tDagListNotEmpty[dest] : "tDagList D = [] \<Longrightarrow> False" by (induction D, auto)
@@ -59,6 +97,36 @@ theorem replaceTipSimp [simp] :"\<not>tipInDag nT' D \<Longrightarrow>
   apply (induction D, case_tac "nT' = x", simp+)
 done
 
+(*replaceTip and xDagList*)
+lemma replaceTipXDagList[intro]: "a \<in> set (xDagList D) \<Longrightarrow> a \<in> set (xDagList (replaceTip oT nT D))"
+  apply (induct oT nT D rule: replaceTip.induct, auto)
+  apply (subgoal_tac "a \<in> set (xDagList Tl) \<or> a \<in> set (xDagList Tr) \<or> xNode a = x", safe)
+  apply (simp, blast)+
+  apply simp
+using xDagListElem by blast
+lemma replaceTipXDagList1[intro]: "a \<in> set (xDagList (replaceTip oT nT D)) \<Longrightarrow>
+  a \<in> set (xDagList D) \<or> a \<in> set (xDagList nT)"
+  apply (induct oT nT D rule: replaceTip.induct, auto)
+  apply (metis (full_types) empty_iff list.set(1) xDagList.simps(1))
+by (metis append_Cons in_set_conv_decomp xDagList.simps(2) xDagListAppendLt xDagListAppendRt
+  xDagListElem)
+
+(*replaceTip and yDagList*)
+lemma replaceTipYDagList[intro]: "a \<in> set (yDagList D) \<Longrightarrow> a \<in> set (yDagList (replaceTip oT nT D))"
+  apply (induct oT nT D rule: replaceTip.induct, auto)
+  apply (subgoal_tac "a \<in> set (yDagList Tl) \<or> a \<in> set (yDagList Tr) \<or> yNode a = x", safe)
+  apply (simp, blast)+
+  apply simp
+using yDagListElem by blast
+lemma replaceTipYDagList1[intro]: "a \<in> set (yDagList (replaceTip oT nT D)) \<Longrightarrow>
+  a \<in> set (yDagList D) \<or> a \<in> set (yDagList nT)"
+  apply (induct oT nT D rule: replaceTip.induct, auto)
+  apply (metis (full_types) empty_iff list.set(1) yDagList.simps(1))
+by (metis append_Cons in_set_conv_decomp yDagList.simps(3) yDagListAppendLt yDagListAppendRt
+  yDagListElem)
+
+
+(*replaceTip and size of tDag*)
 lemma replaceTipSize1: "size (replaceTip oT (Tip nT) D) = size D"
   by (induction oT "Tip nT" D rule: replaceTip.induct, simp+)
 lemma replaceTipSize: "size (replaceTip oT nT D) \<ge> size D"
@@ -67,7 +135,11 @@ lemma replaceTipSize: "size (replaceTip oT nT D) \<ge> size D"
 lemma "a\<noteq>b \<Longrightarrow> replaceTip a (Node (Tip a) (xNode (c)) (Tip b)) (Node (Tip a) (xNode (c)) (Tip b))
   = (Node ((Node (Tip a) (xNode (c)) (Tip b))) (xNode (c)) (Tip b))" by (auto)
 
-
+(*replaceTip and tDagList*)
+lemma replaceTipTDagList[intro]: "a \<in> set (tDagList (replaceTip oT nT D)) \<Longrightarrow>
+  a \<in> set (tDagList D) \<or> a \<in> set (tDagList nT)"
+  apply (induct oT nT D rule: replaceTip.induct, auto)
+by (metis (full_types) tDagListComplete tipInDag.simps(1))
 lemma replaceMiss [simp]: "\<not>tipInDag oT D \<Longrightarrow> replaceTip oT nT D = D"
   by (induction oT nT D rule: replaceTip.induct, case_tac "oT = D", simp+)
 lemma replaceAfter: "\<not>tipInDag oT nT \<Longrightarrow> \<not>tipInDag oT (replaceTip oT nT D)"
