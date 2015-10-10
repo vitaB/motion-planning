@@ -12,6 +12,14 @@ lemma inInsort : "a \<in> set (insort_insert x xs) \<longleftrightarrow> a \<in>
   by (auto simp add: linorder_class.set_insort_insert)
 theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<forall> y \<in> set xs. f x \<le> f y))"
   by (auto simp add: linorder_class.sorted_Cons)
+lemma distinctCount: "distinct L \<Longrightarrow> List.count L a \<le> 1"
+  by (induct L, auto)
+lemma countOne_distinct: "\<forall> a. List.count L a \<le> 1 \<Longrightarrow> distinct L"
+  apply (rule ccontr)
+  apply (induct L, auto)
+sorry
+theorem countDinstinctEq: "(\<forall> a. List.count L a \<le> 1) = distinct L"
+  by (meson countOne_distinct distinctCount)
 
 (*connected edges, with more than 2 corners.
 every corner is found only one time. So therefore has only 2 neighbors*)
@@ -54,30 +62,48 @@ definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
   "uniqueXCoord L \<equiv> \<forall> a < length L. \<forall> b < length L. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
 lemma uniqueXCoordEmtyp[simp]: "uniqueXCoord []" by(simp add: uniqueXCoord_def)
 lemma uniqueXCoordOne[simp]: "uniqueXCoord [x]" by(simp add: uniqueXCoord_def)
-lemma uniqueXCoordAppend[intro]: "uniqueXCoord (D @ X) \<longrightarrow> uniqueXCoord X"
+(*kein elemet kommt doppelt vor*)
+lemma uniqueX_notIn[dest]: "uniqueXCoord (a # L) \<Longrightarrow> a \<in> set L \<Longrightarrow> False"
+  by (metis Suc_mono in_set_conv_nth length_Cons nat.distinct(1) nth_Cons_0 nth_Cons_Suc
+    uniqueXCoord_def zero_less_Suc)
+(*uniqueXCoord List is a distinct List*)
+lemma uniqueXCoordToDistinct: "uniqueXCoord L \<Longrightarrow> distinct L"
+  apply (induct L, auto)
+by (metis Suc_mono diff_Suc_1 length_Cons list.sel(3) nth_tl uniqueXCoord_def)
+
+  
+(*uniqueXCoord List after remove of elements is still a uniqueXCoord List*)
+lemma uniqueXCoordAppend[intro]: "uniqueXCoord (a # L) \<longrightarrow> uniqueXCoord L"
+  by (metis Suc_mono diff_Suc_1 length_Cons list.sel(3) nth_tl uniqueXCoord_def)
+lemma uniqueXRemove:"uniqueXCoord L \<Longrightarrow> uniqueXCoord (remove1 a L)"
+  apply (induct L, auto)
+  apply (simp add: uniqueXCoordAppend)
+sorry
+lemma uniqueXCoordAppend1[intro]: "uniqueXCoord (D @ X) \<longrightarrow> uniqueXCoord X"
   apply (induct X)
   apply (auto simp add: uniqueXCoord_def)
   apply (erule_tac x="length D" in allE)
 sorry
+
 lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a \<in> set D \<Longrightarrow> distinct L \<Longrightarrow> uniqueXCoord L"
   apply (induct D, auto)
   apply (simp add: uniqueXCoord_def)
 sorry
-lemma uniqueXCoordAppend1[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [P])"
+lemma uniqueXCoordAppend2[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [P])"
   apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [P]" in uniqueXSub, auto)
   apply (metis less_antisym nth_append nth_append_length nth_mem)
-  apply (rule ccontr)
-sorry
-lemma uniqueXCoordAppend2[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [Q])"
+  using distinct_append uniqueXCoordToDistinct apply blast
+by (smt append_Cons append_assoc in_set_conv_decomp_last uniqueXCoordAppend1 uniqueX_notIn)
+lemma uniqueXCoordAppend3[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [Q])"
     apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [Q]" in uniqueXSub, auto)
     apply (metis less_antisym nth_append nth_append_length nth_mem)
+    using distinct_append uniqueXCoordToDistinct apply blast
 sorry
 lemma uniqueXCoordPermutation[intro]: "uniqueXCoord (A @ B) \<Longrightarrow> distinct TM \<Longrightarrow>
   \<forall>a \<in> set (TM). a \<in> set (A @ B) \<Longrightarrow> uniqueXCoord(TM)"
   apply (induct A, auto)
   using nth_mem uniqueXSub apply blast
 by (smt Un_iff insert_iff list.set(2) nth_mem set_append uniqueXSub)
-
 lemma uniqueXCoordPointList: "3 \<le> length L \<Longrightarrow> uniqueXCoord L \<Longrightarrow> pointList (L)"
   by (simp add: uniqueXCoord_def pointList_def, metis distinct_conv_nth)
 
