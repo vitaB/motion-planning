@@ -120,22 +120,6 @@ lemma rightTurnDiv: "rightTurn a b c \<Longrightarrow> rightTurn d b e \<Longrig
 lemma interiority: "leftTurn t q r \<Longrightarrow> leftTurn p t r \<Longrightarrow> leftTurn p q t \<Longrightarrow> leftTurn p q r" (*[2]*)
   by (smt hausner leftRightTurn rightTurn_def)
 
-(*scalar multiplication*)
-definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) where (*[2]*)
-  "a *s P \<equiv> (\<lambda>(p1,p2). Abs_point2d (a*p1,a*p2)) (Rep_point2d P)"
-definition pointPlus :: "[point2d, point2d] \<Rightarrow> point2d" (infixl "+p" 60) where 
-  "P +p Q \<equiv> Abs_point2d ((xCoord P) + (xCoord Q), (yCoord P) + (yCoord Q))"
-lemma pointPlusSym[simp]: "(P +p Q) = (Q +p P)" by (auto simp add: pointPlus_def)
-lemma cramersRule: "signedArea P Q R = 0 \<Longrightarrow> T =
-  ((signedArea T Q R / signedArea P Q R) *s P) +p
-  ((signedArea P T R / signedArea P Q R) *s Q) +p
-  ((signedArea P Q T / signedArea P Q R) *s R)"
-sorry
-(*nur mit cramersRule beweisbar?*)
-lemma transitivity: "leftTurn t s p \<Longrightarrow> leftTurn t s q \<Longrightarrow> leftTurn t s r \<Longrightarrow> leftTurn t p q (*[2]*)
-  \<Longrightarrow> leftTurn t q r \<Longrightarrow> leftTurn t p r"
-  by (metis (mono_tags, lifting) areaDoublePoint2 cramersRule divide_eq_0_iff)
-
 (*lemmas for collinear und signedArea*)
 lemma notCollThenDiffPoints [intro]: "\<not>collinear a b c \<Longrightarrow> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"(*[1]*) by (auto)
 lemma notCollThenLfOrRt1 [intro]: "\<not>collinear a b c \<Longrightarrow> leftTurn a b c \<or> rightTurn a b c" by (auto)
@@ -146,6 +130,34 @@ lemma areaContra2 [dest]: "0 < signedArea a c b\<Longrightarrow> 0 < signedArea 
 lemma collinearTransitiv1 : "\<exists> a. collinear a b c \<and> collinear a b d \<longrightarrow> collinear a c d"
   by (simp add: colliniearRight, rule_tac x=d in exI, simp)
 
+
+(*scalar multiplication*)
+definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) where (*[2]*)
+  "a *s P \<equiv> (\<lambda>(p1,p2). Abs_point2d (a*p1,a*p2)) (Rep_point2d P)"
+lemma scalMultNull[simp]: "0 *s P = Abs_point2d (0,0)"
+  by (simp add: scalMult_def)
+definition pointPlus :: "[point2d, point2d] \<Rightarrow> point2d" (infixl "+p" 60) where 
+  "P +p Q \<equiv> Abs_point2d ((xCoord P) + (xCoord Q), (yCoord P) + (yCoord Q))"
+lemma pointPlusSym: "(P +p Q) = (Q +p P)" by (auto simp add: pointPlus_def)
+lemma pointPlusNull[simp]: "xCoord Q = 0 \<Longrightarrow> P +p Q = Abs_point2d (xCoord P, yCoord P + yCoord Q)"
+  by (simp add: pointPlus_def)
+lemma pointPlusNull1[simp]: "yCoord Q = 0 \<Longrightarrow> P +p Q = Abs_point2d (xCoord P + xCoord Q, yCoord P)"
+  by (simp add: pointPlus_def)
+lemma pointPlusNull2[simp]: "P = P +p Abs_point2d(0,0)"
+  by (smt Rep_point2d_inverse pointPlusNull1 prod.collapse xCoord xCoord_def yCoord)
+lemma pointPlusNull3[simp]: "P = Abs_point2d(0,0) +p P"
+  by (simp only: pointPlusSym pointPlusNull2)
+lemma cramersRule: "signedArea P Q R \<noteq> 0 \<Longrightarrow> T =
+  (signedArea T Q R / signedArea P Q R) *s P +p
+  (signedArea P T R / signedArea P Q R) *s Q +p
+  (signedArea P Q T / signedArea P Q R) *s R"
+  apply (auto)
+  apply (case_tac "signedArea Q R T = 0", auto)
+sorry
+(*nur mit cramersRule beweisbar?*)
+lemma transitivity: "leftTurn t s p \<Longrightarrow> leftTurn t s q \<Longrightarrow> leftTurn t s r \<Longrightarrow> leftTurn t p q (*[2]*)
+  \<Longrightarrow> leftTurn t q r \<Longrightarrow> leftTurn t p r"
+sorry
 
 (*mögliche Definitionen für isBetween.*)
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool"
@@ -212,7 +224,8 @@ lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b
   apply (safe)
   apply (auto simp add: isBetween_def)
   apply (simp add: pointsEqualArea)+
-by (metis (mono_tags, hide_lams) colliniearRight cramersRule divide_zero)+
+  
+sorry
 
 lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<Longrightarrow> collinear B C D \<Longrightarrow>
   C isBetween B D" (*[2]*)
@@ -222,7 +235,7 @@ lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<
   apply (simp add: isBetween_def)
   apply (safe)
   apply (simp add: pointsEqualArea)
-by (metis (full_types) areaDoublePoint2 cramersRule signedAreaRotate)+
+sorry
 
 lemma notBetween [dest]: "\<lbrakk>A isBetween B C; B isBetween A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
   apply (auto simp add: isBetween_def)
