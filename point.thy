@@ -222,10 +222,7 @@ lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<
   apply (simp add: isBetween_def)
   apply (safe)
   apply (simp add: pointsEqualArea)
-  apply (subgoal_tac "signedArea d B C \<noteq> 0")
-    apply (case_tac "signedArea d B D > 0", subgoal_tac "signedArea d B C > 0")
-    using zero_less_divide_iff apply blast
-sorry
+by (metis (full_types) areaDoublePoint2 cramersRule signedAreaRotate)+
 
 lemma notBetween [dest]: "\<lbrakk>A isBetween B C; B isBetween A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
   apply (auto simp add: isBetween_def)
