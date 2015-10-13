@@ -58,6 +58,9 @@ lemma tDagListElem[intro]: "a \<in> set (tDagList (Node Tl x Tr)) \<Longrightarr
   \<or> a \<in> set (tDagList Tr)"
   by (case_tac "(Node Tl x Tr)" rule: tDagList.cases, auto)
 
+lemma trapezListTDag[simp]: "trapezList (tDagList D) \<Longrightarrow> T \<in> set (tDagList D) \<Longrightarrow> isTrapez T"
+by (simp add: trapezList_def)
+
 (*wann ist ein Trapez im Baum*)
 primrec tipInDag :: "trapez \<Rightarrow> tDag \<Rightarrow> bool" where
   "tipInDag T (Tip D) = (if (T = D) then True else False)"
@@ -110,6 +113,11 @@ lemma replaceTipXDagList1[intro]: "a \<in> set (xDagList (replaceTip oT nT D)) \
   apply (metis (full_types) empty_iff list.set(1) xDagList.simps(1))
 by (metis append_Cons in_set_conv_decomp xDagList.simps(2) xDagListAppendLt xDagListAppendRt
   xDagListElem)
+(*uniqueXCoord, xDagList and replaceTip*)
+lemma replaceTipUniqueXPerm[simp]: "uniqueXCoord (xDagList D @ xDagList nT) \<Longrightarrow>
+  uniqueXCoord (xDagList (replaceTip T nT D))"
+sorry
+
 
 (*replaceTip and yDagList*)
 lemma replaceTipYDagList[intro]: "a \<in> set (yDagList D) \<Longrightarrow> a \<in> set (yDagList (replaceTip oT nT D))"

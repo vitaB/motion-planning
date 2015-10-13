@@ -62,6 +62,9 @@ definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
   "uniqueXCoord L \<equiv> \<forall> a < length L. \<forall> b < length L. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
 lemma uniqueXCoordEmtyp[simp]: "uniqueXCoord []" by(simp add: uniqueXCoord_def)
 lemma uniqueXCoordOne[simp]: "uniqueXCoord [x]" by(simp add: uniqueXCoord_def)
+lemma pointsUniqueXCoord[simp]: "leftFrom A B \<Longrightarrow> uniqueXCoord[A,B]"
+  by (simp add: less_2_cases nth_Cons' uniqueXCoord_def leftFrom_def)
+
 (*kein elemet kommt doppelt vor*)
 lemma uniqueX_notIn[dest]: "uniqueXCoord (a # L) \<Longrightarrow> a \<in> set L \<Longrightarrow> False"
   by (metis Suc_mono in_set_conv_nth length_Cons nat.distinct(1) nth_Cons_0 nth_Cons_Suc

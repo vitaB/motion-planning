@@ -93,7 +93,8 @@ by (auto simp add: trapezTriangle_def)
 (*Definition für Trapez ((a,b),(c,d),e,f)) top: (a,b), bottom:(c,d), leftP:e, rightP: f
   a=fst(fst p), b = snd(fst p), c=fst(fst(snd p)), d=snd(fst(snd p)), e=fst(snd(snd p)), f=snd(snd(snd p))*)
 definition "isTrapez T \<equiv> trapezPointsXOrder T \<and> (trapezQuad T \<or> trapezTriangle T)"
-definition trapezList :: "trapez list \<Rightarrow> bool" where "trapezList TM \<equiv> \<forall> t \<in> set TM. isTrapez t"
+definition trapezList :: "trapez list \<Rightarrow> bool" where
+  "trapezList TM \<equiv> \<forall> T. T \<in> set TM \<longrightarrow> isTrapez T"
 
 (*linke Ecke ist links von der rechten Ecke*)
 lemma leftPRigthFromRightP [simp] : "isTrapez T \<Longrightarrow> leftFrom (leftP T) (rightP T)"
