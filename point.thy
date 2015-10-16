@@ -148,11 +148,12 @@ lemma pointPlusNull2[simp]: "P = P +p Abs_point2d(0,0)"
 lemma pointPlusNull3[simp]: "P = Abs_point2d(0,0) +p P"
   by (simp only: pointPlusSym pointPlusNull2)
 lemma cramersRule: "signedArea P Q R \<noteq> 0 \<Longrightarrow> T =
-  (signedArea T Q R / signedArea P Q R) *s P +p
-  (signedArea P T R / signedArea P Q R) *s Q +p
-  (signedArea P Q T / signedArea P Q R) *s R"
+  ((signedArea T Q R / signedArea P Q R) *s P) +p
+  ((signedArea P T R / signedArea P Q R) *s Q) +p
+  ((signedArea P Q T / signedArea P Q R) *s R)"
   apply (auto)
   apply (case_tac "signedArea Q R T = 0", auto)
+  
 sorry
 (*nur mit cramersRule beweisbar?*)
 lemma transitivity: "leftTurn t s p \<Longrightarrow> leftTurn t s q \<Longrightarrow> leftTurn t s r \<Longrightarrow> leftTurn t p q (*[2]*)
@@ -227,42 +228,7 @@ lemma onePointIsBetween [intro]: "collinear a b c \<Longrightarrow> a \<noteq> b
   
 sorry
 
-lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<Longrightarrow> collinear B C D \<Longrightarrow>
-  C isBetween B D" (*[2]*)
-  apply (case_tac "B = D", blast, case_tac "C = B", blast, case_tac "C = D", blast)
-  apply (case_tac "A = B", blast, case_tac "A = C") using leftTurnDiffPoints apply blast
-  apply (case_tac "A = D") using leftTurnDiffPoints apply blast
-  apply (simp add: isBetween_def)
-  apply (safe)
-  apply (simp add: pointsEqualArea)
-sorry
 
-lemma notBetween [dest]: "\<lbrakk>A isBetween B C; B isBetween A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
-  apply (auto simp add: isBetween_def)
-  apply (case_tac "signedArea d B A \<noteq> 0")
-    apply (erule_tac x=d in allE, simp)
-    apply (erule_tac x=d in allE, safe, simp)
-    apply (simp add: colliniearRight divide_less_eq_1 left_diff_distrib' right_diff_distrib'
-      signedArea_def)
-    apply (smt mult.commute)
-    apply (simp add: divide_less_cancel divide_strict_right_mono_neg isBetween_def leftTurn_def
-      leftTurnsImplyBetween rightTurn_def zero_less_divide_iff)
-    apply (simp add: colliniearRight mult.commute right_diff_distrib' signedArea_def)
-    apply (smt divide_less_eq_1_neg)
-by (smt collSwap colliniearRight zero_less_divide_iff)
-lemma notBetween2 [dest]: "\<lbrakk>A isBetween B C ; C isBetween A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
-  apply (auto simp add: isBetween_def)
-  apply (case_tac "signedArea d B A \<noteq> 0")
-    apply (erule_tac x=d in allE, simp)
-    apply (erule_tac x=d in allE, safe, simp)
-    apply (simp add: colliniearRight divide_less_eq_1 left_diff_distrib' right_diff_distrib'
-      signedArea_def)
-    apply (smt mult.commute)
-    apply (simp add: divide_less_cancel divide_strict_right_mono_neg isBetween_def leftTurn_def
-      leftTurnsImplyBetween rightTurn_def zero_less_divide_iff)
-    apply (simp add: colliniearRight mult.commute right_diff_distrib' signedArea_def)
-    apply (smt divide_less_eq_1_neg less_divide_eq_1_pos)
-by (smt collSwap colliniearRight zero_less_divide_iff)
 lemma notBetween3 [dest]: "\<lbrakk>B isBetween A C ; C isBetween A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
   apply (auto simp add: isBetween_def)
   apply (case_tac "signedArea d A B \<noteq> 0")
@@ -306,7 +272,43 @@ lemma newLeftTurn1: "\<lbrakk>A isBetween C D; leftTurn A B C \<rbrakk> \<Longri
   apply (metis areaDoublePoint collinearTransitiv2 colliniearRight notRightTurn1 signedAreaRotate)
 by blast
 
+lemma leftTurnsImplyBetween: "leftTurn A B C \<Longrightarrow> leftTurn A C D \<Longrightarrow> collinear B C D \<Longrightarrow>
+  C isBetween B D" (*[2]*)
+  apply (case_tac "B = D", blast, case_tac "C = B", blast, case_tac "C = D", blast)
+  apply (case_tac "A = B", blast, case_tac "A = C") using leftTurnDiffPoints apply blast
+  apply (case_tac "A = D") using leftTurnDiffPoints apply blast
+  apply (simp add: isBetween_def)
+  apply (safe)
+  apply (simp add: pointsEqualArea)
+  apply (subgoal_tac "signedArea d B C \<noteq> 0")
+sorry
 
+lemma notBetween [dest]: "\<lbrakk>A isBetween B C; B isBetween A C\<rbrakk> \<Longrightarrow> False" (*[1]*)
+  apply (auto simp add: isBetween_def)
+  apply (case_tac "signedArea d B A \<noteq> 0")
+    apply (erule_tac x=d in allE, simp)
+    apply (erule_tac x=d in allE, safe, simp)
+    apply (simp add: colliniearRight divide_less_eq_1 left_diff_distrib' right_diff_distrib'
+      signedArea_def)
+    apply (smt mult.commute)
+    apply (simp add: divide_less_cancel divide_strict_right_mono_neg isBetween_def leftTurn_def
+      leftTurnsImplyBetween rightTurn_def zero_less_divide_iff)
+    apply (simp add: colliniearRight mult.commute right_diff_distrib' signedArea_def)
+    apply (smt divide_less_eq_1_neg)
+by (smt collSwap colliniearRight zero_less_divide_iff)
+lemma notBetween2 [dest]: "\<lbrakk>A isBetween B C ; C isBetween A B\<rbrakk> \<Longrightarrow> False"(*[1]*)
+  apply (auto simp add: isBetween_def)
+  apply (case_tac "signedArea d B A \<noteq> 0")
+    apply (erule_tac x=d in allE, simp)
+    apply (erule_tac x=d in allE, safe, simp)
+    apply (simp add: colliniearRight divide_less_eq_1 left_diff_distrib' right_diff_distrib'
+      signedArea_def)
+    apply (smt mult.commute)
+    apply (simp add: divide_less_cancel divide_strict_right_mono_neg isBetween_def leftTurn_def
+      leftTurnsImplyBetween rightTurn_def zero_less_divide_iff)
+    apply (simp add: colliniearRight mult.commute right_diff_distrib' signedArea_def)
+    apply (smt divide_less_eq_1_neg less_divide_eq_1_pos)
+by (smt collSwap colliniearRight zero_less_divide_iff)
 
 
 
