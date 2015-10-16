@@ -73,20 +73,29 @@ lemma uniqueX_notIn[dest]: "uniqueXCoord (a # L) \<Longrightarrow> a \<in> set L
 lemma uniqueXCoordToDistinct: "uniqueXCoord L \<Longrightarrow> distinct L"
   apply (induct L, auto)
 by (metis Suc_mono diff_Suc_1 length_Cons list.sel(3) nth_tl uniqueXCoord_def)
-
+lemma uniqueXNotDouble: "uniqueXCoord L \<Longrightarrow> List.count L a \<le> 1"
+by (meson countDinstinctEq uniqueXCoordToDistinct)
   
 (*uniqueXCoord List after remove of elements is still a uniqueXCoord List*)
 lemma uniqueXCoordAppend[intro]: "uniqueXCoord (a # L) \<longrightarrow> uniqueXCoord L"
   by (metis Suc_mono diff_Suc_1 length_Cons list.sel(3) nth_tl uniqueXCoord_def)
+lemma uniqueXCoordEq: "\<forall> a < length L. xCoord (L!a) \<noteq> xCoord b \<Longrightarrow>
+  uniqueXCoord (b # L) = uniqueXCoord L"
+  apply (safe, simp add: uniqueXCoordAppend)
+  apply (auto simp add: uniqueXCoord_def)
+by (metis (no_types, lifting) diff_Suc_1 less_Suc_eq_0_disj nth_Cons')
 lemma uniqueXRemove:"uniqueXCoord L \<Longrightarrow> uniqueXCoord (remove1 a L)"
   apply (induct L, auto)
   apply (simp add: uniqueXCoordAppend)
-sorry
+  apply (subgoal_tac "\<forall> b < length (remove1 a L). xCoord ((remove1 a L)!b) \<noteq> xCoord aa")
+  using uniqueXCoordAppend uniqueXCoordEq apply blast
+  apply (subgoal_tac "\<forall>b<length L. xCoord (L!b) \<noteq> xCoord aa")
+  apply (metis in_set_conv_nth notin_set_remove1)
+by (metis Suc_less_eq length_Cons nth_Cons_0 nth_Cons_Suc uniqueXCoord_def zero_less_Suc)
 lemma uniqueXCoordAppend1[intro]: "uniqueXCoord (D @ X) \<longrightarrow> uniqueXCoord X"
-  apply (induct X)
-  apply (auto simp add: uniqueXCoord_def)
-  apply (erule_tac x="length D" in allE)
-sorry
+  apply (safe, induct D)
+  apply (simp add: uniqueXCoord_def)
+by (metis append_Cons uniqueXCoordAppend)
 
 lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a \<in> set D \<Longrightarrow> distinct L \<Longrightarrow> uniqueXCoord L"
   apply (induct D, auto)
@@ -101,7 +110,9 @@ lemma uniqueXCoordAppend3[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> un
     apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [Q]" in uniqueXSub, auto)
     apply (metis less_antisym nth_append nth_append_length nth_mem)
     using distinct_append uniqueXCoordToDistinct apply blast
-sorry
+by (smt append_Cons append_assoc in_set_conv_decomp_first rotate1.simps(2) set_rotate1
+  uniqueXCoordAppend1 uniqueX_notIn)
+
 lemma uniqueXCoordPermutation[intro]: "uniqueXCoord (A @ B) \<Longrightarrow> distinct TM \<Longrightarrow>
   \<forall>a \<in> set (TM). a \<in> set (A @ B) \<Longrightarrow> uniqueXCoord(TM)"
   apply (induct A, auto)

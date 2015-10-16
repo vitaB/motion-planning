@@ -93,6 +93,10 @@ Output: neues tDag-tree*)
 fun replaceTip :: "trapez \<Rightarrow> tDag \<Rightarrow> tDag \<Rightarrow> tDag" where
   "replaceTip oT nT (Tip D) = (if (D = oT) then (nT) else (Tip D))"
  |"replaceTip oT nT (Node Tl x Tr) = Node (replaceTip oT nT Tl) x (replaceTip oT nT Tr)"
+lemma replaceCount: "\<forall> a. a \<in> set (xDagList nT) \<longrightarrow> a \<notin> set (xDagList D) \<Longrightarrow> b \<in> set (xDagList D) \<Longrightarrow>
+List.count (xDagList D) b = List.count (xDagList (replaceTip oT nT D)) b"
+  apply (induction oT nT D rule: replaceTip.induct, simp+)
+sorry
 lemma replaceTipSame [simp] : "replaceTip oT (Tip oT) D = D"
   by (induction oT "(Tip oT)" D rule: replaceTip.induct, simp+)
 theorem replaceTipSimp [simp] :"\<not>tipInDag nT' D \<Longrightarrow>

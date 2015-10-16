@@ -95,6 +95,8 @@ by (auto simp add: trapezTriangle_def)
 definition "isTrapez T \<equiv> trapezPointsXOrder T \<and> (trapezQuad T \<or> trapezTriangle T)"
 definition trapezList :: "trapez list \<Rightarrow> bool" where
   "trapezList TM \<equiv> \<forall> T. T \<in> set TM \<longrightarrow> isTrapez T"
+lemma trapezListSimp: "trapezList TM \<Longrightarrow> T \<in> set TM \<Longrightarrow> isTrapez T"
+  by (simp add: trapezList_def)
 
 (*linke Ecke ist links von der rechten Ecke*)
 lemma leftPRigthFromRightP [simp] : "isTrapez T \<Longrightarrow> leftFrom (leftP T) (rightP T)"
@@ -222,6 +224,13 @@ lemma InnerToPointInTrapez[simp]: "isTrapez T \<Longrightarrow> pointInTrapezInn
   apply (auto simp add: pointInTrapez_def pointInTrapezInner_def)
   using rightTurn_def apply auto[1] using rightTurn_def apply auto[1]
 done
+
+lemma isNotInTrapez[dest]: "isTrapez T \<Longrightarrow> pointInTrapez T P \<Longrightarrow>
+  leftTurn (fst (topT T)) (snd (topT T)) P \<Longrightarrow> False"
+by (meson leftTurn_def not_le pointInTrapez_def)
+lemma isNotInTrapez1[dest]: "isTrapez T \<Longrightarrow> pointInTrapez T P \<Longrightarrow>
+  rightTurn (fst (bottomT T)) (snd (bottomT T)) P \<Longrightarrow> False"
+by (meson rightTurn_def not_le pointInTrapez_def)
 
 (*definition trapezSegmentIntersect :: "trapez \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "trapezSegmentIntersect T P Q \<equiv> intersect (fst (topT T)) (snd (topT T)) P Q
