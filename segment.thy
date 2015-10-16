@@ -90,18 +90,25 @@ lemma crossingRightTurn [dest] : "crossing A B P R \<Longrightarrow> rightTurn A
   by (simp add: crossing_def lineSeparate_def, metis conflictingRigthTurns)
 lemma crossingLeftTurn [dest] : "crossing A B P R \<Longrightarrow> leftTurn A B P \<and> leftTurn A B R \<Longrightarrow> False"
   by (simp add: crossing_def lineSeparate_def, metis conflictingRigthTurns)
-lemma notSelfCrossing [simp]: "\<not>crossing A B A B" by (simp add: crossing_def)
+lemma notSelfCrossing[simp]: "\<not>crossing A B A B" by (simp add: crossing_def)
+lemma notSelfCrossing1[simp]: "\<not>crossing A B B A" by (simp add: crossing_def)
 
 (*intersection, even if endpoint is on segment*)
 definition intersect :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-  "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<equiv> crossing A B P R \<or>
+  "intersect A B P R \<equiv> crossing A B P R \<or>
   P isBetween A B \<or> R isBetween A B \<or> A isBetween P R \<or> B isBetween P R"
+lemma notIntersectSame[simp]: "\<not>intersect A B A B"
+  by (simp add: intersect_def)
+lemma notIntersectSame1[simp]: "\<not>intersect A B B A"
+  by (auto simp add: intersect_def segment_Sym)
 
 lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A B P R"
   by (simp add: intersect_def crossingSegment1 crossingSegment)
-lemma intersectSym[simp]: "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect B A P R"
+lemma intersectSym: "intersect A B P R = intersect B A P R"
   using crossingSym intersect_def segment_def by auto
-lemma intersectSym1 : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R = intersect P R A B"
+lemma intersectSym1 : "intersect A B P R = intersect P R A B"
+  using crossingSym1 intersect_def by auto
+lemma NotIntersectSym: "\<not>intersect A B P R \<Longrightarrow> \<not>intersect P R A B"
   using crossingSym1 intersect_def by auto
 
 
