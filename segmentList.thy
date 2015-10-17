@@ -14,10 +14,18 @@ theorem sortedKey : "sorted (map f (x # xs)) = (sorted (map f xs) \<and> (\<fora
   by (auto simp add: linorder_class.sorted_Cons)
 lemma distinctCount: "distinct L \<Longrightarrow> List.count L a \<le> 1"
   by (induct L, auto)
-lemma countOne_distinct: "\<forall> a. List.count L a \<le> 1 \<Longrightarrow> distinct L"
-  apply (rule ccontr)
+lemma countNotIn[dest]: "a \<in> set L \<Longrightarrow> List.count L a = 0 \<Longrightarrow> False"
   apply (induct L, auto)
-sorry
+by (meson add_is_0)
+lemma countOne_distinct1: "List.count L a > 1 \<Longrightarrow> \<not>distinct L"
+  apply (induct L, auto)
+by (metis (full_types) Suc_eq_plus1 count_notin less_not_refl2)
+lemma countOne_distinct: "\<forall> a. List.count L a \<le> 1 \<Longrightarrow> distinct L"
+  apply (induct L, simp)
+  apply (subgoal_tac "List.count L a = 0")
+  apply (auto)
+  apply (metis (full_types) le_0_eq le_Suc_eq)
+by (metis (full_types) Suc_eq_plus1 Suc_le_mono le_0_eq)
 theorem countDinstinctEq: "(\<forall> a. List.count L a \<le> 1) = distinct L"
   by (meson countOne_distinct distinctCount)
 
@@ -100,7 +108,13 @@ by (metis append_Cons uniqueXCoordAppend)
 lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a \<in> set D \<Longrightarrow> distinct L \<Longrightarrow> uniqueXCoord L"
   apply (induct D, auto)
   apply (simp add: uniqueXCoord_def)
-sorry
+  apply (subgoal_tac "\<forall>b<length D. xCoord (D!b) \<noteq> xCoord a", auto)
+  apply (simp add: distinct_conv_nth in_set_conv_nth uniqueXCoordAppend uniqueXCoord_def)
+  apply (metis Suc_mono nth_Cons_Suc)
+  apply (metis Suc_mono gr_implies_not0 length_Cons length_greater_0_conv lessI list.distinct(1)
+    list.sel(3) nth_Cons_0 nth_tl uniqueXCoord_def)
+done
+
 lemma uniqueXCoordAppend2[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [P])"
   apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [P]" in uniqueXSub, auto)
   apply (metis less_antisym nth_append nth_append_length nth_mem)
