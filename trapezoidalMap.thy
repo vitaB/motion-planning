@@ -321,7 +321,7 @@ sorry
 (*alle Trapeze aus followSegment sind aus D*)
 lemma followSegmetInDag[simp]:"tipInDag T D \<Longrightarrow> A \<in> set (followSegment D T P Q) \<Longrightarrow>
   A \<in> set (tDagList D)"
-  apply (induct D T P Q rule: followSegment.induct, auto)
+  apply (induct D T P Q rule: followSegment.induct, simp)
   apply (simp add: conflictingLeftTurns3 set_ConsD tDagListComplete)
   apply (simp add: pointInDag_def set_ConsD tDagListComplete)
 by (smt empty_iff followSegment.simps insert_iff list.set(1) list.set(2) notLeftTurn notRightTurn1)
@@ -346,7 +346,9 @@ using pointInDag_def pointInRBox by auto[1]
 (*jedes Trapez von intersectedTrapez ist aus D*)
 lemma intersectedTrapezInDag[simp]: "leftFrom P Q \<Longrightarrow> T \<in> set (intersectedTrapez D P Q) \<Longrightarrow>
   tipInDag T D"
-  by(auto simp add: intersectedTrapez_def, simp add: followSegmetInDag1)
+  apply(simp add: intersectedTrapez_def)
+by (smt empty_iff followSegmetInDag list.set(1) queryTrapezoidMapInDag rBtNeighbInDag1
+  rUpNeighbInDag1 set_ConsD tDagListComplete)
 (*enthält D nur eine rBox liefert intersectedTrapez die rBox zurück*)
 lemma intersectedTrapezSimp[simp]: "leftFrom p q \<Longrightarrow> rBoxTrapezS [p,q] R \<Longrightarrow>
   intersectedTrapez (Tip R) p q = [R]"
@@ -443,28 +445,27 @@ by (simp)
 
 (******add Segment to trapezoidal-map*)
 (*erneure tDag nach dem hinzufügen eines segments*)
-definition addSegmentToTrapezoidalMap :: "tDag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> tDag" where
-  "leftFrom P Q \<Longrightarrow> addSegmentToTrapezoidalMap D P Q \<equiv>
+definition addSegmentToTrapMap :: "tDag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> tDag" where
+  "leftFrom P Q \<Longrightarrow> addSegmentToTrapMap D P Q \<equiv>
     replaceDag D(intersectedTrapez D P Q)(intersectedTrapez D P Q) P Q"
 lemma addSegmentToRBoxNotSame [simp]:"leftFrom p q \<Longrightarrow> rBoxTrapezS [p,q] R \<Longrightarrow>
-  addSegmentToTrapezoidalMap (Tip R) p q \<noteq> Tip R"
-  apply (simp add: addSegmentToTrapezoidalMap_def)
+  addSegmentToTrapMap (Tip R) p q \<noteq> Tip R"
+  apply (simp add: addSegmentToTrapMap_def)
 done
 
 
 (*****Add Polygon to trapezoidal-map*)
 (*Input: List of line segments(one Polygon) forming a planar subdivision.
 Output:  A trapezoid map M in associated search structure tDag.*)
-fun addSegmentsToTrapezoidalMap :: "tDag \<Rightarrow> point2d list \<Rightarrow> tDag" where
-  "addSegmentsToTrapezoidalMap D [] = D"
-  | "addSegmentsToTrapezoidalMap D [p] = D"
-  | "addSegmentsToTrapezoidalMap D (p#q#xs) = addSegmentsToTrapezoidalMap
-    (addSegmentToTrapezoidalMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
+fun addSegmentsToTrapMap :: "tDag \<Rightarrow> point2d list \<Rightarrow> tDag" where
+  "addSegmentsToTrapMap D [] = D"
+  | "addSegmentsToTrapMap D [p] = D"
+  | "addSegmentsToTrapMap D (p#q#xs) = addSegmentsToTrapMap
+    (addSegmentToTrapMap D (leftPSegment p q) (rightPSegment p q)) (q#xs)"
 
-fun addSegmentListToTrapezoidalMap :: "tDag \<Rightarrow> (point2d list) list \<Rightarrow> tDag" where
-   "addSegmentListToTrapezoidalMap D [] = D"
-  | "addSegmentListToTrapezoidalMap D (x#xs) = addSegmentListToTrapezoidalMap
-    (addSegmentsToTrapezoidalMap D x) xs"
+fun addPolygonsToTrapMap :: "tDag \<Rightarrow> (point2d list) list \<Rightarrow> tDag" where
+   "addPolygonsToTrapMap D [] = D"
+  | "addPolygonsToTrapMap D (x#xs) = addPolygonsToTrapMap (addSegmentsToTrapMap D x) xs"
 
 
 
