@@ -114,7 +114,6 @@ using xDagListElem by blast
 lemma replaceTipXDagList1[intro]: "a \<in> set (xDagList (replaceTip oT nT D)) \<Longrightarrow>
   a \<in> set (xDagList D) \<or> a \<in> set (xDagList nT)"
   apply (induct oT nT D rule: replaceTip.induct, auto)
-  apply (metis (full_types) empty_iff list.set(1) xDagList.simps(1))
 by (metis append_Cons in_set_conv_decomp xDagList.simps(2) xDagListAppendLt xDagListAppendRt
   xDagListElem)
 (*uniqueXCoord, xDagList and replaceTip*)
@@ -133,7 +132,6 @@ using yDagListElem by blast
 lemma replaceTipYDagList1[intro]: "a \<in> set (yDagList (replaceTip oT nT D)) \<Longrightarrow>
   a \<in> set (yDagList D) \<or> a \<in> set (yDagList nT)"
   apply (induct oT nT D rule: replaceTip.induct, auto)
-  apply (metis (full_types) empty_iff list.set(1) yDagList.simps(1))
 by (metis append_Cons in_set_conv_decomp yDagList.simps(3) yDagListAppendLt yDagListAppendRt
   yDagListElem)
 
@@ -150,8 +148,8 @@ lemma "a\<noteq>b \<Longrightarrow> replaceTip a (Node (Tip a) (xNode (c)) (Tip 
 (*replaceTip and tDagList*)
 lemma replaceTipTDagList[intro]: "a \<in> set (tDagList (replaceTip oT nT D)) \<Longrightarrow>
   a \<in> set (tDagList D) \<or> a \<in> set (tDagList nT)"
-  apply (induct oT nT D rule: replaceTip.induct, auto)
-by (metis (full_types) tDagListComplete tipInDag.simps(1))
+by (induct oT nT D rule: replaceTip.induct, auto)
+
 lemma replaceMiss [simp]: "\<not>tipInDag oT D \<Longrightarrow> replaceTip oT nT D = D"
   by (induction oT nT D rule: replaceTip.induct, case_tac "oT = D", simp+)
 lemma replaceAfter: "\<not>tipInDag oT nT \<Longrightarrow> \<not>tipInDag oT (replaceTip oT nT D)"
