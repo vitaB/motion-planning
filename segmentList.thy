@@ -47,6 +47,7 @@ lemma pointListsSimp1 : "pointLists [A] = pointList A" by(simp add: pointLists_d
 lemma pointListsSimp2 [simp]: "i < length PL \<Longrightarrow> pointLists PL \<Longrightarrow> pointList (PL!i)"
   by (auto simp add: pointLists_def)
 
+
 (*(*is segment in pointList?*)
 definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
   "pointList L \<Longrightarrow> segInPointList L S \<equiv> \<exists> i < length L - 1. L!i = fst S \<and> L!i = snd S"
@@ -63,6 +64,9 @@ lemma distEdge : "pointList L \<Longrightarrow> a < size L \<Longrightarrow> b <
    a \<noteq> c \<and> a \<noteq> b \<and> c \<noteq> d \<Longrightarrow> segment_Same (L!a) (L!b) (L!c) (L!d) \<Longrightarrow> False"  
   apply (subgoal_tac "segment (L!a) (L!b) \<and> segment (L!c) (L!d)", auto)
 by (auto simp add: segment_Same_def distVertex segment_def nth_eq_iff_index_eq pointList_def)
+lemma poinListSame: "pointList P \<Longrightarrow> i < length P \<Longrightarrow> k < length P \<Longrightarrow> P!i = P!k \<longleftrightarrow> i = k"
+  apply (auto)
+by (simp add: nth_eq_iff_index_eq pointList_def)
 
 
 (*there is no point in the point list, with the same xCoordinate*)
@@ -281,6 +285,13 @@ lemma collinearListAdj: "\<not>collinearList L \<Longrightarrow> a < length L - 
   apply (erule_tac x="Suc a" in allE, safe, metis Suc_lessD add_2_eq_Suc' less_diff_conv)
 by (erule_tac x="Suc (Suc a)" in allE, safe, (simp add: less_diff_conv n_not_Suc_n)+)
 
+(*no 2 adjacent segment intersect, if \<not>collinearList L*)
+lemma collinearListIntersect:"\<not>collinearList L \<Longrightarrow> a < length L - 2 \<Longrightarrow>
+  \<not>intersect (L ! a) (L! Suc a) (L! Suc a) (L! Suc(Suc a))"
+  apply (auto simp add: intersect_def)
+  using collinearListAdj isBetweenImpliesCollinear3 apply blast
+using collinearListAdj isBetweenImpliesCollinear by blast
+  
 
 
 (*none of the segments from point list intersects(real) with another segment form this point list*)

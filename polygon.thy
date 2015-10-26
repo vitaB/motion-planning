@@ -185,63 +185,29 @@ theorem cPolygonIsCrossingFree: "pointList L \<Longrightarrow> \<not>collinearLi
   apply (simp add: lineSeparate_def, safe, auto simp add: conflictingRigthTurns)
 by(metis collRotate crossingCollinear crossingSym1 crossingRightTurn crossingSym rightTurnRotate2)+
 
-lemma cPolygonIsIntersectionFree1: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
-    cPolygon P \<Longrightarrow> i < length P - 3 \<Longrightarrow>
-    intersect (P!i) (P!Suc i) (P! Suc (Suc i)) (P! Suc (Suc (Suc i))) \<Longrightarrow> False"
-  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc (Suc i)" in cyclePathNotCollinear)
-  apply (simp add: cPolygon_def)+
-  apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def)+)
-  apply (safe)
-  apply (metis Suc_lessD add_2_eq_Suc' collinearListAdj cyclePath_def less_diff_conv
-    notCollThenDiffPoints nth_append)
-  apply (metis Suc_lessD add_2_eq_Suc' collinearListAdj cyclePath_def less_diff_conv
-    notCollThenDiffPoints nth_append)
-oops
+(*no 2 adjacent segment intersect, if cPolygon*)
+lemma cPolygonIntersectAdj:"pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+  cPolygon P \<Longrightarrow> a < length P - 2 \<Longrightarrow> \<not>intersect (P ! a) (P! Suc a) (P! Suc a) (P! Suc(Suc a))"
+  apply (auto simp add: intersect_def)
+  using Suc_mono Suc_pred colliniearRight cyclePathNotCollinear1 isBetweenImpliesCollinear3
+  length_greater_0_conv less_diff_conv apply fastforce
+using Suc_mono colliniearRight cyclePathNotCollinear1 isBetweenImpliesCollinear
+  less_diff_conv by fastforce
     
 (*in a conv. polygon none of the lines intersects(real)*)
 theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
     cPolygon P \<Longrightarrow> intersectionFreePList P"
-  apply (simp add: intersectionFreePList_def, safe)
-  apply (case_tac "k=i")
-    using notIntersectSame apply blast
-  (*apply (case_tac "k = Suc i")
-    apply (subgoal_tac "Suc k = Suc (Suc i)")
-    
-    apply (subgoal_tac "\<not>collinear (L!i) (L!Suc i) (L!Suc k)")
-    *)
-  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in cyclePathNotCollinear)
-    apply (simp add: cPolygon_def)+
-    apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def)+)
-    apply (safe)
-    apply (metis cyclePath_def distVertex nth_append pointsEqualSame)
-    
-  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in cyclePathNotCollinear)
-    apply (simp add: cPolygon_def)+
-    apply (cut_tac L=L and P=P and i=i in cyclePathSegments,
-      (simp add: segment_def cyclePathAdjacentSame1)+)
-  apply (cut_tac L=L and P=P and a="i" and b="Suc k" and c="k" in cyclePathNotCollinear)
-    apply (simp add: cPolygon_def)+
-    apply (cut_tac L=L and P=P and i=k in cyclePathSegments,
-      (simp add: segment_def cyclePathAdjacentSame1)+)
-  apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in cyclePathNotCollinear)
-    apply (simp add: cPolygon_def)+
-    apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
-oops
-  (*apply (simp add: cPolygon_def, erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
-  apply (simp add: lineSeparate_def, safe, metis conflictingRigthTurns)
-  apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectSym1)
-    using segment_def apply auto[1]
-  apply ((simp add: cyclePathSegments conflictingRigthTurns1))
-  apply (metis Suc_eq_plus1 Suc_mono cyclePathSegments cyclePath_def intersectRightTurn
-    length_append_singleton less_diff_conv rightTurnRotate2)
-  apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectRightTurn1)
-    apply ((simp add: cyclePathSegments conflictingRigthTurns1)+, blast)
-by (simp add: colliniearRight cyclePathNotCollinear1 numeral_2_eq_2 pointList_def)*)
+  apply (auto simp add: intersectionFreePList_def intersect_def)
+  apply (metis Suc_eq_plus1 Suc_mono cPolygon_def crossing_def cyclePath_def
+    length_append_singleton less_diff_conv)
+by (metis Suc_mono cyclePathNotCollinear cyclePath_def isBetweenImpliesCollinear
+  isBetweenPointsDistinct length_append_singleton less_SucI)+
+  
 
 (*each conv. polygon is also a simple polygon*)
-lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+theorem cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
     cPolygon P \<Longrightarrow> polygon P"
-oops
+    by (auto simp add: cPolygonIsIntersectionFree polygon_def)
 
 
 (*(*Punkt inside convex Polygon.*)
