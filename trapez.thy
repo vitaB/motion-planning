@@ -2,21 +2,24 @@ theory trapez
 imports polygon
 begin
 
+(*Definition für Datentyp trapez. Durch 6 Punkte. nicht vertikale oben/unten und 2 vertikalen*)
 typedef trapez = "{p::((point2d*point2d)*(point2d*point2d)*point2d*point2d). True}" by (auto)
+(*Vereinfachung der Beweisführung für trapez*)
 lemma [simp]: "fst (Rep_trapez (Abs_trapez (a, c, e, f))) = a" by (simp add: Abs_trapez_inverse) 
 lemma [simp]:"fst(snd (Rep_trapez (Abs_trapez (a, c, e, f)))) = c" by (simp add: Abs_trapez_inverse) 
 lemma [simp]:"fst(snd(snd (Rep_trapez (Abs_trapez (a, c, e, f))))) = e"
   by (simp add: Abs_trapez_inverse) 
 lemma [simp]:"snd(snd(snd (Rep_trapez (Abs_trapez (a, c, e, f))))) = f"
   by (simp add: Abs_trapez_inverse) 
-(*Trapez Equiv.*)
-definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "trapezNotEq A B \<equiv> A \<noteq> B"
 lemma trapezSameCoord[simp]: "(Abs_trapez ((a,b),(c,d),e,f) = Abs_trapez ((a',b'),(c',d'),e',f'))
   \<longleftrightarrow> (a=a'\<and> b=b' \<and> c=c' \<and> d=d' \<and> e=e' \<and> f=f')"
   by (metis Abs_trapez_inverse fst_conv mem_Collect_eq prod.inject)
 lemma trapezSameCoord1[simp]: "(Abs_trapez (a,c,e,f) = Abs_trapez (a',c',e',f')) \<longleftrightarrow>
   (a=a' \<and> c=c'\<and> e=e' \<and> f=f')"
   by (metis Abs_trapez_inverse fst_conv mem_Collect_eq prod.inject)
+
+(*Trapez not Equiv.*)
+definition trapezNotEq :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where "trapezNotEq A B \<equiv> A \<noteq> B"
 
 (*identifiers for Trapez-parts*)
 definition topT :: "trapez \<Rightarrow> (point2d\<times>point2d)" where  "topT T \<equiv> fst(Rep_trapez T)"
@@ -127,18 +130,6 @@ lemma trapezHasOrderetPoints8:"isTrapez T \<Longrightarrow> leftFrom (fst(bottom
   by (metis isTrapez_def trapezHasOrderetPoints4)
 
 
-(*(*jeder Punkt der auf der xCoordinate von rightP steht und von topT und bottomT eingegrenzt wird*)
-definition pointOnLeftT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where
-  "pointOnLeftT T p \<equiv> rightTurn (fst(topT T)) (snd(topT T)) p
-    \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (leftP T) = xCoord p"
-definition pointOnRightT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where
-  "pointOnRightT T p \<equiv> rightTurn (fst(topT T)) (snd(topT T)) p
-    \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (rightP T) = xCoord p"
-lemma pointNotOnLeftRightT[dest]: "pointOnLeftT T p \<Longrightarrow> pointOnRightT T p \<Longrightarrow> False"
-  apply (simp add: pointOnLeftT_def pointOnRightT_def isTrapez_def trapezPointsXOrder_def)
-by (metis leftFrom_def leftPRigthFromRightP1 less_irrefl)*)
-
-
 (*topT und bottomT sind segmente*)
 lemma topTSegment [simp]: "isTrapez T \<Longrightarrow> segment (fst(topT T)) (snd(topT T))"
   apply (cases T, subgoal_tac "xCoord (fst(topT T)) \<noteq> xCoord (snd(topT T))")
@@ -148,14 +139,7 @@ lemma bottomTSegment [simp]: "isTrapez T \<Longrightarrow> segment (fst(bottomT 
   apply (cases T, subgoal_tac "xCoord (fst(bottomT T)) \<noteq> xCoord (snd(bottomT T))")
   apply (simp add: isTrapez_def)
 by (metis  isTrapez_def leftFrom_def not_le trapezHasOrderetPoints2 trapezPointsXOrder_def)
-lemma foo: "c \<noteq> d \<Longrightarrow> leftFrom c d \<Longrightarrow> leftFrom a b \<Longrightarrow> rightTurn a b c \<Longrightarrow>
-  rightTurn a b d \<Longrightarrow> leftFrom a d \<Longrightarrow> leftFrom c b\<Longrightarrow> leftTurn c d a \<or> leftTurn c d  b"
-  apply (case_tac "lineSeparate a b c d") using lineSeparate_def apply auto[1]
-  apply (case_tac "lineSeparate c d a b") using lineSeparate_def apply auto[1]
-  apply (subgoal_tac "\<not>collinear c b d")
-  apply (case_tac "collinear a c d", rule disjI2)
-  apply (case_tac "leftFrom d b")
-oops
+
   
 (*Beweise über die Positionen der Ecken vom Trapez*)
 (*engegengesetzte Ecken des Trapezes sind von einander ungleich*)
@@ -180,7 +164,7 @@ lemma rightPPos [intro] : "isTrapez T \<Longrightarrow> rightTurn (fst(topT T)) 
    cases T, simp del: leftRightTurn leftTurnRotate leftTurnRotate2)
 by(metis isTrapez_def rightTurnRotate trapezQuad_def trapezTriangle_def)
 
-
+(*zwei Trapeze sind benachbart, wenn sie eine Ecke Teilen und bottomT oder topT gleich sind*)
 definition neighbor :: "trapez \<Rightarrow> trapez \<Rightarrow> bool" where
   "isTrapez T \<Longrightarrow> isTrapez Tr \<Longrightarrow> neighbor T Tr \<equiv> rightP T = leftP Tr
   \<and> (topT T = topT Tr \<or> bottomT T = bottomT Tr)"
@@ -195,6 +179,7 @@ lemma neighborNotSym[dest]:"isTrapez T \<Longrightarrow> isTrapez Tr \<Longright
   apply (simp add: neighbor_def, cases T, simp add: isTrapez_def)
   apply (simp add: trapezPointsXOrder_def)
 by (metis leftFromDest)
+
 (*zwei Trapeze sind benachbart entland der Strecke PQ, wenn :
   - die linke Ecke eines Trapezes gleich der rechten Ecke des anderen Trapezes
   - topT gleich sind, falls PQ über rightPT bzw. bottomT gleich sind, falls PQ unter rightP.*)
@@ -259,6 +244,7 @@ lemma rBoxTrapezSConcatEq : "PL \<noteq> [] \<Longrightarrow>
 by (smt UN_iff in_set_conv_nth set_concat)+
 
 
+(*erstellung neuer Trapeze*)
 lemma newTrapez[simp]: "isTrapez oT \<Longrightarrow> pointInRBox oT P \<Longrightarrow>
   isTrapez (Abs_trapez (topT oT, bottomT oT, leftP oT, P))"
   apply (cases oT, simp add: isTrapez_def, rule conjI)
@@ -272,10 +258,21 @@ lemma newTrapez[simp]: "isTrapez oT \<Longrightarrow> pointInRBox oT P \<Longrig
   apply (subst (asm) trapezTriangle_def, simp)
   apply (erule disjE, erule conjE, simp)+
   apply (erule conjE, erule disjE)+ apply (erule conjE, simp)+
-sorry
+oops
 lemma newTrapez1[simp]: "isTrapez oT \<Longrightarrow> pointInRBox oT P \<Longrightarrow>
   isTrapez (Abs_trapez (topT oT, bottomT oT, P, rightP oT))"
-sorry
+oops
 
+
+(*(*jeder Punkt der auf der xCoordinate von rightP steht und von topT und bottomT eingegrenzt wird*)
+definition pointOnLeftT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where
+  "pointOnLeftT T p \<equiv> rightTurn (fst(topT T)) (snd(topT T)) p
+    \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (leftP T) = xCoord p"
+definition pointOnRightT :: "trapez \<Rightarrow> point2d \<Rightarrow> bool" where
+  "pointOnRightT T p \<equiv> rightTurn (fst(topT T)) (snd(topT T)) p
+    \<and> leftTurn (fst(bottomT T)) (snd(bottomT T)) p \<and> xCoord (rightP T) = xCoord p"
+lemma pointNotOnLeftRightT[dest]: "pointOnLeftT T p \<Longrightarrow> pointOnRightT T p \<Longrightarrow> False"
+  apply (simp add: pointOnLeftT_def pointOnRightT_def isTrapez_def trapezPointsXOrder_def)
+by (metis leftFrom_def leftPRigthFromRightP1 less_irrefl)*)
 
 end

@@ -32,7 +32,7 @@ lemma revCycleCollinear [simp]: "pointList L \<Longrightarrow> \<not>collinearLi
   apply (erule_tac x=b in allE, safe, simp)
   apply (erule_tac x=c in allE, safe)
   apply (simp)
-sorry
+oops
 
 (*all adjacent edges of cyclePath are segments*)
 lemma cyclePathLastSegment : "pointList L \<Longrightarrow> segment (last L) (last (cyclePath L))"

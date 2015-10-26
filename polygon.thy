@@ -125,14 +125,13 @@ lemma cPolygonRevEq: "pointList L \<Longrightarrow> P = cyclePath L \<Longrighta
   (\<forall> k < length (rev P) - 1.
   \<not>(\<exists> i. i < length (rev P) - 1 \<and> lineSeparate ((rev P) ! k) ((rev P) ! Suc k) ((rev P) ! i) ((rev P) ! Suc i)))"
   apply (cut_tac P="rev P" and L="hd L # rev (tl L)" in cPolygon_def, simp,simp add: cyclePath_def)
-by (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def
-    rev.simps(2) zero_less_Suc, (simp)+)
+oops
 lemma cPolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<Longrightarrow>
     cPolygon (rev P)"
   apply (simp add: cPolygonRevEq cPolygon_def, auto)
   apply (subgoal_tac "rev P = revCycle L")
   apply (simp add: cPolygon_def)
-sorry
+oops
 
 (*all triangles are conv. polygon*)
 lemma conVextriangles: "pointList L \<Longrightarrow> length L = 3 \<Longrightarrow> \<not>collinearList L \<Longrightarrow>
@@ -186,13 +185,36 @@ theorem cPolygonIsCrossingFree: "pointList L \<Longrightarrow> \<not>collinearLi
   apply (simp add: lineSeparate_def, safe, auto simp add: conflictingRigthTurns)
 by(metis collRotate crossingCollinear crossingSym1 crossingRightTurn crossingSym rightTurnRotate2)+
 
+lemma cPolygonIsIntersectionFree1: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
+    cPolygon P \<Longrightarrow> i < length P - 3 \<Longrightarrow>
+    intersect (P!i) (P!Suc i) (P! Suc (Suc i)) (P! Suc (Suc (Suc i))) \<Longrightarrow> False"
+  apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc (Suc i)" in cyclePathNotCollinear)
+  apply (simp add: cPolygon_def)+
+  apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def)+)
+  apply (safe)
+  apply (metis Suc_lessD add_2_eq_Suc' collinearListAdj cyclePath_def less_diff_conv
+    notCollThenDiffPoints nth_append)
+  apply (metis Suc_lessD add_2_eq_Suc' collinearListAdj cyclePath_def less_diff_conv
+    notCollThenDiffPoints nth_append)
+oops
+    
 (*in a conv. polygon none of the lines intersects(real)*)
 theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
     cPolygon P \<Longrightarrow> intersectionFreePList P"
   apply (simp add: intersectionFreePList_def, safe)
+  apply (case_tac "k=i")
+    using notIntersectSame apply blast
+  (*apply (case_tac "k = Suc i")
+    apply (subgoal_tac "Suc k = Suc (Suc i)")
+    
+    apply (subgoal_tac "\<not>collinear (L!i) (L!Suc i) (L!Suc k)")
+    *)
   apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
     apply (cut_tac L=L and P=P and i=i in cyclePathSegments, (simp add: segment_def)+)
+    apply (safe)
+    apply (metis cyclePath_def distVertex nth_append pointsEqualSame)
+    
   apply (cut_tac L=L and P=P and a="i" and b="Suc i" and c="Suc k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
     apply (cut_tac L=L and P=P and i=i in cyclePathSegments,
@@ -204,7 +226,7 @@ theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collin
   apply (cut_tac L=L and P=P and a="Suc i" and b="Suc k" and c="k" in cyclePathNotCollinear)
     apply (simp add: cPolygon_def)+
     apply (cut_tac L=L and P=P and i=k in cyclePathSegments, (simp add: segment_def cyclePathAdjacentSame1)+)
-sorry
+oops
   (*apply (simp add: cPolygon_def, erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
   apply (simp add: lineSeparate_def, safe, metis conflictingRigthTurns)
   apply (cut_tac A="cyclePath L ! i" and B="cyclePath L ! Suc i" and P="cyclePath L ! k" and R="cyclePath L ! Suc k" in intersectSym1)
@@ -219,7 +241,7 @@ by (simp add: colliniearRight cyclePathNotCollinear1 numeral_2_eq_2 pointList_de
 (*each conv. polygon is also a simple polygon*)
 lemma cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
     cPolygon P \<Longrightarrow> polygon P"
-  by (simp add: polygon_def cPolygonIsIntersectionFree)
+oops
 
 
 (*(*Punkt inside convex Polygon.*)

@@ -311,6 +311,10 @@ lemma notBetween2 [dest]: "\<lbrakk>A isBetween B C ; C isBetween A B\<rbrakk> \
 by (smt collSwap colliniearRight zero_less_divide_iff)
 
 
+lemma leftOrRightTurn: "c \<noteq> d \<Longrightarrow> leftFrom c d \<Longrightarrow> leftFrom a b \<Longrightarrow> rightTurn a b c \<Longrightarrow>
+  rightTurn a b d \<Longrightarrow> leftFrom a d \<Longrightarrow> leftFrom c b\<Longrightarrow> leftTurn c d a \<or> leftTurn c d b"
+oops
+
 
 (*evtl. noch nützlich*)
 
