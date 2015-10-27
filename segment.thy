@@ -102,7 +102,7 @@ lemma notIntersectSame[simp]: "\<not>intersect A B A B"
 lemma notIntersectSame1[simp]: "\<not>intersect A B B A"
   by (auto simp add: intersect_def segment_Sym)
 
-lemma crossingIntersect [simp]: "crossing A B P R \<Longrightarrow> intersect A B P R"
+lemma crossingIntersect [intro]: "crossing A B P R \<Longrightarrow> intersect A B P R"
   by (simp add: intersect_def crossingSegment1 crossingSegment)
 lemma intersectSym: "intersect A B P R = intersect B A P R"
   using crossingSym intersect_def segment_def by auto

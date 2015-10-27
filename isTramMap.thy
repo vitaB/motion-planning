@@ -216,8 +216,8 @@ lemma foo2:"isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointIn
     \<and> leftP ((intersectedTrapez D P Q)!i) = P)")
   apply (induct D "intersectedTrapez D P Q" TM P Q rule: replaceDag.induct)
   apply (simp del: newDagSimpRightCorner newDagSimpLeftCorner)
-  apply (metis (mono_tags) followSeg.simps intersectedTrapez_def isTramMap_def
-    list.sel(2) list.sel(3) not_Cons_self2)
+  (*apply (metis (mono_tags) followSeg.simps intersectedTrapez_def isTramMap_def
+    list.sel(2) list.sel(3) not_Cons_self2)*)
   apply (simp del: newDagSimpRightCorner newDagSimpLeftCorner)
   
 sorry

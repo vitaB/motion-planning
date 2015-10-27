@@ -1,5 +1,5 @@
 theory trapezoidalMap
-imports tDag (*"~~/src/HOL/Library/Multiset"*)
+imports tDag polygon (*"~~/src/HOL/Library/Multiset"*)
 begin
 
 (*#######Suche nach Punkten in der Trapezoidal-Map#########*)
@@ -189,7 +189,7 @@ lemma newDagNotSame[simp]: "newDag D T TM P Q \<noteq> Tip T"
 lemma unicXSimpA[simp]: "leftFrom P Q \<Longrightarrow> uniqueXCoord (xDagList (newDagSimpA D P Q))"
   by (simp add: newDagSimpA_def)
 lemma unicXSimp[simp]: "leftFrom P Q \<Longrightarrow> uniqueXCoord (xDagList (newDagSimp D P Q))"
-  by (auto simp add: newDagSimp_def newDagSimpA_def newDagSimpQ_def)
+  by (auto simp add: newDagSimp_def newDagSimpA_def newDagSimpQ_def pointsUniqueXCoord)
 lemma unicXFirst[simp]: "leftFrom P Q \<Longrightarrow> uniqueXCoord (xDagList (newDagFirst a TM P Q))"
   by (auto simp add: newDagFirst_def newDagFirstY_def)
 lemma unicXLast[simp]: "leftFrom P Q \<Longrightarrow> uniqueXCoord (xDagList (newDagLast a TM P Q))"

@@ -20,12 +20,12 @@ lemma [simp]: "pointList L \<Longrightarrow> pointList (hd L # rev (tl L))"
   apply (metis distinct.simps(2) empty_iff eq_numeral_simps(4) list.collapse list.set(1)
     nth_Cons_numeral nth_equal_first_eq)
 by (simp add: distinct_tl)
-lemma revCycleEq [simp]: "pointList L \<Longrightarrow> revCycle L = rev (cyclePath L)"
+lemma revCycleEq [simp]: "pointList L \<Longrightarrow> rev (cyclePath L) = revCycle L"
   apply (simp add: revCycle_def cyclePath_def)
 by (metis list.collapse list.size(3) not_less numeral_eq_Suc pointList_def rev.simps(2)
     zero_less_Suc)
 (*der Allgemeinfall mit ~~/src/HOL/Library/Permutation ist evtl. einfacher*)
-lemma revCycleCollinear [simp]: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow>
+lemma revCycleCollinear: "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow>
     \<not>collinearList (hd L # rev (tl L))"
   apply (simp add: collinearList_def, safe)
   apply (erule_tac x=a in allE, safe, simp)
@@ -120,7 +120,7 @@ fun lineCyclePathInters :: "point2d list \<Rightarrow> point2d \<Rightarrow> poi
 lemma lineCyclePathIntersSimp [simp]: "\<not>lineCyclePathInters (b#L) A B \<Longrightarrow>
     lineCyclePathInters (a#b#L) A B = lineCyclePathInters [a,b] A B"
   by (simp)
-lemma lineCyclePathIntersSimp1 [simp]: "length L \<ge> 1 \<Longrightarrow> \<not>lineCyclePathInters (b#L) A B \<Longrightarrow>
+lemma lineCyclePathIntersSimp1: "length L \<ge> 1 \<Longrightarrow> \<not>lineCyclePathInters (b#L) A B \<Longrightarrow>
     \<not>intersect b (hd L) A B"
   by (cases L, auto)
 lemma lineCyclePathIntersSimp2 [simp]: "\<not>lineCyclePathInters [a,b] A B \<Longrightarrow>

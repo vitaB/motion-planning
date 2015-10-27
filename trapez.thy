@@ -1,5 +1,5 @@
 theory trapez
-imports polygon
+imports segment
 begin
 
 (*Definition für Datentyp trapez. Durch 6 Punkte. nicht vertikale oben/unten und 2 vertikalen*)

@@ -161,6 +161,7 @@ using xDagListElem by blast
 lemma replaceTipXDagList1[intro]: "a \<in> set (xDagList (replaceTip oT nT D)) \<Longrightarrow>
   a \<in> set (xDagList D) \<or> a \<in> set (xDagList nT)"
   apply (induct oT nT D rule: replaceTip.induct, auto)
+  apply (metis (full_types) empty_iff empty_set xDagList.simps(1))
 by (metis append_Cons in_set_conv_decomp xDagList.simps(2) xDagListAppendLt xDagListAppendRt
   xDagListElem)
 (*Anzahl der Elemente nach replaceTip*)
@@ -191,6 +192,7 @@ using yDagListElem by blast
 lemma replaceTipYDagList1[intro]: "a \<in> set (yDagList (replaceTip oT nT D)) \<Longrightarrow>
   a \<in> set (yDagList D) \<or> a \<in> set (yDagList nT)"
   apply (induct oT nT D rule: replaceTip.induct, auto)
+  apply (metis (full_types) empty_iff empty_set yDagList.simps(1))
   apply (cut_tac Tl="replaceTip oT nT Tl" and Tr="replaceTip oT nT Tr" and a=a and x=x
     in yDagListElem)
 by (auto)
@@ -199,7 +201,8 @@ by (auto)
 (*replaceTip and tDagList*)
 lemma replaceTipTDagList[intro]: "a \<in> set (tDagList (replaceTip oT nT D)) \<Longrightarrow>
   a \<in> set (tDagList D) \<or> a \<in> set (tDagList nT)"
-by (induct oT nT D rule: replaceTip.induct, auto)
+  apply(induct oT nT D rule: replaceTip.induct, auto)
+by (metis (full_types) tDagListComplete tipInDag.simps(1))
 
 
 

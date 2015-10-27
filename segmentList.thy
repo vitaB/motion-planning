@@ -74,7 +74,7 @@ definition uniqueXCoord :: "point2d list \<Rightarrow> bool" where
   "uniqueXCoord L \<equiv> \<forall> a < length L. \<forall> b < length L. a \<noteq> b \<longrightarrow> xCoord (L!a) \<noteq> xCoord (L!b)"
 lemma uniqueXCoordEmtyp[simp]: "uniqueXCoord []" by(simp add: uniqueXCoord_def)
 lemma uniqueXCoordOne[simp]: "uniqueXCoord [x]" by(simp add: uniqueXCoord_def)
-lemma pointsUniqueXCoord[simp]: "leftFrom A B \<Longrightarrow> uniqueXCoord[A,B]"
+lemma pointsUniqueXCoord: "leftFrom A B \<Longrightarrow> uniqueXCoord[A,B]"
   by (simp add: less_2_cases nth_Cons' uniqueXCoord_def leftFrom_def)
 
 (*kein elemet kommt doppelt vor*)
@@ -131,7 +131,7 @@ lemma uniqueXCoordAppend3[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> un
 by (smt append_Cons append_assoc in_set_conv_decomp_first rotate1.simps(2) set_rotate1
   uniqueXCoordAppend1 uniqueX_notIn)
 
-lemma uniqueXCoordPermutation[intro]: "uniqueXCoord (A @ B) \<Longrightarrow> distinct TM \<Longrightarrow>
+lemma uniqueXCoordPermutation: "uniqueXCoord (A @ B) \<Longrightarrow> distinct TM \<Longrightarrow>
   \<forall>a \<in> set (TM). a \<in> set (A @ B) \<Longrightarrow> uniqueXCoord(TM)"
   apply (induct A, auto)
   using nth_mem uniqueXSub apply blast
@@ -198,7 +198,7 @@ lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<g
 definition collinearList :: "point2d list \<Rightarrow> bool" where
   "collinearList L \<equiv> (\<exists> a b c. a < length L \<and> b < length L \<and> c < length L \<and>
   a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> collinear (L!a) (L!b) (L!c))"
-lemma collinearListThree[simp]: "length L = 3 \<Longrightarrow> collinearList L = collinear (L!0) (L!1) (L!2)"
+lemma collinearListThree: "length L = 3 \<Longrightarrow> collinearList L = collinear (L!0) (L!1) (L!2)"
   apply (auto simp add: collinearList_def)
   apply (case_tac "a=0", case_tac "b=1", subgoal_tac "c=2", auto)
     apply (case_tac "b=2", subgoal_tac "c=1", auto)
@@ -264,13 +264,13 @@ lemma collinearListRev: "collinearList xs = collinearList (rev xs)"
 done
 
 (*extend collinearList is still a collinearList*)
-lemma collinearListAppend1 [simp]: "collinearList xs \<Longrightarrow> collinearList (a#xs)"
+lemma collinearListAppend1: "collinearList xs \<Longrightarrow> collinearList (a#xs)"
   by (metis collinearList2)
-lemma collinearListAppendB [simp]: "collinearList xs \<Longrightarrow> collinearList (x @ xs)"
-  by (induction x, simp+)
-lemma collinearListAppend2 [simp]: "collinearList xs \<Longrightarrow> collinearList (xs @ [a])"
+lemma collinearListAppendB : "collinearList xs \<Longrightarrow> collinearList (x @ xs)"
+  by (induction x, auto simp add: collinearListAppend1)
+lemma collinearListAppend2: "collinearList xs \<Longrightarrow> collinearList (xs @ [a])"
   by (metis collinearList2 collinearListRev rev.simps(2) rev_rev_ident)
-lemma collinearListAppend [simp]: "collinearList xs \<Longrightarrow> collinearList (xs @ x)"
+lemma collinearListAppend: "collinearList xs \<Longrightarrow> collinearList (xs @ x)"
   apply (cases xs, simp)
   apply (simp add: collinearList_def, safe)+
   apply (rule_tac x="aa" in exI, simp, rule_tac x=b in exI, simp, rule_tac x=c in exI, simp)
