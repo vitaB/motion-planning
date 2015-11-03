@@ -44,9 +44,6 @@ lemma cPolygonRevEq: "pointList L \<Longrightarrow> P = cyclePath L \<Longrighta
 oops
 lemma cPolygonRev: "pointList L \<Longrightarrow> P = cyclePath L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> cPolygon P \<Longrightarrow>
     cPolygon (rev P)"
-  apply (simp add: cPolygonRevEq cPolygon_def, auto)
-  apply (subgoal_tac "rev P = revCycle L")
-  apply (simp add: cPolygon_def)
 oops
 
 (*all triangles are conv. polygon*)
@@ -100,7 +97,6 @@ theorem cPolygonIsCrossingFree: "pointList L \<Longrightarrow> \<not>collinearLi
   apply (erule_tac x=k in allE, simp, erule_tac x=i in allE, simp)
   apply (simp add: lineSeparate_def, safe, auto simp add: conflictingRigthTurns)
 by(metis collRotate crossingCollinear crossingSym1 crossingRightTurn crossingSym rightTurnRotate2)+
-
 (*no 2 adjacent segment intersect, if cPolygon*)
 lemma cPolygonIntersectAdj:"pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
   cPolygon P \<Longrightarrow> a < length P - 2 \<Longrightarrow> \<not>intersect (P ! a) (P! Suc a) (P! Suc a) (P! Suc(Suc a))"
@@ -109,7 +105,6 @@ lemma cPolygonIntersectAdj:"pointList L \<Longrightarrow> \<not>collinearList L 
   length_greater_0_conv less_diff_conv apply fastforce
 using Suc_mono colliniearRight cyclePathNotCollinear1 isBetweenImpliesCollinear
   less_diff_conv by fastforce
-    
 (*in a conv. polygon none of the lines intersects(real)*)
 theorem cPolygonIsIntersectionFree : "pointList L \<Longrightarrow> \<not>collinearList L \<Longrightarrow> P = cyclePath L \<Longrightarrow>
     cPolygon P \<Longrightarrow> intersectionFreePList P"
@@ -129,6 +124,7 @@ theorem cPolygonIsPolygon : "pointList L \<Longrightarrow> \<not>collinearList L
 
 
 
+(*evtl. noch nützlich*)
 
 (*(*count how many times a track intersects the polygon*)
 fun countSegmentCrossPolygon :: "point2d list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> nat" where

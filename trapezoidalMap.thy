@@ -286,7 +286,7 @@ lemma rBtNeighbInDag1[simp]: "tipInDag (rBtNeighb (tDagList D) (queryTrapezoidMa
 by (auto simp add: tDagListComplete)
 
 (*Definition für Bedingung der Nacharn. jedesmal wenn ein Punkt sich rechts von einem Trapez T
-  befindet, muss es für T ein rechten Nachbar geben*)
+  befindet, muss es für T einen rechten Nachbar geben*)
 definition trapezMapNeighbor :: "tDag \<Rightarrow> bool" where
   "trapezMapNeighbor D \<equiv> \<forall> Q T. (pointInDag D Q \<and> tipInDag T D \<and> xCoord(rightP T) < xCoord Q)
   \<longrightarrow> (rBtNeighb (tDagList D) T \<noteq> T \<or> rUpNeighb (tDagList D) T \<noteq> T)"
@@ -295,24 +295,24 @@ lemma isRBoxMapNeighbor[simp]:"isTrapez X \<Longrightarrow> trapezMapNeighbor (T
   apply (auto simp add: trapezMapNeighbor_def)
 by (meson not_le pointInTrapezSimp)
 
+(*position der Ecken des rechten Nachbar von T zu T*)
 lemma isTramMapNextTrapez[simp]: "trapezMapNeighbor D \<Longrightarrow> trapezList (tDagList D) \<Longrightarrow>
   pointInDag D Q \<Longrightarrow> tipInDag T D \<Longrightarrow> xCoord(rightP T) < xCoord Q \<Longrightarrow> rBtNeighb (tDagList D) T = T
   \<Longrightarrow> leftFrom (rightP T) (rightP (rUpNeighb (tDagList D) T))"
   by (meson rUpNeighbInDag rUpNeighbSimp1 tDagListComplete trapezListTDag trapezMapNeighbor_def)
-
 lemma isTramMapNextTrapez1[simp]: "trapezMapNeighbor D \<Longrightarrow> trapezList (tDagList D) \<Longrightarrow>
   pointInDag D Q \<Longrightarrow> tipInDag T D \<Longrightarrow> xCoord(rightP T) < xCoord Q \<Longrightarrow> rUpNeighb (tDagList D) T = T
   \<Longrightarrow> leftFrom (rightP T) (rightP (rBtNeighb (tDagList D) T))"
   by (meson rBtNeighbInDag rBtNeighbSimp1 tDagListComplete trapezListTDag trapezMapNeighbor_def)
 
-lemma nexNeighbour: "trapezMapNeighbor D \<Longrightarrow> trapezList (tDagList D) \<Longrightarrow> tipInDag T D \<Longrightarrow>
+(*Beweis für die Termination von followSeg*)
+lemma nextNeighbour: "trapezMapNeighbor D \<Longrightarrow> trapezList (tDagList D) \<Longrightarrow> tipInDag T D \<Longrightarrow>
   length (filter ((\<lambda>x. xCoord (rightP (rBtNeighb (tDagList D) T)) < x) \<circ> (xCoord \<circ> rightP))
           (tDagList D))
   < length (filter ((\<lambda>x. xCoord (rightP T) < x) \<circ> (xCoord \<circ> rightP)) (tDagList D))"
   apply (subgoal_tac "leftFrom (rightP T) (rightP (rBtNeighb (tDagList D) T))") 
 sorry
-
-lemma nexNeighbour1: "trapezMapNeighbor D \<Longrightarrow> trapezList (tDagList D) \<Longrightarrow> tipInDag T D \<Longrightarrow>
+lemma nextNeighbour1: "trapezMapNeighbor D \<Longrightarrow> trapezList (tDagList D) \<Longrightarrow> tipInDag T D \<Longrightarrow>
   length (filter ((\<lambda>x. xCoord (rightP (rUpNeighb (tDagList D) T)) < x) \<circ> (xCoord \<circ> rightP))
           (tDagList D))
   < length (filter ((\<lambda>x. xCoord (rightP T) < x) \<circ> (xCoord \<circ> rightP)) (tDagList D))"
@@ -344,7 +344,7 @@ termination followSeg
   Beweis mit Abstand für reale Zahlen garnicht möglich!
   Abstand kan beliebig klein werden und Q nicht erreichen
   Beweis sollte über die Anzahl der Elemente in der Liste sein, die noch als Nachbar in Frage kommen*)
-by (auto simp add: nexNeighbour nexNeighbour1)
+by (auto simp add: nextNeighbour nextNeighbour1)
 
 (*alle Trapeze aus followSeg sind aus D*)
 lemma followSegmetInDag[simp]:"tipInDag T D \<Longrightarrow> A \<in> set (followSeg D T P Q) \<Longrightarrow>
@@ -410,7 +410,7 @@ lemma intersectedLast[intro]: "trapezMapNeighbor D \<Longrightarrow> leftFrom P 
   pointInDag D Q \<Longrightarrow> TM = intersectedTrapez D P Q \<Longrightarrow> trapezList (tDagList D) \<Longrightarrow>
   last(TM) = queryTrapezoidMap D Q \<or> leftP (queryTrapezoidMap D Q) = rightP (last TM)"
   apply (auto, simp only: intersectedTrapez_def)
-sorry
+oops
 
 (*segment ist im Trapez dann liefert intersectedTrapez nur ein Trapez*)
 lemma intersectOne: "trapezMapNeighbor D \<Longrightarrow> pointsInTramMap D \<Longrightarrow>
@@ -455,6 +455,7 @@ Output: neues Dag, nachdem alle Trapeze ersetzt wurden*)
 fun replaceDag :: "tDag \<Rightarrow> trapez list \<Rightarrow> trapez list \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> tDag" where
   "replaceDag D [] TM P Q = D"
   | "replaceDag D (T#Ts) TM P Q = replaceDag (replaceTip T (newDag D T TM P Q ) D) Ts TM P Q"
+(*Inhalt von tDag nach replaceDag*)
 lemma replaceDagXDagList[intro]: "a \<in> set (xDagList D) \<longrightarrow> 
   a \<in> set (xDagList (replaceDag D TM TN P Q))"
   by (induct D TM TN P Q rule: replaceDag.induct, auto)

@@ -43,14 +43,17 @@ lemma leftFromDest [dest]: "leftFrom a b \<Longrightarrow> leftFrom b a \<Longri
 definition signedArea :: "[point2d, point2d, point2d] \<Rightarrow> real" where(*[1]*)
   "signedArea a b c \<equiv> (xCoord b - xCoord a)*(yCoord c - yCoord a)
     - (yCoord b - yCoord a)*(xCoord c - xCoord a)"
+(*sigendArea-Rotate*)
 lemma signedAreaMin: "signedArea A B C = -signedArea A C B"
   by (simp add: signedArea_def)
 lemma signedAreaRotate [simp]: "signedArea b c a = signedArea a b c"(*[1]*)
   by (simp add: signedArea_def, algebra)
 lemma signedAreaRotate2 [simp]: "signedArea b a c = signedArea a c b"(*[1]*)
   by (simp add: signedArea_def,  algebra)
+(*equal Points*)
 lemma areaDoublePoint [simp]: "signedArea a a b = 0"(*[1]*) by (simp add: signedArea_def)
 lemma areaDoublePoint2 [simp]: "signedArea a b b = 0"(*[1]*) by (simp add: signedArea_def)
+(*hausner*)
 lemma hausner: "signedArea P A B + signedArea P B C + signedArea P C A = signedArea A B C" (*[2]*)
   by (simp add: mult.commute right_diff_distrib' signedArea_def)
 
@@ -116,7 +119,6 @@ lemma rightTurnDiv: "rightTurn a b c \<Longrightarrow> rightTurn d b e \<Longrig
   (signedArea a b c)/(signedArea d b e) > 0"
   by (simp add: rightTurn_def zero_less_divide_iff)
   
-  
 lemma interiority: "leftTurn t q r \<Longrightarrow> leftTurn p t r \<Longrightarrow> leftTurn p q t \<Longrightarrow> leftTurn p q r" (*[2]*)
   by (smt hausner leftRightTurn rightTurn_def)
 
@@ -136,6 +138,7 @@ definition scalMult :: "[real, point2d] \<Rightarrow> point2d" (infixl "*s" 65) 
   "a *s P \<equiv> (\<lambda>(p1,p2). Abs_point2d (a*p1,a*p2)) (Rep_point2d P)"
 lemma scalMultNull[simp]: "0 *s P = Abs_point2d (0,0)"
   by (simp add: scalMult_def)
+(*addition*)
 definition pointPlus :: "[point2d, point2d] \<Rightarrow> point2d" (infixl "+p" 60) where 
   "P +p Q \<equiv> Abs_point2d ((xCoord P) + (xCoord Q), (yCoord P) + (yCoord Q))"
 lemma pointPlusSym: "(P +p Q) = (Q +p P)" by (auto simp add: pointPlus_def)
@@ -150,23 +153,22 @@ lemma pointPlusNull3[simp]: "P = Abs_point2d(0,0) +p P"
 lemma cramersRule: "signedArea P Q R \<noteq> 0 \<Longrightarrow> T =
   ((signedArea T Q R / signedArea P Q R) *s P) +p
   ((signedArea P T R / signedArea P Q R) *s Q) +p
-  ((signedArea P Q T / signedArea P Q R) *s R)"
+  ((signedArea P Q T / signedArea P Q R) *s R)" (*[2]*)
   apply (auto)
   apply (case_tac "signedArea Q R T = 0", auto)
-  
 sorry
 (*nur mit cramersRule beweisbar?*)
 lemma transitivity: "leftTurn t s p \<Longrightarrow> leftTurn t s q \<Longrightarrow> leftTurn t s r \<Longrightarrow> leftTurn t p q (*[2]*)
   \<Longrightarrow> leftTurn t q r \<Longrightarrow> leftTurn t p r"
 sorry
 
-(*mögliche Definitionen für isBetween.*)
+(*b is between a c?*)
 definition isBetween :: "[point2d, point2d, point2d] \<Rightarrow> bool"
   ("_ isBetween _ _ " [60, 60, 60] 60) where(*[1]*)
   "b isBetween  a c \<equiv> collinear a b c \<and> (\<exists> d. signedArea a c d \<noteq> 0) \<and>
   (\<forall> d. signedArea a c d \<noteq> 0 \<longrightarrow>
   (0 < (signedArea a b d / signedArea a c d) \<and> (signedArea a b d / signedArea a c d) < 1 ))"
-(*Punkte sind gleich, wenn*)
+(*Punkte sind verschieden, wenn*)
 lemma pointsEqualArea: "a \<noteq> b = (\<exists> d. signedArea a b d \<noteq> 0)"
   apply (auto)
   apply (case_tac "xCoord a = xCoord b", rule_tac x="Abs_point2d(xCoord b + 1, yCoord b)" in exI)

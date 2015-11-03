@@ -11,6 +11,7 @@ definition isTramMap :: "tDag \<Rightarrow> bool" where
   "isTramMap D \<equiv> trapezList (tDagList D) \<and> pointsInTramMap D
   \<and> trapezMapNeighbor D \<and> uniqueXCoord (xDagList D) \<and> intersectionYNode D"
 
+(*isTramMap gilt für einen tDag bestehend aus einem Trapez*)
 lemma isTramMapRBox[simp]: "isTrapez X \<Longrightarrow> isTramMap (Tip X)"
   apply (auto simp add: isTramMap_def pointInDag_def pointInTrapez_def trapezList_def)
 by (auto simp add: rBoxPointsInTramMap intersectionYNode_def)
@@ -25,7 +26,7 @@ lemma segmentAndDagUnicX[simp]:"segmentXNode D P \<Longrightarrow> P \<notin> se
   apply (auto simp add: segmentXNode_def)
   apply (case_tac "\<exists> a. a \<in> set (xDagList D)", erule exE)
   apply (erule_tac x=a in allE, simp, safe)
-sorry
+oops
 
 definition segmentCompWithDag :: "tDag \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
   "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<equiv> leftFrom P Q \<and> pointInDag D P \<and> pointInDag D Q
@@ -39,11 +40,11 @@ by (metis NotIntersectSym)
   
 lemma segmentAndDagUnicX1[simp]:"isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
   P \<notin> set (xDagList D) \<Longrightarrow> Q \<notin> set (xDagList D) \<Longrightarrow> uniqueXCoord (xDagList D @ [P, Q])"
-sorry
+oops
 
 lemma pointNotXNode: "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
   \<forall> T. T \<in> set (tDagList D) \<longrightarrow> rightP T \<noteq> P \<and> leftP T \<noteq> P \<Longrightarrow> P \<notin> set (xDagList D)"
-sorry
+oops
 
 
 (*##############intersectionYNode###############*)
@@ -61,6 +62,7 @@ lemma replaceTipNoIntersect[intro]: "isTramMap D \<Longrightarrow> segmentCompWi
   using segmentCompWithDag_def apply auto[1]
 by (meson BNF_Greatest_Fixpoint.subst_Pair segmentCompWithDagSym)
 
+(*kein y-Node schneidet ein anderes y-Node*)
 lemma addSegmentNoIntersect: "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow>
   intersectionYNode (addSegmentToTrapMap D P Q)"
   apply (auto simp add: addSegmentToTrapMap_def intersectionYNode_def)
@@ -86,10 +88,10 @@ lemma newTrapezA[simp]: "isTrapez T \<Longrightarrow> pointInTrapez T P \<Longri
   trapezList (tDagList(newDagSimpA T P Q))"
   apply (simp add: newDagSimpA_def trapezList_def, auto)
   apply (auto simp add: isTrapez_def)
-sorry
+oops
 lemma addSegmentTrapezList: "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
   segmentCompWithDag D P Q \<Longrightarrow> trapezList (tDagList (addSegmentToTrapMap D P Q))"
-sorry
+oops
 
 
 
@@ -130,7 +132,7 @@ oops
 lemma addSegmentPointsInTramMap: "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
   segmentCompWithDag D P Q \<Longrightarrow> pointsInTramMap (addSegmentToTrapMap D P Q)"
   apply (simp add: addSegmentToTrapMap_def)
-sorry
+oops
 
 
 
@@ -138,6 +140,7 @@ sorry
 
 
 (*##############uniqueXCoord for xDagList ###############*)
+(*x-Nodes eines newDagSimp*)
 lemma newDagSimpLeftCorner[simp]:"leftFrom P Q \<Longrightarrow> leftP T = P \<Longrightarrow>
   a \<in> set (xDagList (newDagSimp T P Q)) \<Longrightarrow> a \<noteq> P"
   apply (auto simp add: newDagSimp_def)
@@ -150,6 +153,7 @@ lemma newDagSimpRightCorner[simp]:"leftFrom P Q \<Longrightarrow> rightP T = Q \
   apply (case_tac "leftP T \<noteq> P ")
     apply (simp add: newDagSimpQ_def newDagSimpA_def, blast)
 by (auto simp add: newDagSimpA_def)
+(*x-Nodes eines newDag*)
 lemma newDagLeftCorner[simp]:"leftFrom P Q \<Longrightarrow> leftP T = P \<Longrightarrow>
   a \<in> set (xDagList (newDag D T TM P Q)) \<Longrightarrow> a \<noteq> P"
   apply (auto simp add: newDag_def)
@@ -178,7 +182,7 @@ lemma newDagRightCorner[simp]:"leftFrom P Q \<Longrightarrow> rightP T = Q \<Lon
     apply (auto simp add: newDagLast_def newDagLastY_def)
 done
 
-
+(*welche Elemente besitz xDagList eines tDag's nach dem ein Trapez durch newDag ersetzt wurde*)
 lemma replaceTipElement[intro]:"a \<in> set (xDagList (replaceTip T (newDag D T TM P Q) D)) \<Longrightarrow>
   a \<in> set (xDagList D) \<or> a \<in> set [P,Q]"
   apply (cut_tac oT=T and nT="newDag D T TM P Q" and D=D and a=a in replaceTipXDagList1, assumption)
@@ -186,7 +190,7 @@ lemma replaceTipElement[intro]:"a \<in> set (xDagList (replaceTip T (newDag D T 
   apply (thin_tac "a \<in> set (xDagList (replaceTip T (newDag D T TM P Q) D))")
 by (metis insert_iff list.set(2) xDagListNewDag)
    
-
+(*wie oft kommt P in xDagList vor nachdem ein Trapez mit newDag ersetzt wurde*)
 lemma "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> leftP T = P \<Longrightarrow>
    List.count (xDagList (replaceTip T (newDag D T TM P Q) D)) P \<le> 1"
   apply (case_tac "\<exists> a. a \<in> set (xDagList (replaceTip T (newDag D T TM P Q) D))")
@@ -202,12 +206,8 @@ lemma "isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> 
   apply (erule_tac x=a in allE, simp)
   defer
   using isTramMap_def uniqueXNotDouble apply auto[1]
-sorry
-lemma bar1:"isTramMap D \<Longrightarrow> segmentCompWithDag D P Q \<Longrightarrow> rightP T = Q \<Longrightarrow>
-   List.count (xDagList (replaceTip T (newDag D T TM P Q) D)) Q \<le> 1"
-sorry
-
-lemma foo2:"isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
+oops
+lemma "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
   segmentCompWithDag D P Q \<Longrightarrow>
   List.count (xDagList (replaceDag D (intersectedTrapez D P Q) TM P Q)) Q = 1"
   apply (subgoal_tac "\<not>(\<exists> i. i < length (intersectedTrapez D P Q) - 1 \<and> i \<noteq> 0
@@ -218,14 +218,9 @@ lemma foo2:"isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointIn
   apply (simp del: newDagSimpRightCorner newDagSimpLeftCorner)
   (*apply (metis (mono_tags) followSeg.simps intersectedTrapez_def isTramMap_def
     list.sel(2) list.sel(3) not_Cons_self2)*)
-  apply (simp del: newDagSimpRightCorner newDagSimpLeftCorner)
-  
-sorry
-lemma foo3:"isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
-  segmentCompWithDag D P Q \<Longrightarrow>
-  List.count (xDagList (replaceDag D (intersectedTrapez D P Q) TM P Q)) P = 1"
-sorry
+oops
 
+(*alle x-Nodes besitzen unterschiedliche x-Koordinaten*)
 lemma addSegmentsUnicX: "isTramMap D \<Longrightarrow> leftFrom P Q \<Longrightarrow> pointInDag D P \<Longrightarrow> pointInDag D Q \<Longrightarrow>
   segmentCompWithDag D P Q \<Longrightarrow> uniqueXCoord (xDagList (addSegmentToTrapMap D P Q))"
   (*nur da erste Trapez kann P entrhalten und das letzte Trapez Q,

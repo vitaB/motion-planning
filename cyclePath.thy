@@ -171,7 +171,7 @@ lemma cyclePathNotIntersectSame: "pointList P \<Longrightarrow> A = cyclePath P 
   apply (subgoal_tac "segment a b \<and> segment ((a # b # xs) ! i) ((b # xs) ! i)", simp add: intersect_def)
 oops
 
-lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longrightarrow> A = cyclePath P \<Longrightarrow> B = cyclePath Q\<Longrightarrow> 
+lemma cyclePathIntersectSym: "pointList P \<Longrightarrow> pointList Q \<Longrightarrow> A = cyclePath P \<Longrightarrow> B = cyclePath Q\<Longrightarrow>
   cyclePathIntersect A B = cyclePathIntersect B A"
   apply (auto simp add: cyclePathIntersect_def)
   apply (case_tac "(A, (B ! i), (B ! Suc i))" rule: lineCyclePathInters.cases,safe)

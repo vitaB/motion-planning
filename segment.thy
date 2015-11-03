@@ -8,12 +8,12 @@ definition segment :: "point2d \<Rightarrow> point2d \<Rightarrow> bool" where
 lemma [simp]: "xCoord A \<noteq> xCoord B \<Longrightarrow> segment A B" by (auto simp add: segment_def)
 lemma [simp]: "yCoord A \<noteq> yCoord B \<Longrightarrow> segment A B" by (auto simp add: segment_def)
 lemma [simp]: "leftFrom A B \<Longrightarrow> segment A B" by (simp add: leftFrom_def)
-lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
-definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
-"segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
 lemma betweenSegment[intro]: "p isBetween A B \<longrightarrow> segment A B"
 by (simp add: isBetweenPointsDistinct segment_def)
-
+lemma segment_Sym: "segment a b \<Longrightarrow> segment b a" by(simp add: segment_def)
+(*two segments are equal*)
+definition segment_Same :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> point2d \<Rightarrow> bool" where
+"segment A B \<Longrightarrow> segment P R \<Longrightarrow> segment_Same A B P R \<equiv> (pointsEqual A P \<and> pointsEqual B R)"
 
 (*left corner of the segment*)
 definition leftPSegment :: "point2d \<Rightarrow> point2d \<Rightarrow> point2d" where
@@ -34,10 +34,7 @@ lemma leftPRightPSimp2[simp]: "leftFrom P Q \<Longrightarrow> P = leftPSegment P
 lemma leftPRightPSimp3[simp]: "leftFrom P Q \<Longrightarrow> Q = rightPSegment P Q"
   by (auto simp add: leftFrom_def)
 
-(*Point p is on segment AB*)
 (*pointOnSegment and signedArea*)
-(*wenn ein Punkt von AB auf einer geraden PR (und ungleich mit Ecken),
-  dann trennt AB die Ecken P und R*)
 lemma pointOnSegment_noRightTurn : "A isBetween P R \<Longrightarrow> rightTurn A B P \<Longrightarrow>
   rightTurn A B R \<Longrightarrow> False"
   by (smt betweenSegment collinearTransitiv conflictingRightTurns2 leftRightTurn leftTurnsImplyBetween notBetween
@@ -101,9 +98,9 @@ lemma notIntersectSame[simp]: "\<not>intersect A B A B"
   by (simp add: intersect_def)
 lemma notIntersectSame1[simp]: "\<not>intersect A B B A"
   by (auto simp add: intersect_def segment_Sym)
-
 lemma crossingIntersect [intro]: "crossing A B P R \<Longrightarrow> intersect A B P R"
   by (simp add: intersect_def crossingSegment1 crossingSegment)
+(*intersection is symmetrical*)
 lemma intersectSym: "intersect A B P R = intersect B A P R"
   using crossingSym intersect_def segment_def by auto
 lemma intersectSym1 : "intersect A B P R = intersect P R A B"
@@ -120,8 +117,6 @@ lemma intersectRightTurn: "segment A B \<Longrightarrow> segment P R \<Longright
   using rightTurnRotate2 apply blast
   apply (metis pointOnSegment_noRightTurn)
 by (metis pointOnSegment_noRightTurn1)
-  
-
 lemma intersectRightTurn1 : "segment A B \<Longrightarrow> segment P R \<Longrightarrow> intersect A B P R \<Longrightarrow>
   rightTurn A R P \<and> rightTurn P B R \<Longrightarrow> False"
   apply (simp only:intersect_def, safe)

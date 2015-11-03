@@ -48,13 +48,6 @@ lemma pointListsSimp2 [simp]: "i < length PL \<Longrightarrow> pointLists PL \<L
   by (auto simp add: pointLists_def)
 
 
-(*(*is segment in pointList?*)
-definition segInPointList :: "point2d list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
-  "pointList L \<Longrightarrow> segInPointList L S \<equiv> \<exists> i < length L - 1. L!i = fst S \<and> L!i = snd S"
-(*is segment in pointList-List?*)
-definition segInPointLists :: "(point2d list) list \<Rightarrow> (point2d*point2d) \<Rightarrow> bool" where
-  "pointLists PL \<Longrightarrow> segInPointLists PL S \<equiv> \<exists> i < length PL. segInPointList (PL!i) S"*)
-
 (*none of the corners can be repeated*)
 lemma distVertex : "pointList L \<Longrightarrow> i < size L \<Longrightarrow> k < size L \<Longrightarrow> k \<noteq> i
   \<Longrightarrow> pointsEqual (L ! i) (L ! k) \<Longrightarrow> False"
@@ -109,6 +102,7 @@ lemma uniqueXCoordAppend1[intro]: "uniqueXCoord (D @ X) \<longrightarrow> unique
   apply (simp add: uniqueXCoord_def)
 by (metis append_Cons uniqueXCoordAppend)
 
+(*partlist of a uniqueXCoord-List, is a uniqueXCoord-List*)
 lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a \<in> set D \<Longrightarrow> distinct L \<Longrightarrow> uniqueXCoord L"
   apply (induct D, auto)
   apply (simp add: uniqueXCoord_def)
@@ -118,7 +112,6 @@ lemma uniqueXSub: "uniqueXCoord D \<Longrightarrow> \<forall> a < length L. L!a 
   apply (metis Suc_mono gr_implies_not0 length_Cons length_greater_0_conv lessI list.distinct(1)
     list.sel(3) nth_Cons_0 nth_tl uniqueXCoord_def)
 done
-
 lemma uniqueXCoordAppend2[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> uniqueXCoord (D @ [P])"
   apply (safe, cut_tac D="D @ [P,Q]" and L="D @ [P]" in uniqueXSub, auto)
   apply (metis less_antisym nth_append nth_append_length nth_mem)
@@ -130,7 +123,6 @@ lemma uniqueXCoordAppend3[intro]: "uniqueXCoord (D @ [P,Q]) \<longrightarrow> un
     using distinct_append uniqueXCoordToDistinct apply blast
 by (smt append_Cons append_assoc in_set_conv_decomp_first rotate1.simps(2) set_rotate1
   uniqueXCoordAppend1 uniqueX_notIn)
-
 lemma uniqueXCoordPermutation: "uniqueXCoord (A @ B) \<Longrightarrow> distinct TM \<Longrightarrow>
   \<forall>a \<in> set (TM). a \<in> set (A @ B) \<Longrightarrow> uniqueXCoord(TM)"
   apply (induct A, auto)
@@ -160,38 +152,6 @@ theorem pointsSegmentsAppend: "pointList L \<Longrightarrow> k < size L - 1 \<Lo
   = (segment (L!k) (L ! Suc k) \<and> segment (last L) a)"
   apply (safe, simp add: pointsSegments, simp add: pointsSegmentsAppend2)
 by (metis pointsSegmentsAppend1)
-
-
-(*Define order of point list after x-Coord and after x-Coord.
-  Needed to say which point on the X and Y axes is far right/left/top/bottom*)
-definition xCoordSort :: "point2d list \<Rightarrow> point2d list" where
-"xCoordSort P \<equiv> sort_key (xCoord) P"
-definition yCoordSort :: "point2d list \<Rightarrow> point2d list" where
-"yCoordSort P \<equiv> sort_key (yCoord) P"
-(*x/y-Sort gibt returns a sorted list*)
-lemma xCoordSorted :  "sorted (map xCoord (xCoordSort xs))"
-  by(induct xs, auto simp:sorted_insort_key xCoordSort_def)
-theorem xCoordSorted1 : "sorted (map xCoord (x # xs)) \<longleftrightarrow>
-    (sorted (map xCoord xs) \<and> (\<forall> y \<in> set xs. xCoord x \<le> xCoord y))"
-  by (rule sortedKey) 
-lemma yCoordSorted :  "sorted (map yCoord (yCoordSort xs))"
-  by (induct xs, auto simp:sorted_insort_key yCoordSort_def)
-theorem yCoordSorted1 :  "sorted (map yCoord (x # xs)) \<longleftrightarrow>
-    (sorted (map yCoord xs) \<and> (\<forall> y \<in> set xs. yCoord x \<le> yCoord y))"
-  by (rule sortedKey) 
-(*All the points in the list are still there after sort*)
-lemma inXCoord : "a \<in> set xs \<longrightarrow> a \<in> set (xCoordSort xs)"
-  by (auto simp add: xCoordSort_def)
-lemma inYCoord : "a \<in> set xs \<longrightarrow>  a \<in> set (yCoordSort xs)"
-  by (auto simp add: yCoordSort_def)
-
-(*first element of the sorted list is less or equal than the last.*)
-lemma xCoordOrd : "size L > 0 \<Longrightarrow> xCoord (last (xCoordSort L)) \<ge> xCoord (hd (xCoordSort L))"
-  apply (cases L, simp, insert inXCoord xCoordSorted xCoordSorted1)
-  by (metis empty_iff in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl)
-lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<ge> yCoord (hd (yCoordSort L))"
-  apply (cases L, simp, insert inYCoord yCoordSorted yCoordSorted1)
-  by (metis empty_iff in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl)
 
 
 (*any 3 corners in the point list are collinear.*)
@@ -240,8 +200,8 @@ lemma collinearPointList: "3 \<le> length L \<Longrightarrow> \<not>collinearLis
   apply (simp add: distinct_conv_nth)
 using collinearListNoPointsEq collinearList_def by auto
 
-lemma collinearList1: "collinear a b c = collinearList [a,b,c]"
-  apply (simp add: collinearList_def, rule iffI)
+lemma collinearList1[simp]: "collinearList [a,b,c] = collinear a b c"
+  apply (simp add: collinearList_def, rule iffI) defer
   apply (rule_tac  x=0 in exI, simp, rule_tac  x=1 in exI, simp, rule_tac  x=2 in exI, simp, safe)
   apply (case_tac "aa = 0", subgoal_tac "ba > 0", case_tac "ba = 1", subgoal_tac "ca = 2", simp+)
   apply (case_tac "ba = 0", case_tac "aa = 1", subgoal_tac "ca = 2", simp+)
@@ -365,6 +325,39 @@ by (simp add: isBetweenPointsDistinct segment_def)
 
 
 
-(*alte Definition*)
+
+
+(*evtl. noch nütlich*)
+
+(*(*Define order of point list after x-Coord and after x-Coord.
+  Needed to say which point on the X and Y axes is far right/left/top/bottom*)
+definition xCoordSort :: "point2d list \<Rightarrow> point2d list" where
+"xCoordSort P \<equiv> sort_key (xCoord) P"
+definition yCoordSort :: "point2d list \<Rightarrow> point2d list" where
+"yCoordSort P \<equiv> sort_key (yCoord) P"
+(*x/y-Sort gibt returns a sorted list*)
+lemma xCoordSorted :  "sorted (map xCoord (xCoordSort xs))"
+  by(induct xs, auto simp:sorted_insort_key xCoordSort_def)
+theorem xCoordSorted1 : "sorted (map xCoord (x # xs)) \<longleftrightarrow>
+    (sorted (map xCoord xs) \<and> (\<forall> y \<in> set xs. xCoord x \<le> xCoord y))"
+  by (rule sortedKey) 
+lemma yCoordSorted :  "sorted (map yCoord (yCoordSort xs))"
+  by (induct xs, auto simp:sorted_insort_key yCoordSort_def)
+theorem yCoordSorted1 :  "sorted (map yCoord (x # xs)) \<longleftrightarrow>
+    (sorted (map yCoord xs) \<and> (\<forall> y \<in> set xs. yCoord x \<le> yCoord y))"
+  by (rule sortedKey) 
+(*All the points in the list are still there after sort*)
+lemma inXCoord : "a \<in> set xs \<longrightarrow> a \<in> set (xCoordSort xs)"
+  by (auto simp add: xCoordSort_def)
+lemma inYCoord : "a \<in> set xs \<longrightarrow>  a \<in> set (yCoordSort xs)"
+  by (auto simp add: yCoordSort_def)
+
+(*first element of the sorted list is less or equal than the last.*)
+lemma xCoordOrd : "size L > 0 \<Longrightarrow> xCoord (last (xCoordSort L)) \<ge> xCoord (hd (xCoordSort L))"
+  apply (cases L, simp, insert inXCoord xCoordSorted xCoordSorted1)
+  by (metis empty_iff in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl)
+lemma yCoordOrd : "size L > 0 \<Longrightarrow> yCoord (last (yCoordSort L)) \<ge> yCoord (hd (yCoordSort L))"
+  apply (cases L, simp, insert inYCoord yCoordSorted yCoordSorted1)
+  by (metis empty_iff in_set_member last_in_set list.collapse list.set(1) member_rec(1) order_refl)*)
 
 end

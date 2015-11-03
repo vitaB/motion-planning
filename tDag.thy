@@ -115,7 +115,6 @@ by (auto simp add: pointInDag_def)
 
 (*Input Tip welches entfernt wird, tDag welches hinzugefügt wird, tDag-tree in dem ersetzt werden soll
 Output: neues tDag-tree*)
-(* wie verbiete ich replaceTip a D D?*)
 fun replaceTip :: "trapez \<Rightarrow> tDag \<Rightarrow> tDag \<Rightarrow> tDag" where
   "replaceTip oT nT (Tip D) = (if (D = oT) then (nT) else (Tip D))"
  |"replaceTip oT nT (Node Tl x Tr) = Node (replaceTip oT nT Tl) x (replaceTip oT nT Tr)"
